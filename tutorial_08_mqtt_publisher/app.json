@@ -1,0 +1,20 @@
+{
+    "name": "Tutorial 08 - MQTT Publisher",
+    "description": "A simple application that publish on a MQTT topic. Should be used with the tuto 9",
+     "release":{
+        "name": "1.0.0",
+        "description": "Initial release",
+        "type":"docker-compose",
+        "default_parameters": {
+            "requested":{
+                "core": { "disable_app": false },
+                "led_status": "false"
+            }
+        }
+    },
+    "permissions": {
+        "camera": true
+    },
+    "auto_install": false,
+    "restart_policy": "always"
+}

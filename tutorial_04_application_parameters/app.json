@@ -1,0 +1,22 @@
+{
+    "name": "Tutorial 04 - Application Parameters",
+    "description": "A simple application that streams and records video, and updates the led status of the ZED camera with a parameter.",
+     "release":{
+        "name": "1.1.1",
+        "description": "Initial release",
+        "type":"docker-compose",
+        "default_parameters": {
+            "requested":{
+                "core": { "disable_app": false },
+                "led_status": "false",
+                "$led_status": {"name":"LED Status", "order":1, 
+                    "type":"boolean",  "unit":"", "description": "Define whether your ZED LED is turned on or off" }
+            }
+        }
+    },
+    "permissions": {
+        "camera": true
+    },
+    "auto_install": false,
+    "restart_policy": "always"
+}

@@ -1,0 +1,19 @@
+{
+    "name": "Tutorial 02 - Live Stream and Recording",
+    "description": "A simple application that streams and records video.",
+     "release":{
+        "name": "1.0.0",
+        "description": "Initial release",
+        "type":"docker-compose",
+        "default_parameters": {
+            "requested":{
+                "core": { "disable_app": false }
+            }     
+        }
+    },
+    "permissions": {
+        "camera": true
+    },
+    "auto_install": false,
+    "restart_policy": "always"
+}
