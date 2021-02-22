@@ -4,12 +4,13 @@ This repository contains samples that show and explain the main CMP features. Ea
 
 ## What are the CMP features available and explained in these tutorials:
 
-- Live stream : How to display  your camera live video in the CMP interface
-- Telemetry : How to upload and store any kind of data in order to analyse and display it later 
-- Application parameters: How to define parameters to your application, settable in the CMP interface
-- Remote functions: How to define and call a remote function
-- Custum stream : How to replace your live camera stream by images of your choice
-- Video event : How to define Video Events, reccorded ans accessible through the interface.
+- **Live stream** : How to display  your camera live video in the CMP interface.
+- **Telemetry** : How to upload and store any kind of data in order to analyse and display it later.
+- **Application parameters**: How to define parameters to your application, settable in the CMP interface.
+- **Remote functions**: How to define and call a remote function.
+- **Custum stream** : How to replace your live camera stream by images of your choice.
+- **Video event** : How to define Video Events, reccorded ans accessible through the interface.
+- **MQTT publisher and receiver** : How to use MQTT to communicate between apps on the local network.
 
 
 ## Requirements
