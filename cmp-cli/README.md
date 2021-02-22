@@ -34,7 +34,7 @@ The main feature consiste in running the packaged application with a command lin
 
 ### Deploy an app
 
-Let's suppose you have a packaged app in a zip file. The following command lines allow to deploy the application as a **dev release** (meaning that the release is concidered as a test and not as a classic release) either on the current computer (if it is set up as a CMP device) or on any device of the local network:
+Let's suppose you have a packaged app in a zip file. The following command lines allow to **deploy** the application as a **dev release** (meaning that the release is concidered as a test and not as a classic release) either on the **current computer** (if it is set up as a CMP device) or on any device of the **local network**:
 
 
 On the host computer:
@@ -45,6 +45,7 @@ sudo cmp-cli run
 Remotly on a device of the local network:
 
 `$USER` : user name of the targeted device
+
 `$IP` : IP of the targeted device
 
 ```
@@ -53,7 +54,7 @@ sudo cmp-cli run --host $USER@$IP
 
 ### Build the docker image
 
-You can also use cmp-cli to test the build stage of your application. 
+You can also use cmp-cli to **test** the build stage of your application. 
 
 ```
 sudo cmp-cli build
@@ -62,6 +63,7 @@ sudo cmp-cli build
 Or emotly on a device of the local network:
 
 `$USER` : user name of the targeted device
+
 `$IP` : IP of the targeted device
 
 ```
