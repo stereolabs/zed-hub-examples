@@ -1,0 +1,4 @@
+paramiko
+argparse
+requests
+pathlib

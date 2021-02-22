@@ -1,0 +1,19 @@
+{
+    "name": "Python logs and telemetry",
+    "description": "Python app that sends logs and telemetry to the cloud",
+    "release":{
+        "name": "1.0.0",
+        "description": "first release",
+        "type":"docker-compose",
+        "default_parameters": {
+            "requested":{
+				"core": { "disable_app": false }		
+			}
+		}
+	},
+	"permissions": {
+    "camera": false
+    },
+    "auto_install": false,
+    "restart_policy": "always"
+}

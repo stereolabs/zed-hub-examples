@@ -1,0 +1,28 @@
+{
+    "name": "Python app parameters",
+    "description": "Python app that update its app parameters on update",
+    "release":{
+        "name": "1.0.0",
+        "description": "first release",
+        "type":"docker-compose",
+        "default_parameters": {
+            "requested":{
+                "core": { "disable_app": false },
+
+                "my_first_param": "My first param",
+                "$my_first_param": { "name":"My device IP", "order":1, 
+                    "type":"string", "unit":""},
+                                
+                "my_second_param": 10,
+				"$my_second_param": {"name":"My second param", "order":2, 
+                    "type":"number", "min":0, "max":100, "step":5, "unit":"seconds"}
+			
+			}
+		}
+	},
+	"permissions": {
+    "camera": false
+    },
+    "auto_install": false,
+    "restart_policy": "always"
+}

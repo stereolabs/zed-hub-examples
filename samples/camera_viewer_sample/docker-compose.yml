@@ -1,0 +1,13 @@
+version: '2.3'
+services:
+  cam_viewer_service:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: stereolabs/iot:0.22.0-runtime-jetson-jp4.4
+    runtime: nvidia
+    privileged: true
+    network_mode: host
+    environment:
+      - NVIDIA_DRIVER_CAPABILITIES=all
