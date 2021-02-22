@@ -1,0 +1,23 @@
+{
+    "name": "Camera Viewer Sample",
+    "description": "An application that opens the camera to provide streaming and recording capabilities. This sample is based on the default Camera Viewer app that is automatically deployed on all devices.",
+     "release":{
+        "name": "1.0.0",
+        "description": "Initial release",
+        "type":"docker-compose",
+        "default_parameters": {
+            "requested":{
+                "core": { "disable_app": false },
+                "local_stream": false
+            }
+        }
+    },
+    "permissions": {
+        "camera": true
+    },
+    "auto_install": false,
+    "restart_policy": "always",
+    "user_data": {
+
+    }
+}

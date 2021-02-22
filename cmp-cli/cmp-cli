@@ -1,0 +1,1644 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import re
+import getpass
+import paramiko
+import subprocess
+import shutil
+from subprocess import call, DEVNULL, STDOUT, check_call
+from pathlib import Path
+import base64
+import json
+import argparse
+import requests
+import random
+import string
+import time
+from signal import signal, SIGINT
+from shutil import copyfile
+from zipfile import ZipFile
+from pprint import pprint
+
+docker_compose_image_name="linuxserver/docker-compose:sl_iot"
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+def random_string(stringLength=8):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(stringLength))
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(help="commands")
+
+    run_parser = subparsers.add_parser('run', help='Build, deploy and run your application on your device. Use CTRL+C to stop it.')
+
+    run_parser.set_defaults(func=run)
+    run_parser.add_argument("--app_directory", help="Your application directory. Default is current path.")
+    run_parser.add_argument("--host", help="The user and ip/hostname of your device in your local network : user@ip or user@hostname")
+    run_parser.add_argument("--password", help="The password of your device in your local network.")
+
+    build_parser = subparsers.add_parser('build', help='Build your application on your device.')
+    build_parser.set_defaults(func=build)
+
+    build_parser.add_argument("--app_directory", help="Your application directory. Default is current path.")
+    build_parser.add_argument("--host", help="The user and ip/hostname of your device in your local network : user@ip or user@hostname")
+    build_parser.add_argument("--password", help="The password of your device in your local network.")
+
+    clean_parser = subparsers.add_parser('clean', help='Uninstall your dev release of your application and resets your working directory.')
+    clean_parser.set_defaults(func=clean)
+    clean_parser.add_argument("--app_directory", help="Your application directory. Default is current path.")
+    clean_parser.add_argument("--host", help="The user and ip/hostname of your device in your local network : user@ip or user@hostname")
+    clean_parser.add_argument("--password", help="The password of your device in your local network.")
+
+#   deploy_parser = subparsers.add_parser('deploy', help='Build, deploy and run your application on a device in your local network. Use CTRL+C to stop it.')
+
+#    deploy_parser.set_defaults(func=deploy)
+#    deploy_parser.add_argument("--host", required=True, help="The user and ip/hostname of your device in your local network : user@ip or user@hostname")
+#    deploy_parser.add_argument("--password", help="The password of your device in your local network.")
+#    deploy_parser.add_argument("--app_directory", help="Your application directory. Default is current path.")
+
+
+    if len(sys.argv)==1:
+        parser.print_help()
+        exit(0)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+def clean(args):
+    app_directory = str(Path().absolute())
+    if (args.app_directory != None) :
+        app_directory = os.path.abspath(args.app_directory)
+
+    ip = ""
+    username = ""
+    if (args.host != None) :
+        host = str(args.host)
+        valid_ip = False
+        for l in host :
+            if l == '@' :
+                valid_ip = True
+                continue
+            if valid_ip == False :
+                username += l
+            else :
+                ip += l
+
+    password = ""
+    if (args.host != None and args.password != None) :
+        password = str(args.password)
+    elif (args.host != None) :
+        print(host+"'s ", end='')
+        sys.stdout.flush()
+        password = getpass.getpass()
+
+    ssh = paramiko.SSHClient()
+    if (args.host != None) :
+        try :
+            ssh.load_system_host_keys()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            ssh.connect(ip, username=username, password=password)
+        except Exception as e:
+            print(e)
+            print(f'{bcolors.FAIL}Connection to device failed.{bcolors.ENDC}')
+            exit(1)
+
+    if (args.host == None) and (not os.path.isfile('/etc/sl_iot_token.conf')) :
+        print(f'{bcolors.OKGREEN}Please install Edge Agent on your device before using cmp build{bcolors.ENDC}')
+        exit(1)
+
+    #try :
+    #    check_call(['systemctl', 'status', 'sl_admin_app'], stdout=DEVNULL, stderr=DEVNULL)
+    #    check_call(['systemctl', 'status', 'sl_local_broker'], stdout=DEVNULL, stderr=DEVNULL)
+    #except:
+    #    print(f'{bcolors.OKGREEN}Edge Agent is not running on your device.\nPlease install Edge Agent on your device before using cmp build{bcolors.ENDC}')
+    #    exit(1)
+    if (args.host != None) :
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cat /etc/sl_iot_token.conf")
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(f'{bcolors.OKGREEN}Please install Edge Agent on the device at ip '+ip+' before using cmp deploy{bcolors.ENDC}')
+            exit(1)
+        token_file = ""
+        for line in ssh_stdout :
+            token_file=token_file+line
+    else :
+        token_file = Path('/etc/sl_iot_token.conf').read_text()
+
+
+    token_decode= base64.decodebytes(token_file.encode('utf-8'))
+
+    byte_token = bytearray(token_decode)
+    token_key = b'CtIWIyp271DYnmywLCt25Qpzi8lgvqboiwDssdAT5Vilh8jZllfoozW0DahQNqe1gKpQyyKzwG503i5UVuOPP1NjjGQGDxZRL3UzZyyW5RsX4N0MjL6xNVvbygth8Oq'
+    decoded_token = bytearray()
+
+    for i in range(len(byte_token)) :
+        c = token_decode[i]
+        c_key = token_key[i % (len(token_key)-1)]
+        c_new = c ^ c_key
+        decoded_token.append(c_new)
+        i = i+1
+
+    token = decoded_token.decode()
+
+    token_data = json.loads(token)
+    global cloud_url
+    cloud_url = token_data["APIH"]
+    global use_ssl
+    if 'APISSL' in token_data :
+        use_ssl = token_data["APISSL"]
+    else :
+        use_ssl = True
+    global cloud_workspace_url
+    cloud_workspace_url = token_data["WAPIH"]
+    global device_id
+    device_id = token_data["DID"]
+    global workspace_id
+    workspace_id = token_data["WID"]
+    global auth_token
+
+    auth_token = ''
+
+    app_manifest_file = 'app.json'
+    auth_manifest_file = '.auth_manifest.json'
+    if Path(auth_manifest_file).is_file() :
+        with open(auth_manifest_file) as json_file :
+            try :
+                data = json.load(json_file)
+                if 'auth_token' in data :
+                    auth_token = data['auth_token']
+                else :
+                    print(f"{bcolors.FAIL}[Error] Nothing to clean, your authentification manifest is not valid.{bcolors.ENDC}")
+                    exit(1)
+            except :
+                print(f"{bcolors.FAIL}[Error] Your authentifaction manifest is not a valid json{bcolors.ENDC}")
+                exit(1)
+    else :
+        print(f"{bcolors.OKGREEN}[Info] Nothing to clean, cmp build or run has not been called.{bcolors.ENDC}")
+        exit(1)
+
+    headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+    https = "https://"
+    if use_ssl == False :
+        https = "http://"
+    ws_url = https+cloud_url+'/api/v1/workspaces/'+workspace_id
+    r = requests.get(ws_url, headers=headers)
+    if r.status_code != 200 :
+        print(f"{bcolors.FAIL}[Error] Bad authentification token. Cannot get informations from cloud.{bcolors.ENDC}")
+        exit(1)
+
+    app_name = ''
+    app_release = {}
+    app_data = {}
+    dev_release_name = ''
+    prev_app_data = {}
+    if Path(auth_manifest_file).is_file() :
+        with open(auth_manifest_file) as json_file :
+            try :
+                data = json.load(json_file)
+                if 'dev_release_name' in data :
+                    dev_release_name = data['dev_release_name']
+                else :
+                    print(f"{bcolors.FAIL}[Error] Nothing to clean, cmp build or run have not been called.{bcolors.ENDC}")
+                    exit(1)
+                if 'app_data' in data :
+                    prev_app_data = data['app_data']
+                else :
+                    print(f"{bcolors.FAIL}[Error] Nothing to clean, cmp build or run have not been called.{bcolors.ENDC}")
+                    exit(1)
+            except :
+                print(f"{bcolors.FAIL}[Error] Your authentifaction manifest is not a valid json.{bcolors.ENDC}")
+                exit(1)
+    else :
+        print(f"{bcolors.FAIL}[Error] Nothing to clean, cmp build or run have not been called.{bcolors.ENDC}")
+        exit(1)
+
+    app_data = prev_app_data
+    app_name = app_data['name']
+
+
+    # Rest request to get team id
+    headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+    https = "https://"
+    if use_ssl == False :
+        https = "http://"
+    ws_url = https+cloud_url+'/api/v1/workspaces/'+workspace_id
+    r = requests.get(ws_url, headers=headers)
+    if r.status_code != 200 :
+        try :
+            print(r.json())
+        except :
+            print(r.text)
+        print(f"{bcolors.FAIL}[Error] Cannot get application informations from cloud.{bcolors.ENDC}")
+        exit(1)
+
+    ws_info = r.json()
+    team_id = ws_info["team_id"]
+    # Rest request get application list in workspace
+
+    headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+    app_url = https+cloud_url+'/api/v1/apps'
+    app_list_url = app_url+'?team_id='+team_id+'&per_page=100&page=1'
+
+    r = requests.get(app_list_url, headers=headers)
+
+    if r.status_code != 200 :
+        try :
+            print(r.json())
+        except :
+            print(r.text)
+        print(f"{bcolors.FAIL}[Error] Cannot get application informations from cloud.{bcolors.ENDC}")
+        exit(1)
+
+    app_list = r.json()
+    app_list = app_list["apps"]
+
+
+    app_found = False
+    app_json = {}
+    for app in app_list :
+        if app["name"] == app_name :
+            app_found = True
+            app_json = app
+
+    # If app or release doesn't exist create zip Rest request to create app
+    # Zip app.json / docker-compose.yml
+    global app_id
+
+    release_found = False
+    app_release_info = {}
+    if app_found == True :
+        app_id = app_json["id"]
+
+        # If version doesn't exist create zip and Rest request to create version
+        release_list_url = https+cloud_url+'/api/v1/apps/'+app_id+'/releases'+'?&per_page=100&page=1' 
+
+        r = requests.get(release_list_url, headers=headers)
+
+        if r.status_code != 200 :
+            try :
+                print(r.json())
+            except :
+                print(r.text)
+            print("{bcolors.FAIL}[Error] Cannot get application informations from cloud.{bcolors.ENDC}")
+            exit(1)
+
+        release_list_json = r.json()
+        release_list = release_list_json["releases"]
+
+        for release in release_list :
+            if release["name"] == dev_release_name :
+                release_found = True
+                app_release_info = release
+
+    if app_found == False or release_found == False :
+        print(f"{bcolors.FAIL}[Error] Application release has already been deleted from cloud.{bcolors.ENDC}")
+        os.remove(auth_manifest_file)
+        exit(1)
+
+    if (len(release_list) > 1) :
+        release_id = app_release_info["id"]
+        release_url = https+cloud_url+'/api/v1/apps/'+app_id+'/releases/'+release_id
+        r = requests.delete(release_url, headers=headers)
+        if r.status_code != 200 :
+            try :
+                print(r.json())
+            except :
+                print(r.text)
+            print(f"{bcolors.FAIL}[Error] Cannot delete application release from cloud.{bcolors.ENDC}")
+            os.remove(auth_manifest_file)
+            exit(1)
+    else :
+        app_url = https+cloud_url+'/api/v1/apps/'+app_id
+        r = requests.delete(app_url, headers=headers)
+        if r.status_code != 200 :
+            try :
+                print(r.json())
+            except :
+                print(r.text)
+            print(f"{bcolors.FAIL}[Error] Cannot delete application from cloud.{bcolors.ENDC}")
+            os.remove(auth_manifest_file)
+            exit(1)
+
+    os.remove(auth_manifest_file)
+    print(f"{bcolors.OKGREEN}[Info] Application dev release has been successfully deleted from cloud.{bcolors.ENDC}")
+    print(f"{bcolors.OKGREEN}[Info] Your working directory has been cleaned.{bcolors.ENDC}")
+    exit(0)
+
+def build(args):
+    app_directory = str(Path().absolute())
+    if (args.app_directory != None) :
+        app_directory = os.path.abspath(args.app_directory)
+
+
+    ip = ""
+    username = ""
+    if (args.host != None) :
+        host = str(args.host)
+        valid_ip = False
+        for l in host :
+            if l == '@' :
+                valid_ip = True
+                continue
+            if valid_ip == False :
+                username += l
+            else :
+                ip += l
+
+    password = ""
+    if (args.host != None and args.password != None) :
+        password = str(args.password)
+    elif (args.host != None) :
+        print(host+"'s ", end='')
+        sys.stdout.flush()
+        password = getpass.getpass()
+
+    ssh = paramiko.SSHClient()
+    if (args.host != None) :
+        try :
+            ssh.load_system_host_keys()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            ssh.connect(ip, username=username, password=password)
+        except Exception as e:
+            print(e)
+            print(f'{bcolors.FAIL}Connection to device failed.{bcolors.ENDC}')
+            exit(1)
+
+    if (args.host == None) and (not os.path.isfile('/etc/sl_iot_token.conf')) :
+        print(f'{bcolors.OKGREEN}Please install Edge Agent on your device before using cmp build{bcolors.ENDC}')
+        exit(1)
+
+    #try :
+    #    check_call(['systemctl', 'status', 'sl_admin_app'], stdout=DEVNULL, stderr=DEVNULL)
+    #    check_call(['systemctl', 'status', 'sl_local_broker'], stdout=DEVNULL, stderr=DEVNULL)
+    #except:
+    #    print(f'{bcolors.OKGREEN}Edge Agent is not running on your device.\nPlease install Edge Agent on your device before using cmp build{bcolors.ENDC}')
+    #    exit(1)
+    if (args.host != None) :
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cat /etc/sl_iot_token.conf")
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(f'{bcolors.OKGREEN}Please install Edge Agent on the device at ip '+ip+' before using cmp deploy{bcolors.ENDC}')
+            exit(1)
+        token_file = ""
+        for line in ssh_stdout :
+            token_file=token_file+line
+    else :
+        token_file = Path('/etc/sl_iot_token.conf').read_text()
+
+    token_decode= base64.decodebytes(token_file.encode('utf-8'))
+
+    byte_token = bytearray(token_decode)
+    token_key = b'CtIWIyp271DYnmywLCt25Qpzi8lgvqboiwDssdAT5Vilh8jZllfoozW0DahQNqe1gKpQyyKzwG503i5UVuOPP1NjjGQGDxZRL3UzZyyW5RsX4N0MjL6xNVvbygth8Oq'
+    decoded_token = bytearray()
+
+    for i in range(len(byte_token)) :
+        c = token_decode[i]
+        c_key = token_key[i % (len(token_key)-1)]
+        c_new = c ^ c_key
+        decoded_token.append(c_new)
+        i = i+1
+
+    token = decoded_token.decode()
+
+    token_data = json.loads(token)
+    global cloud_url
+    cloud_url = token_data["APIH"]
+    global use_ssl
+    if 'APISSL' in token_data :
+        use_ssl = token_data["APISSL"]
+    else :
+        use_ssl = True
+    global cloud_workspace_url
+    cloud_workspace_url = token_data["WAPIH"]
+    global device_id
+    device_id = token_data["DID"]
+    global workspace_id
+    workspace_id = token_data["WID"]
+    global auth_token
+
+    auth_token = ''
+
+    app_manifest_file = 'app.json'
+    auth_manifest_file = '.auth_manifest.json'
+    global_auth_manifest_file = '/usr/local/.auth_manifest.json'
+    if Path(auth_manifest_file).is_file() :
+        with open(auth_manifest_file) as json_file :
+            try :
+                data = json.load(json_file)
+                if 'auth_token' in data :
+                    auth_token = data['auth_token']
+            except :
+                print(f"{bcolors.FAIL}[Error] Your authentifaction manifest is not a valid json{bcolors.ENDC}")
+    elif Path(global_auth_manifest_file).is_file() :
+        with open(global_auth_manifest_file) as json_file :
+            try :
+                data = json.load(json_file)
+                if 'auth_token' in data :
+                    auth_token = data['auth_token']
+            except :
+                print(f"{bcolors.FAIL}[Error] Your authentifaction manifest is not a valid json{bcolors.ENDC}")
+
+    https = "https://"
+    if use_ssl == False :
+       https = "http://"
+    if auth_token != '' :
+        headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+        ws_url = https+cloud_url+'/api/v1/workspaces/'+workspace_id
+        r = requests.get(ws_url, headers=headers)
+        if r.status_code != 200 :
+            print(f"{bcolors.FAIL}[Error] Bad authentification token. Cannot get informations from cloud.{bcolors.ENDC}")
+            auth_token = ''
+
+    if (auth_token == ''):
+#        print(f'{bcolors.OKGREEN}Write your authentification token (go to the API panel in CMP): {bcolors.ENDC}', end='')
+        print(f'{bcolors.OKGREEN}Please type your email and your password to connect to CMP.{bcolors.ENDC}')
+        print('Email: ', end='')
+
+        email_cloud = ""
+        password_cloud = ""
+        sys.stdout.flush()
+        for line in sys.stdin :
+            email_cloud = line.rstrip()
+            break
+
+        password_cloud = getpass.getpass()
+
+        login_url = https+cloud_url+'/api/v1/users/login'
+        login_json = { }
+        login_json["email"] = email_cloud
+        login_json["password"] = password_cloud
+        headers = {'Content-Type' : 'application/json'}
+        r = requests.post(login_url, headers=headers, json=login_json)
+        if r.status_code != 200 :
+            print(f"{bcolors.FAIL}[Error] Bad email or password, cannot connect to cloud.{bcolors.ENDC}")
+            exit(1)
+
+        login_result = r.json()
+        access_token = login_result["access_token"]
+        user_id = login_result["id"]
+        api_token_json = {}
+        api_token_json["name"] = "dev_mode"
+        api_token_json["access"] = "write"
+        api_token_json["description"] = {}
+        headers = {'Content-Type' : 'application/json', 'Authorization': access_token}
+        api_token_url = https+cloud_url+'/api/v1/users/'+str(user_id)+'/api_tokens'
+        r = requests.post(api_token_url, headers=headers, json=api_token_json)
+        if r.status_code != 200 :
+            try :
+                print(r.json())
+            except :
+                print(r.text)
+            print(f"{bcolors.FAIL}[Error] Cannot create api token.{bcolors.ENDC}")
+            exit(1)
+
+        api_token_result= r.json()
+        auth_token = api_token_result["access_token"]
+
+        headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+        ws_url = https+cloud_url+'/api/v1/workspaces/'+workspace_id
+        r = requests.get(ws_url, headers=headers)
+        if r.status_code != 200 :
+            print(f"{bcolors.FAIL}[Error] Bad authentification token. Cannot get informations from cloud.{bcolors.ENDC}")
+            exit(1)
+
+        if Path(auth_manifest_file).is_file() :
+            with open(auth_manifest_file, 'w+') as json_file :
+                try :
+                    data = json.load(json_file)
+                    data['auth_token'] = auth_token
+                    json.dump(data, json_file)
+                except : 
+                    data = {}
+                    data['auth_token'] = auth_token
+                    json.dump(data, json_file)
+        else :
+            with open(auth_manifest_file, 'w+') as json_file :
+                data = {}
+                data['auth_token'] = auth_token
+                json.dump(data, json_file)
+
+        if Path(global_auth_manifest_file).is_file() :
+            with open(global_auth_manifest_file, 'w+') as json_file :
+                try :
+                    data = json.load(json_file)
+                    data['auth_token'] = auth_token
+                    json.dump(data, json_file)
+                except :
+                    data = {}
+                    data['auth_token'] = auth_token
+                    json.dump(data, json_file)
+        else :
+            with open(global_auth_manifest_file, 'w+') as json_file :
+                data = {}
+                data['auth_token'] = auth_token
+                json.dump(data, json_file)
+
+
+    headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+    ws_url = https+cloud_url+'/api/v1/workspaces/'+workspace_id
+    r = requests.get(ws_url, headers=headers)
+    if r.status_code != 200 :
+        print(f"{bcolors.FAIL}[Error] Bad authentification token. Cannot get informations from cloud.{bcolors.ENDC}")
+        exit(1)
+
+    #if (args.host == None) :
+    #try :
+    #    check_call(['docker-compose', 'config'], stdout=DEVNULL)
+    #except:
+    #    print(f'{bcolors.FAIL}[Error] Your docker-compose.yml file is not present or malformed in your application directory.{bcolors.ENDC}')
+    #    exit(1)
+
+
+    app_name = ''
+    app_release = {}
+    app_data = {}
+    # Validate app.json
+    if Path(app_manifest_file).is_file() :
+        with open(app_manifest_file) as json_file :
+            try :
+                app_data = json.load(json_file)
+                if 'name' in app_data :
+                    app_name = app_data['name']
+                else :
+                    print(f"{bcolors.FAIL}[Error] Your application manifest is not valid, \"name\" is missing.{bcolors.ENDC}")
+                    exit(1)
+                if 'release' in app_data :
+                    app_release = app_data['release']
+                else :
+                    print(f"{bcolors.FAIL}[Error] Your application manifest is not valid, \"release\" is missing.{bcolors.ENDC}")
+                    exit(1)
+            except :
+                print(f"{bcolors.FAIL}[Error] Your application manifest is not a valid json.{bcolors.ENDC}")
+                exit(1)
+    else :
+         print(f"{bcolors.FAIL}[Error] Your application manifest is not present in your application directory.{bcolors.ENDC}")
+         exit(1)
+
+    dev_release_name = ''
+    prev_app_data = {}
+    if Path(auth_manifest_file).is_file() :
+        with open(auth_manifest_file) as json_file :
+            try :
+                data = json.load(json_file)
+                if 'dev_release_name' in data :
+                    dev_release_name = data['dev_release_name']
+                if 'app_data' in data :
+                    prev_app_data = data['app_data']
+            except :
+                print(f"{bcolors.FAIL}[Error] Your authentifaction manifest is not a valid json.{bcolors.ENDC}")
+                exit(1)
+
+    new_release=False
+    old_release_name=''
+    if dev_release_name == '' or app_data != prev_app_data :
+        if dev_release_name != '':
+            new_release=True
+            old_release_name=dev_release_name
+        dev_release_name = "dev_local_mode_"+random_string()
+        if Path(auth_manifest_file).is_file() :
+            with open(auth_manifest_file, 'w+') as json_file :
+                try :
+                    data = json.load(json_file)
+                    data['dev_release_name'] = dev_release_name
+                    data['app_data'] = app_data
+                    json.dump(data, json_file)
+                except :
+                    data = {}
+                    data['auth_token'] = auth_token
+                    data['dev_release_name'] = dev_release_name
+                    data['app_data'] = app_data
+                    json.dump(data, json_file)
+        else :
+            with open(auth_manifest_file, 'w+') as json_file :
+                data = {}
+                data['dev_release_name'] = dev_release_name
+                data['auth_token'] = auth_token
+                data['app_data'] = app_data
+                json.dump(data, json_file)
+
+    app_release["name"] = dev_release_name
+    app_release["default_parameters"]["requested"]["core"]["disable_app"] = False
+    app_release["default_parameters"]["requested"]["core"]["autorun"] = True
+    app_release["default_parameters"]["requested"]["core"]["dev_local_mode"] = True
+    if args.host != None :
+        app_release["default_parameters"]["requested"]["core"]["dev_local_path"] = '/tmp/'+dev_release_name
+    else :
+        app_release["default_parameters"]["requested"]["core"]["dev_local_path"] = app_directory
+    app_data["release"] = app_release
+    app_data["auto_install"] = False
+    app_data["restart_policy"] = "never"
+
+    # Rest request to get team id
+    headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+    ws_url = https+cloud_url+'/api/v1/workspaces/'+workspace_id
+    r = requests.get(ws_url, headers=headers)
+    if r.status_code != 200 :
+        try :
+            print(r.json())
+        except :
+            print(r.text)
+        print(f"{bcolors.FAIL}[Error] Cannot get application informations from cloud.{bcolors.ENDC}")
+        exit(1)
+
+    ws_info = r.json()
+    team_id = ws_info["team_id"]
+    # Rest request get application list in workspace
+
+    headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+    app_url = https+cloud_url+'/api/v1/apps'
+    app_list_url = app_url+'?team_id='+team_id+'&per_page=100&page=1'
+
+    r = requests.get(app_list_url, headers=headers)
+
+    if r.status_code != 200 :
+        try :
+            print(r.json())
+        except :
+            print(r.text)
+        print(f"{bcolors.FAIL}[Error] Cannot get application informations from cloud.{bcolors.ENDC}")
+        exit(1)
+
+    app_list = r.json()
+    app_list = app_list["apps"]
+
+
+    app_found = False
+    app_json = {}
+    for app in app_list :
+        if app["name"] == app_name :
+            app_found = True
+            app_json = app
+
+    # If app or release doesn't exist create zip Rest request to create app
+    # Zip app.json / docker-compose.yml
+    global app_id
+
+    release_found = False
+    old_release_found = False
+    app_release_info = {}
+    old_release_info = {}
+    if app_found == True :
+        app_id = app_json["id"]
+
+        # If version doesn't exist create zip and Rest request to create version
+        release_list_url = https+cloud_url+'/api/v1/apps/'+app_id+'/releases'+'?&per_page=100&page=1' 
+
+        r = requests.get(release_list_url, headers=headers)
+
+        if r.status_code != 200 :
+            try :
+                print(r.json())
+            except :
+                print(r.text)
+            print("{bcolors.FAIL}[Error] Cannot get application informations from cloud.{bcolors.ENDC}")
+            exit(1)
+
+        release_list_json = r.json()
+        release_list = release_list_json["releases"]
+
+        for release in release_list :
+            if new_release == True and release["name"] == old_release_name :
+                old_release_found = True
+                old_release_info = release
+            if release["name"] == dev_release_name :
+                release_found = True
+                app_release_info = release
+
+    if app_found == False or release_found == False :
+        #create zip Rest request to create app
+        copyfile(app_manifest_file, "app_original.json")
+        if Path(app_manifest_file).is_file() :
+            with open(app_manifest_file, 'w+') as json_file :
+                json.dump(app_data, json_file)
+        else :
+            print("{bcolors.FAIL}[Error] Your application manifest is not a valid json.{bcolors.ENDC}")
+            os.remove("app_original.json")
+            exit(1)
+
+        zipObj = ZipFile('app_dev.zip', 'w')
+        zipObj.write(app_manifest_file)
+        zipObj.write('docker-compose.yml')
+        zipObj.close()
+
+        copyfile("app_original.json", app_manifest_file)
+        os.remove("app_original.json")
+        if app_found == False :
+            #headers_form = { 'Content-Type':'multipart/form-data', 'Authorization':auth_token }
+            headers_form = { 'Authorization':auth_token }
+            filename = app_directory+'/app_dev.zip'
+            arg_files = {'file':(filename, open(filename, 'rb'), "multipart/form-data")}
+            arg_data = {'team_id':team_id}
+            r = requests.post(app_url, headers=headers_form, files=arg_files, data=arg_data)
+            if r.status_code != 200 :
+                try :
+                    print(r.json())
+                except :
+                    print(r.text)
+                print(f"{bcolors.FAIL}[Error] Cannot create application on cloud.{bcolors.ENDC}")
+                os.remove('app_dev.zip')
+                exit(1)
+            app_return = r.json()
+            app_id = app_return["id"]
+            app_release_info = app_return["latest_release"]
+            os.remove('app_dev.zip')
+        elif release_found == False :
+            release_url = https+cloud_url+'/api/v1/apps/'+app_id+'/releases'
+            headers_form = { 'Authorization':auth_token }
+            filename = app_directory+'/app_dev.zip'
+            arg_files = {'file':(filename, open(filename, 'rb'), "multipart/form-data")}
+            r = requests.post(release_url, headers=headers_form, files=arg_files)
+            if r.status_code != 200 :
+                try :
+                    print(r.json())
+                except :
+                    print(r.text)
+                print(f"{bcolors.FAIL}[Error] Cannot create release for your application on cloud.{bcolors.ENDC}")
+                os.remove('app_dev.zip')
+                exit(1)
+            app_return = r.json()
+            app_id = app_return["id"]
+            app_release_info = app_return["latest_release"]
+            os.remove('app_dev.zip')
+
+    if old_release_found == True :
+        old_release_id = old_release_info["id"]
+        old_release_url = https+cloud_url+'/api/v1/apps/'+app_id+'/releases/'+old_release_id
+        print(old_release_url)
+        r = requests.delete(old_release_url, headers=headers)
+        if r.status_code != 200 :
+            try :
+                print(r.json())
+            except :
+                print(r.text)
+            print(f"{bcolors.FAIL}[Error] Cannot delete previous application release from cloud.{bcolors.ENDC}")
+
+    # Copying files through ssh
+    if (args.host != None) :
+        print(f"{bcolors.OKGREEN}[Info] Copying your working directory to "+ip+f" through ssh...{bcolors.ENDC}")
+        print ("working directory : "+app_directory)
+#        zf = ZipFile("app_dev.zip", "w")
+#        for dirname, subdirs, files in os.walk(app_directory) :
+#            zf.write(dirname)
+#            for filename in files:
+#                zf.write(os.path.join(dirname, filename))
+#        zf.close()
+        shutil.make_archive('/tmp/app_dev', 'zip', root_dir=app_directory)
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("mkdir -p /tmp/"+dev_release_name+"_build")
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(f'{bcolors.FAIL}[Error] Failed to create application directory on '+ip+f"{bcolors.ENDC}")
+            exit(1)
+
+        try :
+            ftp_client=ssh.open_sftp()
+            ftp_client.put("/tmp/app_dev.zip","/tmp/"+dev_release_name+"_build/app_dev.zip")
+            ftp_client.close()
+            os.remove("/tmp/app_dev.zip")
+        except Exception as e:
+            print(e)
+            os.remove("/tmp/app_dev.zip")
+            print(f"{bcolors.FAIL}[Error] Failed to copy files on "+ip+f"{bcolors.ENDC}")
+            exit(1)
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cd /tmp/"+dev_release_name+"_build/ && unzip -qo app_dev.zip")
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(f'{bcolors.FAIL}[Error] Failed to unzip copied files on '+ip+f"{bcolors.ENDC}")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cd /tmp/"+dev_release_name+"_build/ && rm -rf /tmp/"+dev_release_name+"_build/")
+            exit(1)
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cd /tmp/"+dev_release_name+"_build/ && rm -rf /tmp/"+dev_release_name+"_build/app_dev.zip")
+
+    # docker build / pull
+    print(f"{bcolors.OKGREEN}[Info] Building your application runtime image...{bcolors.ENDC}")
+    if (args.host != None) :
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/"+dev_release_name+"_build/:/tmp/"+dev_release_name+"_build/ -t "+docker_compose_image_name+" docker-compose --project-directory /tmp/"+dev_release_name+"_build/ -f /tmp/"+dev_release_name+"_build/docker-compose.yml build 2>&1", get_pty=True)
+        for l in line_buffered(ssh_stdout):
+            print(l.decode("utf-8"), end='')
+
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(ssh_stdout.channel.recv_exit_status())
+            print(f'{bcolors.FAIL}[Error] Cannot build your application.{bcolors.ENDC}')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cd /tmp/"+dev_release_name+"_build/ && rm -rf /tmp/"+dev_release_name+"_build/")
+            print(f'{bcolors.WARNING}If you face permissions issues using docker or docker-compose, try this on your host device :{bcolors.ENDC}')
+            print(f'{bcolors.WARNING}Add docker to user group : {bcolors.ENDC}')
+            print(f'{bcolors.WARNING}{bcolors.BOLD}sudo usermod -aG docker $USER{bcolors.ENDC}')
+            exit(1)
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/"+dev_release_name+"_build/:/tmp/"+dev_release_name+"_build/ -t "+docker_compose_image_name+" docker-compose --project-directory /tmp/"+dev_release_name+"_build/ -f /tmp/"+dev_release_name+"_build/docker-compose.yml pull 2>&1", get_pty=True)
+        for l in line_buffered(ssh_stdout):
+            print(l.decode("utf-8"), end='')
+
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(f'{bcolors.FAIL}[Error] Cannot pull your application.{bcolors.ENDC}')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cd /tmp/"+dev_release_name+"_build/ && rm -rf /tmp/"+dev_release_name+"_build/")
+            print(f'{bcolors.WARNING}If you face permissions issues using docker or docker-compose, try this on your host device :{bcolors.ENDC}')
+            print(f'{bcolors.WARNING}Add docker to user group : {bcolors.ENDC}')
+            print(f'{bcolors.WARNING}{bcolors.BOLD}sudo usermod -aG docker $USER{bcolors.ENDC}')
+            exit(1)
+
+    else :
+        print(f"{bcolors.OKGREEN}[Info] Building your application runtime image...{bcolors.ENDC}")
+        exit_code = subprocess.call(["docker", "run", "--rm", "--privileged", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", app_directory+":"+app_directory, "-t", docker_compose_image_name,"docker-compose", "--project-directory",app_directory, "-f", app_directory+"/docker-compose.yml","build"])
+        if (exit_code != 0) :
+            print(f"{bcolors.FAIL}[Error] Cannot build your application.{bcolors.ENDC}")
+            print(f'{bcolors.WARNING}If you face permissions issues using docker or docker-compose, try this on your host device :{bcolors.ENDC}')
+            print(f'{bcolors.WARNING}Add docker to user group : {bcolors.ENDC}')
+            print(f'{bcolors.WARNING}{bcolors.BOLD}sudo usermod -aG docker $USER{bcolors.ENDC}')
+            exit(1)
+
+        exit_code = subprocess.call(["docker", "run", "--rm", "--privileged", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", app_directory+":"+app_directory, "-t", docker_compose_image_name,"docker-compose", "--project-directory",app_directory, "-f", app_directory+"/docker-compose.yml","pull"])
+        if (exit_code !=0) :
+            print(f"{bcolors.FAIL}[Error] Cannot pull your application.{bcolors.ENDC}")
+            print(f'{bcolors.WARNING}If you face permissions issues using docker or docker-compose, try this on your host device :{bcolors.ENDC}')
+            print(f'{bcolors.WARNING}Add docker to user group : {bcolors.ENDC}')
+            print(f'{bcolors.WARNING}{bcolors.BOLD}sudo usermod -aG docker $USER{bcolors.ENDC}')
+            exit(1)
+        print(f"{bcolors.OKGREEN}[Info] Your application has been successfully built.{bcolors.ENDC}")
+
+
+def line_buffered(f):
+    line_buf = b''
+    while not f.channel.exit_status_ready():
+        line_buf += f.read(1)
+        if line_buf.endswith(b'\n'):
+            yield line_buf
+            line_buf = b''
+
+def run(args):
+    app_directory = str(Path().absolute())
+    if (args.app_directory != None) :
+        app_directory = os.path.abspath(args.app_directory)
+
+    ip = ""
+    username = ""
+    if (args.host != None) :
+        host = str(args.host)
+        valid_ip = False
+        for l in host :
+            if l == '@' :
+                valid_ip = True
+                continue
+            if valid_ip == False :
+                username += l
+            else :
+                ip += l
+
+    password = ""
+    if (args.host != None and args.password != None) :
+        password = str(args.password)
+    elif (args.host != None) :
+        print(host+"'s ", end='')
+        sys.stdout.flush()
+        password = getpass.getpass()
+
+    ssh = paramiko.SSHClient()
+    if (args.host != None) :
+        try :
+            ssh.load_system_host_keys()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            ssh.connect(ip, username=username, password=password)
+        except Exception as e:
+            print(e)
+            print(f'{bcolors.FAIL}Connection to device failed.{bcolors.ENDC}')
+            exit(1)
+
+
+    if (args.host == None) and (not os.path.isfile('/etc/sl_iot_token.conf')) :
+        print(f'{bcolors.OKGREEN}Please install Edge Agent on your device before using cmp run{bcolors.ENDC}')
+        exit(1)
+
+    #try :
+    #    check_call(['systemctl', 'status', 'sl_admin_app'], stdout=DEVNULL, stderr=DEVNULL)
+    #    check_call(['systemctl', 'status', 'sl_local_broker'], stdout=DEVNULL, stderr=DEVNULL)
+    #except:
+    #    print(f'{bcolors.OKGREEN}Edge Agent is not running on your device.\nPlease install Edge Agent on your device before using cmp run{bcolors.ENDC}')
+    #    exit(1)
+
+    if (args.host != None) :
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cat /etc/sl_iot_token.conf")
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(f'{bcolors.OKGREEN}Please install Edge Agent on the device at ip '+ip+' before using cmp deploy{bcolors.ENDC}')
+            exit(1)
+        token_file = ""
+        for line in ssh_stdout :
+            token_file=token_file+line
+    else :
+        token_file = Path('/etc/sl_iot_token.conf').read_text()
+
+    token_decode= base64.decodebytes(token_file.encode('utf-8'))
+
+    byte_token = bytearray(token_decode)
+    token_key = b'CtIWIyp271DYnmywLCt25Qpzi8lgvqboiwDssdAT5Vilh8jZllfoozW0DahQNqe1gKpQyyKzwG503i5UVuOPP1NjjGQGDxZRL3UzZyyW5RsX4N0MjL6xNVvbygth8Oq'
+    decoded_token = bytearray()
+
+    for i in range(len(byte_token)) :
+        c = token_decode[i]
+        c_key = token_key[i % (len(token_key)-1)]
+        c_new = c ^ c_key
+        decoded_token.append(c_new)
+        i = i+1
+
+    token = decoded_token.decode()
+
+    token_data = json.loads(token)
+    global cloud_url
+    cloud_url = token_data["APIH"]
+    global use_ssl
+    if 'APISSL' in token_data :
+        use_ssl = token_data["APISSL"]
+    else :
+        use_ssl = True
+    global cloud_workspace_url
+    cloud_workspace_url = token_data["WAPIH"]
+    global device_id
+    device_id = token_data["DID"]
+    global workspace_id
+    workspace_id = token_data["WID"]
+    global auth_token
+
+    auth_token = ''
+
+    app_manifest_file = 'app.json'
+    auth_manifest_file = '.auth_manifest.json'
+    global_auth_manifest_file = '/usr/local/.auth_manifest.json'
+    if Path(auth_manifest_file).is_file() :
+        with open(auth_manifest_file) as json_file :
+            try :
+                data = json.load(json_file)
+                if 'auth_token' in data :
+                    auth_token = data['auth_token']
+            except :
+                print(f"{bcolors.FAIL}[Error] Your authentifaction manifest is not a valid json{bcolors.ENDC}")
+    elif Path(global_auth_manifest_file).is_file() :
+        with open(global_auth_manifest_file) as json_file :
+            try :
+                data = json.load(json_file)
+                if 'auth_token' in data :
+                    auth_token = data['auth_token']
+            except :
+                print(f"{bcolors.FAIL}[Error] Your authentifaction manifest is not a valid json{bcolors.ENDC}")
+    https = "https://"
+    if use_ssl == False :
+        https = "http://"
+    if auth_token != '' :
+        headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+        ws_url = https+cloud_url+'/api/v1/workspaces/'+workspace_id
+        r = requests.get(ws_url, headers=headers)
+        if r.status_code != 200 :
+            print(f"{bcolors.FAIL}[Error] Bad authentification token. Cannot get informations from cloud.{bcolors.ENDC}")
+            auth_token = ''
+
+    if (auth_token == ''):
+#        print(f'{bcolors.OKGREEN}Write your authentification token (go to the API panel in CMP): {bcolors.ENDC}', end='')
+        print(f'{bcolors.OKGREEN}Please type your email and your password to connect to CMP.{bcolors.ENDC}')
+        print('Email: ', end='')
+
+        email_cloud = ""
+        password_cloud = ""
+        sys.stdout.flush()
+        for line in sys.stdin :
+            email_cloud = line.rstrip()
+            break
+
+        password_cloud = getpass.getpass()
+
+        login_url = https+cloud_url+'/api/v1/users/login'
+        login_json = { }
+        login_json["email"] = email_cloud
+        login_json["password"] = password_cloud
+        headers = {'Content-Type' : 'application/json'}
+        r = requests.post(login_url, headers=headers, json=login_json)
+        if r.status_code != 200 :
+            print(f"{bcolors.FAIL}[Error] Bad email or password, cannot connect to cloud.{bcolors.ENDC}")
+            exit(1)
+
+        login_result = r.json()
+        access_token = login_result["access_token"]
+        user_id = login_result["id"]
+        api_token_json = {}
+        api_token_json["name"] = "dev_mode"
+        api_token_json["access"] = "write"
+        api_token_json["description"] = {}
+        headers = {'Content-Type' : 'application/json', 'Authorization': access_token}
+        api_token_url = https+cloud_url+'/api/v1/users/'+str(user_id)+'/api_tokens'
+        r = requests.post(api_token_url, headers=headers, json=api_token_json)
+        if r.status_code != 200 :
+            try :
+                print(r.json())
+            except :
+                print(r.text)
+            print(f"{bcolors.FAIL}[Error] Cannot create api token.{bcolors.ENDC}")
+            exit(1)
+
+        api_token_result= r.json()
+        auth_token = api_token_result["access_token"]
+
+        headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+        ws_url = https+cloud_url+'/api/v1/workspaces/'+workspace_id
+        r = requests.get(ws_url, headers=headers)
+        if r.status_code != 200 :
+            print(f"{bcolors.FAIL}[Error] Bad authentification token. Cannot get informations from cloud.{bcolors.ENDC}")
+            exit(1)
+
+        if Path(auth_manifest_file).is_file() :
+            with open(auth_manifest_file, 'w+') as json_file :
+                try :
+                    data = json.load(json_file)
+                    data['auth_token'] = auth_token
+                    json.dump(data, json_file)
+                except : 
+                    data = {}
+                    data['auth_token'] = auth_token
+                    json.dump(data, json_file)
+        else :
+            with open(auth_manifest_file, 'w+') as json_file :
+                data = {}
+                data['auth_token'] = auth_token
+                json.dump(data, json_file)
+
+        if Path(global_auth_manifest_file).is_file() :
+            with open(global_auth_manifest_file, 'w+') as json_file :
+                try :
+                    data = json.load(json_file)
+                    data['auth_token'] = auth_token
+                    json.dump(data, json_file)
+                except :
+                    data = {}
+                    data['auth_token'] = auth_token
+                    json.dump(data, json_file)
+        else :
+            with open(global_auth_manifest_file, 'w+') as json_file :
+                data = {}
+                data['auth_token'] = auth_token
+                json.dump(data, json_file)
+
+
+    headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+    ws_url = https+cloud_url+'/api/v1/workspaces/'+workspace_id
+    r = requests.get(ws_url, headers=headers)
+    if r.status_code != 200 :
+        print(f"{bcolors.FAIL}[Error] Bad authentification token. Cannot get informations from cloud.{bcolors.ENDC}")
+        exit(1)
+
+    #if (args.host == None) :
+    #try :
+    #    check_call(['docker-compose', 'config'], stdout=DEVNULL)
+    #except:
+    #    print(f'{bcolors.FAIL}[Error] Your docker-compose.yml file is not present or malformed in your application directory.{bcolors.ENDC}')
+    #    exit(1)
+
+
+    app_name = ''
+    app_release = {}
+    app_data = {}
+    # Validate app.json
+    if Path(app_manifest_file).is_file() :
+        with open(app_manifest_file) as json_file :
+            try :
+                app_data = json.load(json_file)
+                if 'name' in app_data :
+                    app_name = app_data['name']
+                else :
+                    print(f"{bcolors.FAIL}[Error] Your application manifest is not valid, \"name\" is missing.{bcolors.ENDC}")
+                    exit(1)
+                if 'release' in app_data :
+                    app_release = app_data['release']
+                else :
+                    print(f"{bcolors.FAIL}[Error] Your application manifest is not valid, \"release\" is missing.{bcolors.ENDC}")
+                    exit(1)
+            except :
+                print(f"{bcolors.FAIL}[Error] Your application manifest is not a valid json.{bcolors.ENDC}")
+                exit(1)
+    else :
+         print(f"{bcolors.FAIL}[Error] Your application manifest is not present in your application directory.{bcolors.ENDC}")
+         exit(1)
+
+
+    dev_release_name = ''
+    prev_app_data = {}
+    if Path(auth_manifest_file).is_file() :
+        with open(auth_manifest_file) as json_file :
+            try :
+                data = json.load(json_file)
+                if 'dev_release_name' in data :
+                    dev_release_name = data['dev_release_name']
+                if 'app_data' in data :
+                    prev_app_data = data['app_data']
+            except :
+                print(f"{bcolors.FAIL}[Error] Your authentifaction manifest is not a valid json.{bcolors.ENDC}")
+                exit(1)
+
+    new_release = False
+    old_release_name = ''
+    if dev_release_name == '' or app_data != prev_app_data :
+        if dev_release_name != '':
+            new_release=True
+            old_release_name=dev_release_name
+        dev_release_name = "dev_local_mode_"+random_string()
+        if Path(auth_manifest_file).is_file() :
+            with open(auth_manifest_file, 'w+') as json_file :
+                try :
+                    data = json.load(json_file)
+                    data['dev_release_name'] = dev_release_name
+                    data['app_data'] = app_data
+                    json.dump(data, json_file)
+                except :
+                    data = {}
+                    data['auth_token'] = auth_token
+                    data['dev_release_name'] = dev_release_name
+                    data['app_data'] = app_data
+                    json.dump(data, json_file)
+        else :
+            with open(auth_manifest_file, 'w+') as json_file :
+                data = {}
+                data['dev_release_name'] = dev_release_name
+                data['auth_token'] = auth_token
+                data['app_data'] = app_data
+                json.dump(data, json_file)
+
+    app_release["name"] = dev_release_name
+    app_release["default_parameters"]["requested"]["core"]["disable_app"] = False
+    app_release["default_parameters"]["requested"]["core"]["autorun"] = True
+    app_release["default_parameters"]["requested"]["core"]["dev_local_mode"] = True
+    if args.host != None :
+        app_release["default_parameters"]["requested"]["core"]["dev_local_path"] = '/tmp/'+dev_release_name
+    else :
+        app_release["default_parameters"]["requested"]["core"]["dev_local_path"] = app_directory
+    app_data["release"] = app_release
+    app_data["auto_install"] = False
+    app_data["restart_policy"] = "never"
+
+    # Rest request to get team id
+    headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+    ws_url = https+cloud_url+'/api/v1/workspaces/'+workspace_id
+    r = requests.get(ws_url, headers=headers)
+    if r.status_code != 200 :
+        try :
+            print(r.json())
+        except :
+            print(r.text)
+        print(f"{bcolors.FAIL}[Error] Cannot get application informations from cloud.{bcolors.ENDC}")
+        exit(1)
+
+    ws_info = r.json()
+    team_id = ws_info["team_id"]
+    # Rest request get application list in workspace
+
+    headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+    app_url = https+cloud_url+'/api/v1/apps'
+    app_list_url = app_url+'?team_id='+team_id+'&per_page=100&page=1'
+
+    r = requests.get(app_list_url, headers=headers)
+
+    if r.status_code != 200 :
+        try :
+            print(r.json())
+        except :
+            print(r.text)
+        print(f"{bcolors.FAIL}[Error] Cannot get application informations from cloud.{bcolors.ENDC}")
+        exit(1)
+
+    app_list = r.json()
+    app_list = app_list["apps"]
+
+
+    app_found = False
+    app_json = {}
+    for app in app_list :
+        if app["name"] == app_name :
+            app_found = True
+            app_json = app
+
+    # If app or release doesn't exist create zip Rest request to create app
+    # Zip app.json / docker-compose.yml
+    global app_id
+
+    release_found = False
+    old_release_found = False
+    app_release_info = {}
+    old_release_info = {}
+    if app_found == True :
+        app_id = app_json["id"]
+
+        # If version doesn't exist create zip and Rest request to create version
+        release_list_url = https+cloud_url+'/api/v1/apps/'+app_id+'/releases'+'?&per_page=100&page=1' 
+
+        r = requests.get(release_list_url, headers=headers)
+
+        if r.status_code != 200 :
+            try :
+                print(r.json())
+            except :
+                print(r.text)
+            print("{bcolors.FAIL}[Error] Cannot get application informations from cloud.{bcolors.ENDC}")
+            exit(1)
+
+        release_list_json = r.json()
+        release_list = release_list_json["releases"]
+
+        for release in release_list :
+            if new_release == True and release["name"] == old_release_name :
+                old_release_found = True
+                old_release_info = release
+            if release["name"] == dev_release_name :
+                release_found = True
+                app_release_info = release
+
+    if app_found == False or release_found == False :
+        #create zip Rest request to create app
+        copyfile(app_manifest_file, "app_original.json")
+        if Path(app_manifest_file).is_file() :
+            with open(app_manifest_file, 'w+') as json_file :
+                json.dump(app_data, json_file)
+        else :
+            print("{bcolors.FAIL}[Error] Your application manifest is not a valid json.{bcolors.ENDC}")
+            os.remove("app_original.json")
+            exit(1)
+
+        zipObj = ZipFile('app_dev.zip', 'w')
+        zipObj.write(app_manifest_file)
+        zipObj.write('docker-compose.yml')
+        zipObj.close()
+
+        copyfile("app_original.json", app_manifest_file)
+        os.remove("app_original.json")
+        if app_found == False :
+            #headers_form = { 'Content-Type':'multipart/form-data', 'Authorization':auth_token }
+            headers_form = { 'Authorization':auth_token }
+            filename = app_directory+'/app_dev.zip'
+            arg_files = {'file':(filename, open(filename, 'rb'), "multipart/form-data")}
+            arg_data = {'team_id':team_id}
+            r = requests.post(app_url, headers=headers_form, files=arg_files, data=arg_data)
+            if r.status_code != 200 :
+                try :
+                    print(r.json())
+                except :
+                    print(r.text)
+                print(f"{bcolors.FAIL}[Error] Cannot create application on cloud.{bcolors.ENDC}")
+                os.remove('app_dev.zip')
+                exit(1)
+            app_return = r.json()
+            app_id = app_return["id"]
+            app_release_info = app_return["latest_release"]
+            os.remove('app_dev.zip')
+        elif release_found == False :
+            release_url = https+cloud_url+'/api/v1/apps/'+app_id+'/releases'
+            headers_form = { 'Authorization':auth_token }
+            filename = app_directory+'/app_dev.zip'
+            arg_files = {'file':(filename, open(filename, 'rb'), "multipart/form-data")}
+            r = requests.post(release_url, headers=headers_form, files=arg_files)
+            if r.status_code != 200 :
+                try :
+                    print(r.json())
+                except :
+                    print(r.text)
+                print(f"{bcolors.FAIL}[Error] Cannot create release for your application on cloud.{bcolors.ENDC}")
+                os.remove('app_dev.zip')
+                exit(1)
+            app_return = r.json()
+            app_id = app_return["id"]
+            app_release_info = app_return["latest_release"]
+            os.remove('app_dev.zip')
+
+    if old_release_found == True :
+        headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+        old_release_id = old_release_info["id"]
+        old_release_url = https+cloud_url+'/api/v1/apps/'+app_id+'/releases/'+old_release_id
+        r = requests.delete(old_release_url, headers=headers)
+        if r.status_code != 200 :
+            try :
+                print(r.json())
+            except :
+                print(r.text)
+            print(f"{bcolors.FAIL}[Error] Cannot delete previous application release from cloud.{bcolors.ENDC}")
+
+
+    # Rest request get application list on device
+    app_device_list_url =https+cloud_workspace_url+'/api/v1/workspaces/'+workspace_id+'/devices/'+device_id+'/apps/'
+
+    r = requests.get(app_device_list_url, headers=headers)
+
+    if r.status_code != 200 :
+        try :
+            print(r.json())
+        except :
+            print(r.text)
+        print(f"{bcolors.FAIL}[Error] Cannot get device informations from cloud.{bcolors.ENDC}")
+        exit(1)
+
+    app_device_list_json = r.json()
+    app_device_list = app_device_list_json["apps"]
+
+    app_device_found = False
+    app_device = {}
+    for app in app_device_list :
+        if app["name"] == app_name and str(app["id"]) == str(app_id) :
+            app_device_found = True
+            app_device = app
+
+    # Copying files through ssh
+    if (args.host != None) :
+        print(f"{bcolors.OKGREEN}[Info] Copying your working directory to "+ip+f" through ssh...{bcolors.ENDC}")
+        print ("working directory : "+app_directory)
+#        zf = ZipFile("app_dev.zip", "w")
+#        for dirname, subdirs, files in os.walk(app_directory) :
+#            zf.write(dirname)
+#            for filename in files:
+#                zf.write(os.path.join(dirname, filename))
+#        zf.close()
+        shutil.make_archive('/tmp/app_dev', 'zip', root_dir=app_directory)
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("mkdir -p /tmp/"+dev_release_name+"_build")
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(f'{bcolors.FAIL}[Error] Failed to create application directory on '+ip+f"{bcolors.ENDC}")
+            exit(1)
+
+        try :
+            ftp_client=ssh.open_sftp()
+            ftp_client.put("/tmp/app_dev.zip","/tmp/"+dev_release_name+"_build/app_dev.zip")
+            ftp_client.close()
+            os.remove("/tmp/app_dev.zip")
+        except Exception as e:
+            print(e)
+            os.remove("/tmp/app_dev.zip")
+            print(f"{bcolors.FAIL}[Error] Failed to copy files on "+ip+f"{bcolors.ENDC}")
+            exit(1)
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cd /tmp/"+dev_release_name+"_build/ && unzip -qo app_dev.zip")
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(f'{bcolors.FAIL}[Error] Failed to unzip copied files on '+ip+f"{bcolors.ENDC}")
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cd /tmp/"+dev_release_name+"_build/ && rm -rf /tmp/"+dev_release_name+"_build/")
+            exit(1)
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cd /tmp/"+dev_release_name+"_build/ && rm -rf /tmp/"+dev_release_name+"_build/app_dev.zip")
+
+    # docker build / pull
+
+    print(f"{bcolors.OKGREEN}[Info] Building your application runtime image...{bcolors.ENDC}")
+    if (args.host != None) :
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/"+dev_release_name+"_build/:/tmp/"+dev_release_name+"_build/ -t "+docker_compose_image_name+" docker-compose --project-directory /tmp/"+dev_release_name+"_build/ -f /tmp/"+dev_release_name+"_build/docker-compose.yml build --pull 2>&1", get_pty=True)
+        for l in line_buffered(ssh_stdout):
+            print(l.decode("utf-8"), end='')
+
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(ssh_stdout.channel.recv_exit_status())
+            print(f'{bcolors.FAIL}[Error] Cannot build your application.{bcolors.ENDC}')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cd /tmp/"+dev_release_name+"_build/ && rm -rf /tmp/"+dev_release_name+"_build/")
+            print(f'{bcolors.WARNING}If you face permissions issues using docker or docker-compose, try this on your host device :{bcolors.ENDC}')
+            print(f'{bcolors.WARNING}Add docker to user group : {bcolors.ENDC}')
+            print(f'{bcolors.WARNING}{bcolors.BOLD}sudo usermod -aG docker $USER{bcolors.ENDC}')
+            exit(1)
+
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/"+dev_release_name+"_build/:/tmp/"+dev_release_name+"_build/ -t "+docker_compose_image_name+" docker-compose --project-directory /tmp/"+dev_release_name+"_build/ -f /tmp/"+dev_release_name+"_build/docker-compose.yml pull 2>&1", get_pty=True)
+        for l in line_buffered(ssh_stdout):
+            print(l.decode("utf-8"), end='')
+
+        if ssh_stdout.channel.recv_exit_status() != 0 :
+            print(f'{bcolors.FAIL}[Error] Cannot pull your application.{bcolors.ENDC}')
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("cd /tmp/"+dev_release_name+"_build/ && rm -rf /tmp/"+dev_release_name+"_build/")
+            print(f'{bcolors.WARNING}If you face permissions issues using docker or docker-compose, try this on your host device :{bcolors.ENDC}')
+            print(f'{bcolors.WARNING}Add docker to user group : {bcolors.ENDC}')
+            print(f'{bcolors.WARNING}{bcolors.BOLD}sudo usermod -aG docker $USER{bcolors.ENDC}')
+            exit(1)
+
+    else :
+        print (app_directory)
+        exit_code = subprocess.call(["docker", "run", "--rm", "--privileged", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", app_directory+":"+app_directory, "-t", docker_compose_image_name, "docker-compose", "--project-directory",app_directory, "-f", app_directory+"/docker-compose.yml", "build"])
+        if (exit_code != 0) :
+            print(f"{bcolors.FAIL}[Error] Cannot build your application.{bcolors.ENDC}")
+            print(f'{bcolors.WARNING}If you face permissions issues using docker or docker-compose, try this on your host device :{bcolors.ENDC}')
+            print(f'{bcolors.WARNING}Add docker to user group : {bcolors.ENDC}')
+            print(f'{bcolors.WARNING}{bcolors.BOLD}sudo usermod -aG docker $USER{bcolors.ENDC}')
+            exit(1)
+
+        exit_code = subprocess.call(["docker", "run", "--rm", "--privileged", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", app_directory+":"+app_directory, "-t", docker_compose_image_name,"docker-compose", "--project-directory",app_directory, "-f", app_directory+"/docker-compose.yml","pull"])
+        if (exit_code !=0) :
+            print(f"{bcolors.FAIL}[Error] Cannot pull your application.{bcolors.ENDC}")
+            print(f'{bcolors.WARNING}If you face permissions issues using docker or docker-compose, try this on your host device :{bcolors.ENDC}')
+            print(f'{bcolors.WARNING}Add docker to user group : {bcolors.ENDC}')
+            print(f'{bcolors.WARNING}{bcolors.BOLD}sudo usermod -aG docker $USER{bcolors.ENDC}')
+            exit(1)
+
+    print(f"{bcolors.OKGREEN}[Info] Your application has been successfully built.{bcolors.ENDC}")
+    # If app isn't on the device, Rest request to deploy it
+    # If app is already on the device, Rest request to enable it or stop it/re-enable or uninstall/deploy
+    if app_device_found == False :
+        print(f"{bcolors.OKGREEN}[Info] Deploying your application...{bcolors.ENDC}")
+        release_id = app_release_info["id"]
+        app_send = {}
+        app_send_json = json.loads(json.dumps(app_send))
+        if (args.host != None) :
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("mv /tmp/"+dev_release_name+"_build/ /tmp/"+dev_release_name)
+        r = requests.post(app_device_list_url+app_id+'/releases/'+release_id, headers=headers, json=app_send_json)
+        if r.status_code != 200 :
+            try :
+                print(r.json())
+            except :
+                print(r.text)
+            print(f"{bcolors.FAIL}[Error] Cannot deploy your application.{bcolors.ENDC}")
+            exit(1)
+    else :
+        if str(app_device["release"]["id"]) != str(app_release_info["id"]) :
+            print(f"{bcolors.OKGREEN}[Info] A release of your application is already deployed. Updating your application...{bcolors.ENDC}")
+            release_id = app_release_info["id"]
+            app_send = {}
+            app_send["disable_app"] = False
+            app_send_json = json.loads(json.dumps(app_send))
+            app_device_url = app_device_list_url + app_id + '/releases/' + release_id
+            if (args.host != None) :
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("mv /tmp/"+dev_release_name+"_build/ /tmp/"+dev_release_name)
+            r  = requests.post(app_device_url, headers=headers, json=app_send_json)
+            if r.status_code != 200 :
+                try :
+                    print(r.json())
+                except :
+                    print(r.text)
+                print(f"{bcolors.FAIL}[Error] Cannot deploy application.{bcolors.ENDC}")
+                exit(1)
+        else :
+            app_device_url = app_device_list_url+app_id
+            r = requests.get(app_device_url, headers=headers)
+            if r.status_code != 200 :
+                print(f"{bcolors.FAIL}[Error] Cannot get application information on device from cloud.{bcolors.ENDC}")
+                exit(1)
+            app_on_device = r.json()
+            if (app_on_device["deployment"]["parameters"]["requested"]["core"]["disable_app"] == False or app_on_device["deployment"]["status"] != "stopped") :
+                app_send = {}
+                app_send["core.disable_app"] = True
+                app_send_json = json.loads(json.dumps(app_send))
+                r = requests.post(app_device_url+'/request', headers=headers, json=app_send_json)
+                if r.status_code != 200 :
+                    try :
+                       print(r.json())
+                    except :
+                       print(r.text)
+                    print(f"{bcolors.FAIL}[Error] Your application is already running on device but restarting it has failed.{bcolors.ENDC}")
+                    exit(1)
+                status = "running"
+                print(f"{bcolors.OKGREEN}[Info] Your application is already running on device, restarting it...{bcolors.ENDC}")
+                while status != "stopped" :
+                    r = requests.get(app_device_url, headers=headers)
+                    app_on_device = r.json()
+                    status = app_on_device["deployment"]["status"]
+                    time.sleep(1)
+                if (args.host != None) :
+                    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("rm -rf /tmp/"+dev_release_name +" && mv /tmp/"+dev_release_name+"_build/ /tmp/"+dev_release_name)
+                app_send["core.disable_app"] = False
+                app_send_json = json.loads(json.dumps(app_send))
+                r = requests.post(app_device_url+'/request', headers=headers, json=app_send_json)
+                if r.status_code != 200 :
+                    try :
+                        print(r.json())
+                    except :
+                        print(r.text)
+                    print(f"{bcolors.FAIL}[Error] Cannot start your application.{bcolors.ENDC}")
+                    exit(1)
+            else :
+                if (args.host != None) :
+                    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("rm -rf /tmp/"+dev_release_name +" && mv /tmp/"+dev_release_name+"_build/ /tmp/"+dev_release_name)
+                app_send = {}
+                app_send["core.disable_app"] = False
+                app_send_json = json.loads(json.dumps(app_send))
+                r = requests.post(app_device_url+'/request', headers=headers, json=app_send_json)
+                print(f"{bcolors.OKGREEN}[Info] Launching your application...{bcolors.ENDC}")
+                if r.status_code != 200 :
+                    try :
+                        print(r.json())
+                    except :
+                        print(r.text)
+                    print(f"{bcolors.FAIL}[Error] Cannot start your application.{bcolors.ENDC}")
+                    exit(1)
+
+
+    # Rest request to print build logs
+    # Catch CTRL+C
+    # Wait for Running status
+
+    signal(SIGINT, handler_sigint)
+    failed_count = 0
+    app_device_url = app_device_list_url + app_id
+    while failed_count < 5 :
+        r = requests.get(app_device_url, headers=headers)
+        if r.status_code != 200 :
+            failed_count += 1
+            time.sleep(1)
+            continue
+        app_on_device = r.json()
+        status = app_on_device["deployment"]["status"]
+        if status == "launching" or status == "running" or app_on_device["deployment"]["parameters"]["requested"]["core"]["disable_app"] == True :
+            break
+        time.sleep(1)
+
+    # Rest request to print execution logs OR docker-compose logs
+    if failed_count < 5 and (app_on_device["deployment"]["status"] == "running" or app_on_device["deployment"]["status"] == "launching") :
+        print(f"{bcolors.OKGREEN}[Info] Your application is running. Use CTRL+C stop stop it.{bcolors.ENDC}")
+        if args.host != None :
+            ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/"+dev_release_name+"/:/tmp/"+dev_release_name+" -t "+docker_compose_image_name+" docker-compose --project-directory /tmp/"+dev_release_name+"/ -f /tmp/"+dev_release_name+"/docker-compose.yml logs -f", get_pty=True)
+            for l in line_buffered(ssh_stdout):
+                print(l.decode("utf-8"), end='')
+        else :
+            exit_code = subprocess.call(["docker", "run", "--rm", "--privileged", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", app_directory+":"+app_directory, "-t", docker_compose_image_name,"docker-compose", "--project-directory",app_directory, "-f", app_directory+"/docker-compose.yml","logs", "-f"])
+        if app_on_device["deployment"]["status"] == "launching" :
+            time.sleep(1)
+            failed_count=0
+            while failed_count < 5 :
+                r = requests.get(app_device_url, headers=headers)
+                if r.status_code != 200 :
+                    failed_count += 1
+                    time.sleep(1)
+                    continue
+                app_on_device = r.json()
+                status = app_on_device["deployment"]["status"]
+                if status == "running" or app_on_device["deployment"]["parameters"]["requested"]["core"]["disable_app"] == True :
+                    break
+                time.sleep(1)
+            if args.host != None :
+                ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/"+dev_release_name+"/:/tmp/"+dev_release_name+"/ -t "+docker_compose_image_name+" docker-compose --project-directory /tmp/"+dev_release_name+"/ -f /tmp/"+dev_release_name+"/docker-compose.yml logs -f", get_pty=True)
+                for l in line_buffered(ssh_stdout):
+                    print(l.decode("utf-8"), end='')
+            else :
+                exit_code = subprocess.call(["docker", "run", "--rm", "--privileged", "-v", "/var/run/docker.sock:/var/run/docker.sock", "-v", app_directory+":"+app_directory, "-t", docker_compose_image_name,"docker-compose", "--project-directory",app_directory, "-f", app_directory+"/docker-compose.yml","logs", "-f"])
+
+    print(f"{bcolors.WARNING}[Warning] Your application has been interrupted, stopping your container...{bcolors.ENDC}")
+    app_send = {}
+    app_send["core.disable_app"] = True
+    app_send_json = json.loads(json.dumps(app_send))
+    app_device_url = app_device_list_url + app_id
+    r  = requests.post(app_device_url+'/request', headers=headers, json=app_send_json)
+    if r.status_code != 200 :
+        try :
+            print(r.json())
+        except :
+            print(r.text)
+        print(f"{bcolors.FAIL}[Error] Cannot stop your application.{bcolors.ENDC}")
+        exit(1)
+    failed_count=0
+    while failed_count < 5 :
+        r = requests.get(app_device_url, headers=headers)
+        if r.status_code != 200 :
+            failed_count += 1
+            time.sleep(1)
+            continue
+        app_on_device = r.json()
+        status = app_on_device["deployment"]["status"]
+        if status == "stopped" :
+            break
+        time.sleep(1)
+    print(f"{bcolors.OKGREEN}[Info] Your application has stopped.{bcolors.ENDC}")
+
+    exit(0)
+
+def handler_force_sigint(sig, frame) :
+    print(f"{bcolors.FAIL}Force exit.{bcolors.ENDC}")
+    exit(1)
+
+def handler_sigint(sig, frame) :
+    https = "https://"
+    if use_ssl == False :
+        https = "http://"
+    app_device_url = https+cloud_workspace_url+'/api/v1/workspaces/'+workspace_id+'/devices/'+device_id+'/apps/'+app_id
+    headers = {'Content-Type' : 'application/json', 'Authorization': auth_token}
+    app_send = {}
+    app_send["core.disable_app"] = True
+    app_send_json = json.loads(json.dumps(app_send))
+    r = requests.post(app_device_url+'/request', headers=headers, json=app_send_json)
+    if r.status_code != 200 :
+        try :
+            print(r.json())
+        except :
+            print(r.text)
+        print(f"{bcolors.FAIL}[Error] Cannot stop your application.{bcolors.ENDC}")
+        exit(1)
+    print(f"{bcolors.OKGREEN}[Info] Gracefully stopping your application (Press CTRL+C to force)...{bcolors.ENDC}")
+    signal(SIGINT, handler_force_sigint)
+    failed_count=0
+    while failed_count < 5 :
+        r = requests.get(app_device_url, headers=headers)
+        if r.status_code != 200 :
+            failed_count += 1
+            time.sleep(1)
+            continue
+        app_on_device = r.json()
+        status = app_on_device["deployment"]["status"]
+        if status == "stopped" :
+            break
+        time.sleep(1)
+    print(f"{bcolors.OKGREEN}[Info] Your application has stopped.{bcolors.ENDC}")
+    exit(0)
+
+if __name__ == "__main__":
+    main()
