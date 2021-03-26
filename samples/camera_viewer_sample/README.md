@@ -6,9 +6,6 @@ This sample is a basic exemple that shows you how to display your ZED live view 
 - **Recordings** that are listed hour by hour in the **Video** Panel
 
 
-**Note** That this sample ecactly correpond to the Camera Viewer app that is provided by default when you setup a new device.
-![](./images/live_view.png " ")
-
 
 ## Requirements
 This sample uses a part of the **7 basic tutorials** provided in the `tutorials` folder. You are advice to **read and test the 3 first tutorials** before running this sample. These tutorials provide many information on the CMP features and will make it easier to understand the **Camera Viewer Sample**.  
