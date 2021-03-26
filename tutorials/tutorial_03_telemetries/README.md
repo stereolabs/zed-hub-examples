@@ -47,11 +47,6 @@ This app have two direct consequences in the CMP interface:
 - A live stream should be visible
 - The published telemetry should be accessible
 
-
-#### Tutorials overview
-This README only focus on the source code explaination and the way to deploy the app without giving technical explaination about the app deployment. 
-Please refer to the main README of this repository if you want more information about the CMP apps structure and technical precisions. 
-
 ### Live video
 Wait at least until your app is **running**. 
 If you click in the **Devices** panel  on the device where the app is deployed, you should see the live video (with a delay of a few seconds).

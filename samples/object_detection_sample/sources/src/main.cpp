@@ -110,26 +110,32 @@ int main(int argc, char **argv) {
     obj_det_params.image_sync = true;
     obj_det_params.enable_tracking = true;
     obj_det_params.detection_model =  sl::DETECTION_MODEL::MULTI_CLASS_BOX;
+        std::cout << "ok 0 " << std::endl;
+
     zed_error = p_zed->enableObjectDetection(obj_det_params);
+            std::cout << "ok 0.5 " << std::endl;
+
     if (zed_error != ERROR_CODE::SUCCESS) {
         std::cout << sl::toVerbose(zed_error) << "\nExit program." << std::endl;
         p_zed->close();
         return 1;
     }
-
+    std::cout << "ok 1 " << std::endl;
     // Object Detection runtime parameters : detect person only
     // see  the ZED Doc for the other available classes https://www.stereolabs.com/docs/api/group__Object__group.html#ga13b0c230bc8fee5bbaaaa57a45fa1177 
     ObjectDetectionRuntimeParameters objectTracker_parameters_rt;
     objectTracker_parameters_rt.detection_confidence_threshold = 50;
     objectTracker_parameters_rt.object_class_filter.clear();
     objectTracker_parameters_rt.object_class_filter.push_back(sl::OBJECT_CLASS::PERSON);
-     
+         std::cout << "ok 2 " << std::endl;
+
 
     // Runtime parameters
     sl::RuntimeParameters rt_param;
     rt_param.measure3D_reference_frame = sl::REFERENCE_FRAME::CAMERA;
 
     /*********    App parameters      *************/
+    std::cout << "ok 3 " << std::endl;
 
     CallbackParameters callback_display_param;
     callback_display_param.setParameterCallback("onDisplayParametersUpdate", "draw_bboxes", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
@@ -154,6 +160,7 @@ int main(int argc, char **argv) {
 
     /****************************/
 
+    std::cout << "ok 4 " << std::endl;
 
     // Main loop
     int counter_no_detection = 0;
@@ -167,13 +174,19 @@ int main(int argc, char **argv) {
     leftImageCpuCV = slMat2cvMat(imgLeftCustom);
 
     sl::Resolution image_raw_res = p_zed->getCameraInformation().camera_resolution;
+    std::cout << "ok 4.5 " << std::endl;
 
     while (true) {
+            std::cout << "ok 5 " << std::endl;
+
         // Grab a new frame from the ZED
         status_zed = p_zed->grab(rt_param);
+                    std::cout << "ok 6 " << std::endl;
+
         if (status_zed != ERROR_CODE::SUCCESS) break;
         
         p_zed->retrieveObjects(objects, objectTracker_parameters_rt);
+                    std::cout << "ok 7 " << std::endl;
 
         /*******     Define event   *********/
         /*

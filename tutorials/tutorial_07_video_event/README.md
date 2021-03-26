@@ -47,7 +47,7 @@ Please refer to the main README of this repository if you want more information 
 
 
 ## What you should see after deployment
-Make sure that the recordings are enable and that the privacy mode is disabled (Settings panel of your device, in the CMP interface).
+Make sure that the recordings are enabled and that the privacy mode is disabled (Settings panel of your device, in the CMP interface).
 As each time a ZED is opened, you will find the **live stream** and the **recordings** in the **Video Panel** of your device as soon as your app is **running**.
 
 A video is concidered as event if **at least on person is detected** in the image. Therefore if your app is running and that someone is seen by your ZED, you should see an Event in the Video Event panel corresponding to this situation.
