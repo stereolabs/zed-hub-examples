@@ -6,6 +6,7 @@ This tutorial shows you how to send telemetry to the cloud. This sample app open
 
 ## What you will obtain after deployment
 This app have two direct consequences in the CMP interface:
+
 - A live stream should be visible
 - The published telemetry should be accessible
 
@@ -27,6 +28,7 @@ If you click go in the **Telemetry** panel, you should see the telemetry of your
 You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
+
 - [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.

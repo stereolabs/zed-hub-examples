@@ -2,7 +2,7 @@
 
 > **NOTE**: The source code of this application and a code explaination are available [here](https://github.com/stereolabs/cmp-examples/tree/main/tutorials)
 
-This sample shows how to make a very simple application that **connects** itself to the cloud and **sends logs**. 
+This sample shows how to make a very simple application that **connects** itself to the cloud and **sends logs**. This tutorial does not require a ZED.
 
 ## What you will obtain after deployment
 This app is a minimalist app that only connect itself to the cloud and send logs (live stream is not provided by this app). It doesn't mean there is nothing to see:
@@ -43,9 +43,9 @@ If you click  on the device where the app is deployed and go in the **Logs** sec
 You will deploy this tutorial on one of the devices installed on **your CMP workspace**. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
+
 - [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
-- **Enable recordings** and **disable privacy mode** in the Settings panel of your device
 
 ### How to deploy your application
 You just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the CMP interface:
