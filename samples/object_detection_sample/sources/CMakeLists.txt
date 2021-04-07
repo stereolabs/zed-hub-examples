@@ -48,7 +48,7 @@ link_directories(${SL_IOT_LIB_DIR})
 FILE(GLOB_RECURSE SRC_FILES src/*.cpp)
 FILE(GLOB_RECURSE HDR_FILES include/*.hpp)
 
-add_definitions(-DOBFUSCATION -g)
+add_definitions(-DOBFUSCATION)
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${HDR_FILES} ${SRC_FILES})
 add_definitions(-std=c++14 -g -O3)
