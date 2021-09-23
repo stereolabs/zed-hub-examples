@@ -4,42 +4,51 @@
 
 This tutorial shows you how to communicate between apps on the local network. It subscribes to a MQTT topics and send a log to notify that the messages have been received.
 
+[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_09_mqtt_subscriber)
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on **your CMP workspace**. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
 - [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 
+This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 
-## Build and deploy this tutorial
-
-### How to build your application
-To build your app just run:
-
+You can start it using this command, and stop it with CTRL+C :
 ```
-$ cd /PATH/TO/tutorial_09_mqtt_subscriber
-$ ./cmp_builder.sh
+$ edge_agent start
 ```
 
-- The script will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `cmp_builder.sh`.
-- The script will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the CMP interface.
-- Finally you will be asked the **IOT version** you want to use. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
+If you want to run it in backround use :
+```
+$ edge_agent start -b
+```
 
-### How to deploy your application
-`cmp_builder.sh` packages your app by generating a app.zip file. 
-Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the CMP interface:
+And to stop it :
+```
+$ edge_agent stop
+```
 
-- In your workspace, in the **Applications** section, click on **Create a new app** 
-- Get the .zip an Drag’n’Drop in the dedicated area
-- Select the devices on which you want to deploy  the app and press **Deploy** 
+## Build and run this tutorial for development
 
-**Additional information about deployment and CMP apps :**
+Run the Edge Agent installed on your device using :
+```
+$ edge_agent start
+```
 
-This README only focus on the source code explaination and the way to deploy the app without giving technical explaination about the app deployment. 
-Please refer to the main README of this repository if you want more information about the CMP apps structure and technical precisions.  
+Then to build your app :
+```
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make -j$(nproc)
+```
 
+Then to run your app :
+```
+./app_executable
+```
 
 ## What you should see after deployment
 

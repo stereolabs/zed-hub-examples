@@ -80,7 +80,7 @@ if [[ $reset_variables -eq 1 ]]; then
     fi
     if [[ $use_jetson -eq 1  ]]; then
         PS3='For which release of Jetpack do you want to build your application? : '
-        options=("4.3" "4.4")
+        options=("4.3" "4.4" "4.5")
         select opt in "${options[@]}"
         do
             case $opt in
@@ -92,6 +92,12 @@ if [[ $reset_variables -eq 1 ]]; then
                 "4.4")
                     echo -e "${green_log}> Jetpack 4.4 selected.${normal_log}"
                     export SL_IOT_PLATFORM="jp4.4"
+                    break
+                    ;;
+                *)
+                "4.5")
+                    echo -e "${green_log}> Jetpack 4.5 selected.${normal_log}"
+                    export SL_IOT_PLATFORM="jp4.5"
                     break
                     ;;
                 *)
@@ -176,6 +182,8 @@ if [[ $reset_variables -eq 1 ]]; then
     elif [[ $SL_IOT_PLATFORM == "jp4.3" ]]; then
         export SL_IOT_CUDA_VERSION="10.0"
     elif [[ $SL_IOT_PLATFORM == "jp4.4" ]]; then
+        export SL_IOT_CUDA_VERSION="10.2"
+    elif [[ $SL_IOT_PLATFORM == "jp4.5" ]]; then
         export SL_IOT_CUDA_VERSION="10.2"
     fi
     read -p "Which version of the sl_iot library your application will be using (ex : 0.23.0)?" choice

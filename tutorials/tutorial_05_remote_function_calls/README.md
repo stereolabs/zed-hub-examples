@@ -3,50 +3,56 @@
 This tutorial shows how to make an application containing a **remote function** that computes an addition called by a **remote function call**.
 This tutorial does not require a ZED to be runned.
 
-*********
-// Image 
-*********
+[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_05_remote_function_calls)
+
 #### What is a remote function call ?
 A **remote function call** is a call to a remote function **declared and register by a CMP app**. The app described in this tutorial declares and registers the `additionCallback` remote function. 
 The call to this function can be done from **any computer** connected to the internet, by using a **REST request**. The way to perform this request is explained later in this tutorial.
 
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on **your CMP workspace**. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
-To be able to run this tutorials:
+To be able to run this tutorial:
 - [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 
-## Build and deploy this tutorial
+This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 
-### How to build your application
-To build your app just run:
-
+You can start it using this command, and stop it with CTRL+C :
 ```
-$ cd /PATH/TO/tutorial_05_remote_function_calls
-$ ./cmp_builder.sh
+$ edge_agent start
 ```
 
-- The script will ask for the device type (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `cmp_builder.sh`.
-- The script will also ask for your device cuda version. If you do not know it you can find it in the **Info** section of your device in the CMP interface.
-- Finally you will be asked the IOT version you want to use. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
+If you want to run it in backround use :
+```
+$ edge_agent start -b
+```
 
+And to stop it :
+```
+$ edge_agent stop
+```
 
-### How to deploy your application
-`cmp_builder.sh` packages your app by generating a app.zip file. 
-Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the CMP interface:
+## Build and run this tutorial for development
 
-- In your workspace, in the **Applications** section, click on **Create a new app** 
-- Get the .zip an Drag’n’Drop in the dedicated area
-- Select the devices on which you want to deploy  the app and press **Deploy**  
+Run the Edge Agent installed on your device using :
+```
+$ edge_agent start
+```
 
-**Additional information about deployment and CMP apps :**
+Then to build your app :
+```
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make -j$(nproc)
+```
 
-This README only focus on the source code explaination and the way to deploy the app without giving technical explaination about the app deployment. 
-Please refer to the main README of this repository if you want more information about the CMP apps structure and technical precisions.  
-
-
+Then to run your app :
+```
+./app_executable
+```
 
 ## What you should see after deployment
 The application in itself only define and register a **callback function** that can be called from anywhere if the app is running. Therefore there is not a lot to see in the CMP interface. Make simply sure that your application has a **building** and finaly a **running status**.  

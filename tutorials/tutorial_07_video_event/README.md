@@ -4,6 +4,8 @@ A **video event** is **Video recording** associated to a **description** stored 
 This application shows how to define a Video Event in a CMP app. This event will be available in the Video Event CMP interface.
 In this tutorial a video is concidered as event if **at least on person is detected** in the image. To detect people the **Object Detection** module of the SDK will be used. 
 
+[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_07_video_event)
+
 ![](./images/event_detected_people.png " ")
 
 
@@ -17,34 +19,28 @@ To be able to run this tutorial:
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
 
 
-
 ## Build and deploy this tutorial
 
-### How to build your application
-To build your app just run:
+### How to build your application (for development)
 
+Run the Edge Agent installed on your device using :
 ```
-$ cd /PATH/TO/tutorial_01_basic_app
-$ ./cmp_builder.sh
+$ edge_agent start
 ```
 
-- The script will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `cmp_builder.sh`.
-- The script will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the CMP interface.
-- Finally you will be asked the **IOT version** you want to use. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
+Then to build your app :
+```
+$ cd sources
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make -j$(nproc)
+```
 
-### How to deploy your application
-`cmp_builder.sh` packages your app by generating a app.zip file. 
-Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the CMP interface:
-
-- In your workspace, in the **Applications** section, click on **Create a new app** 
-- Get the .zip an Drag’n’Drop in the dedicated area
-- Select the devices on which you want to deploy  the app and press **Deploy** 
-
-**Additional information about deployment and CMP apps :**
-
-This README only focus on the source code explaination and the way to deploy the app without giving technical explaination about the app deployment. 
-Please refer to the main README of this repository if you want more information about the CMP apps structure and technical precisions.  
-
+Then to run your app :
+```
+./app_executable
+```
 
 ## What you should see after deployment
 Make sure that the recordings are enable and that the privacy mode is disabled (Settings panel of your device, in the CMP interface).
@@ -90,9 +86,8 @@ Each time a frame is successfuly **grabbed**, the detected object are retrieve w
 
 Remember that the frame is part of an event as soon as **at least one person is detected**. However a **second rule** is necessary to **distinguish one event from an other**. Once again, this rule depends on your wishes. In this tutorial we decided to define a new event as soon as **no one has been seen for 10 frames**. 
 
-A frame is defined as part of a videoEvent if the `IoTCloud::addVideoEvent` is called with the **corresponding timestamp**.
-** Note** that you do not define a new Video event each time you call `IoTCloud::addVideoEvent` but you extend the current one until current timestamp  provided that the `event_params.reference` is the same than the reference of previous timestamp.
-
+A frame is defined as part of a videoEvent if the `IoTCloud::startVideoEvent` is called with the **corresponding timestamp**.
+** Note** that you do not define a new Video event each time you call `IoTCloud::addVideoEvent` but you extend the current one by calling `IoTCloud::updateVideoEvent` by using the same `event.reference`.
 
 ```c++
     EventParameters event_params;
@@ -103,16 +98,10 @@ A frame is defined as part of a videoEvent if the `IoTCloud::addVideoEvent` is c
     event2send["message"] = "Current event as reference " + event_reference;
     event2send["nb_detected_personn"] = objects.object_list.size();
 
-    IoTCloud::addVideoEvent(event_label, event2send, event_params);
+    if (new_event)
+        IoTCloud::startVideoEvent(event_label, event2send, event_params);
+    else
+        IoTCloud::updateVideoEvent(event_label, event2send, event_params);
+
+
 ```
-
-
-In the exemple bellow, there are people detected on the current frame, so the frame is part of an event. As last event is younger than 10 frames (the limit that we chose for this tutorial) the current frame is associated to the same event.
-
-![](./images/Video_event_extention.png " ")
-
-
-In this second exemple , there are people detected on the current frame, so the frame is part of an event. However no one has been detected for 10 frames so this new frame should be part of a new Video Event. Therefore `IoTCloud::addVideoEvent` is called with an other `event_params.reference`. Lets say "my_event_1".
-
-![](./images/New_video_event.png " ")
-
