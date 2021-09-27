@@ -27,7 +27,35 @@ To be able to run this tutorial:
 
 ## Build and deploy this tutorial
 
-### How to build your application
+### How to build your application (for development)
+
+Run the Edge Agent installed on your device using :
+```
+$ edge_agent start
+```
+
+Then to build your app :
+```
+$ cd sources
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make -j$(nproc)
+```
+
+This application use application parameters. Move the `parameters.json` file to the path you specified in the `IoTCloud::loadApplicationParameters` function.
+```
+$ cp ../parameters.json .
+```
+
+Then to run your app :
+```
+./app_executable
+```
+
+To dynamically change the parameters and activate callbacks, edit the `parameters.json` file.
+
+### How to build your application (for service deployment)
 To build your app just run:
 
 ```
@@ -159,6 +187,7 @@ Then you will finf the features described in the tutorials:
 ```c++
 sl::Timestamp current_ts = objects.timestamp;
 if (recordVideoEvent && objects.object_list.size() >= 1){
+    bool is_new_event = true;
     if (counter_no_detection >= nbFramesNoDetBtw2Events){
         event_reference = "detected_person_" + std::to_string(current_ts.getMilliseconds()); 
         IoTCloud::log("New Video Event defined",LOG_LEVEL::INFO);
@@ -166,6 +195,7 @@ if (recordVideoEvent && objects.object_list.size() >= 1){
     }
     else{
         // Do nothing, keep previous event reference --> The current frame will be defined as being part of the previous video event  
+        is_new_event = false;
     }
     EventParameters event_params;
     event_params.timestamp = current_ts.getMilliseconds();
@@ -174,8 +204,15 @@ if (recordVideoEvent && objects.object_list.size() >= 1){
     json event2send; // Use to store all the data associated to the video event. 
     event2send["message"] = "Current event as reference " + event_reference;
     event2send["nb_detected_personn"] = objects.object_list.size();
-
-    IoTCloud::addVideoEvent(event_label, event2send, event_params);
+    if (is_new_event || (event_reference == "first_event" && !first_event_sent)) {
+        IoTCloud::startVideoEvent(event_label, event2send, event_params);
+        first_event_sent = true;
+    }
+    // update every 10 s
+    else if ((uint64) (current_ts.getMilliseconds() >= (uint64) (prev_timestamp.getMilliseconds() + (uint64)10 * 1000ULL)))
+    {
+        IoTCloud::updateVideoEvent(event_label, event2send, event_params);
+    }
 
     counter_no_detection = 0; //reset counter as someone as been detected
 }

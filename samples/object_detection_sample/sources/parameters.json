@@ -1,0 +1,8 @@
+{
+    "draw_bboxes" : true,
+    "recordVideoEvent"  : true,
+    "nbFramesNoDetBtw2Events" : 30, 
+    "recordTelemetry"  : true,
+    "telemetryFreq"  : 10
+}
+

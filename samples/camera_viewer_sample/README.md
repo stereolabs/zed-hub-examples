@@ -25,7 +25,35 @@ To be able to run this tutorial:
 
 ## Build and deploy this tutorial
 
-### How to build your application
+### How to build your application (for development)
+
+Run the Edge Agent installed on your device using :
+```
+$ edge_agent start
+```
+
+Then to build your app :
+```
+$ cd sources
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make -j$(nproc)
+```
+
+This application use application parameters. Move the `parameters.json` file to the path you specified in the `IoTCloud::loadApplicationParameters` function.
+```
+$ cp ../parameters.json .
+```
+
+Then to run your app :
+```
+./app_executable
+```
+
+To dynamically change the parameters and activate callbacks, edit the `parameters.json` file.
+
+### How to build your application (for service deployment)
 To build your app just run:
 
 ```

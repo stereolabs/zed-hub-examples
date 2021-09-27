@@ -13,6 +13,22 @@ To be able to run this tutorial:
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
 
+This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
+
+You can start it using this command, and stop it with CTRL+C :
+```
+$ edge_agent start
+```
+
+If you want to run it in backround use :
+```
+$ edge_agent start -b
+```
+
+And to stop it :
+```
+$ edge_agent stop
+```
 
 ## Build and deploy this tutorial
 
