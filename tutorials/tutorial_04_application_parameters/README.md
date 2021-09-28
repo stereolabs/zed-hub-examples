@@ -16,12 +16,12 @@ To be able to run this tutorial:
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 
-You can start it using this command, and stop it with CTRL+C :
+You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
 ```
 $ edge_agent start
 ```
 
-If you want to run it in backround use :
+If you want to run it in backround use (note that it's already running by default after Edge Agent installation) :
 ```
 $ edge_agent start -b
 ```
@@ -33,7 +33,7 @@ $ edge_agent stop
 
 ## Build and run this tutorial for development
 
-Run the Edge Agent installed on your device using :
+Run the Edge Agent installed on your device using (note that it's already running by default after Edge Agent installation) :
 ```
 $ edge_agent start
 ```

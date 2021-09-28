@@ -123,8 +123,6 @@ int main(int argc, char **argv) {
     std::cout<<"[Device CORE app] Enable Object Detection Module"<<std::endl;
     sl::ObjectDetectionParameters obj_det_params;
     obj_det_params.image_sync = true;
-    //obj_det_params.enable_tracking = true;
-    //obj_det_params.detection_model =  sl::DETECTION_MODEL::MULTI_CLASS_BOX;
     zed_error = p_zed->enableObjectDetection(obj_det_params);
     if (zed_error != ERROR_CODE::SUCCESS) {
         std::cout << sl::toVerbose(zed_error) << "\nExit program." << std::endl;

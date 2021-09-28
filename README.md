@@ -33,7 +33,7 @@ A CMP app is an application deployed in a Docker container on one of the devices
 In these [**CMP tutorials**](./tutorials/) you will learn how to develop a CMP app, exploring each feature.
 The only requirement is to setup a device to install the Edge Agent software and the sl_iot library.
 
-You can start it using this command, and stop it with CTRL+C :
+You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
 ```
 $ edge_agent start
 ```
@@ -68,14 +68,14 @@ The provided tutorials can be a good starting point for your own apps. Here is h
 ```
 .
 ├── app
-│   └── Dockerfile.runtime
+│   └── Dockerfile
 ├── app.json
 ├── cmp_builder.sh
 ├── docker-compose.yml
 ├── README.md
 └── sources
     ├── CMakeLists.txt
-    ├── Dockerfile.build
+    ├── Dockerfile
     └── src
         └── main.cpp 
 ```
