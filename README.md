@@ -97,26 +97,6 @@ Now you just need to deploy your app using the CMP interface:
 - Get the .zip an Drag’n’Drop in the dedicated area
 - Select the devices on which you want to deploy  the app and press **Deploy** 
 
-**Deployment stage in dev mode**:
-There is an other way to deploy your application without using the CMP interface. Lets supposed you built an app/tutorial on a computer A that has been [setup as a CMP device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera) on the CMP interface, you can deploy the app on this computer by running on this computer:
-```
-$ sudo cmpcli run
-```
-Now you can also build an app/tutorial on a computer A, and deploy it on a device B.
-There are only three requirements:
-- Computer A and device B must be on the same local network
-- Device B must be [setup as a CMP device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera)
-- Computer A must have **cmpcli** installed. You can find it in the [CMP tutorials repository]()
-
- Run : 
-```
-$ sudo cmpcli run --host device_name@device_IP
-```
-
-
-#### Devlopping an app in Python
-You are not advice to devlopp in Python as many CMp feature are not available (live view, recordings, Video Events...) However some samples are available to show you how to use the telemetry, logs and app parameters in Python.
-
 
 ## Docker complement
 Here are some explaination about the docker related files.  
