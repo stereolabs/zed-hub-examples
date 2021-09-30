@@ -3,6 +3,7 @@
 This tutorial shows how to use custom application parameters in your application. These parameters can be modified by everyone in the CMP interface.
 This sample starts a ZED exactly as tutorial_02_live_stream_and_recording does, but it also define one parameter. The first one indicates whether the camera LED must be on or off. 
 
+[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_04_application_parameters)
 
 ## Requirements
 You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
@@ -13,57 +14,49 @@ To be able to run this tutorial:
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
 
+This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 
-## Build and deploy this tutorial
-
-### How to build your application
-To build your app just run:
-
+You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
 ```
-$ cd /PATH/TO/tutorial_01_basic_app
-$ ./cmp_builder.sh
+$ edge_agent start
 ```
 
-- The script will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `cmp_builder.sh`.
-- The script will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the CMP interface.
-- Finally you will be asked the **IOT version** you want to use. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
+If you want to run it in backround use (note that it's already running by default after Edge Agent installation) :
+```
+$ edge_agent start -b
+```
 
+And to stop it :
+```
+$ edge_agent stop
+```
 
-### How to deploy your application
-`cmp_builder.sh` packages your app by generating a app.zip file. 
-Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the CMP interface:
+## Build and run this tutorial for development
 
-- In your workspace, in the **Applications** section, click on **Create a new app** 
-- Get the .zip an Drag’n’Drop in the dedicated area
-- Select the devices on which you want to deploy  the app and press **Deploy** 
+Run the Edge Agent installed on your device using (note that it's already running by default after Edge Agent installation) :
+```
+$ edge_agent start
+```
 
+Then to build your app :
+```
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make -j$(nproc)
+```
 
-**Additional information about deployment and CMP apps :**
+This application use application parameters. Move the `parameters.json` file to the path you specified in the `IoTCloud::loadApplicationParameters` function.
+```
+$ cp ../parameters.json .
+```
 
-This README only focus on the source code explaination and the way to deploy the app without giving technical explaination about the app deployment. 
-Please refer to the main README of this repository if you want more information about the CMP apps structure and technical precisions.  
+Then to run your app :
+```
+./app_executable
+```
 
-
-
-## What you should see after deployment
-The app should be exactly the same than tutorial_02_live_stream_and_recording's app. It means that you should be able to see the live video and the recordings list in the CMP interface. In addition the two parameters should be visible in the interface: they are part of your application description in **the `Applications` panel of your device**.
-
-![](./images/app_4_running_param.png " ")
-
-### Modifing the app parameter
-Wait until your app is **running**. 
-
-In the **`Applications` panel of your device**, click on the figure that indicates the number of available parameters. A pop up window appears. You can modify the parameters value and update your changes. In our exemple you can turn the ZED LED on and off thanks to the parameters and verifie it work by checking that the LED does turn on and off.
-
-![](./images/param_panel.png " ")
-
-### Live video
-Wait at least until your app is **running**. 
-If you click in the **Video** panel  on the device where the app is deployed, you should see the live video (with a delay of a few seconds).
-
-![](./images/live_and_recordings.png " ")
-
-
+To dynamically change the parameters and activate callbacks, edit the `parameters.json` file.
 
 ## Code overview
 
@@ -118,9 +111,18 @@ In the app.json file, we finally have :
 
 The parameter is defined in the app.json and associated to a default value.  When this value is modified in the interface you are so far not notified of this modification in your app (even if the new value does is available). To be notify on a parameter modification, you need to associate your parameter to a callback in your C++ code. 
 
+In our case we want that the `led_status` parameter defined in the `parameters.json` file be associated to the `onLedStatusChange` callback function.
+In three step we 
 
-In our case we want that the `led_status` parameter defined in the `app.json` file be associated to the `onLedStatusChange` callback function.
-In two step we 
+- load the application parameter file to the callback with `loadApplicationParameters`. Note that this is only needed for development. When you will deploy your app as a service, you'll need to put those parameters in your `app.json`. Please have a look to the sample **Camera Viewer sample** and **Object Detection sample** to understand how it works. :
+
+```c++
+    status_iot = IoTCloud::loadApplicationParameters("parameters.json");
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "parameters.json file not found or malformated" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+```
 
 - associate the parameter to the callback with `setParameterCallback`:
 
@@ -210,6 +212,6 @@ Finaly with these four steps we easily added a parameter to the initial applicat
 
 ## Next steps
 
-Note that the parameters panel can be quite complex. Please have a look to the sample **Camera Viewer sample** and **Object Detection sample** to understand how it works. A detailed documentation is coming soon.
+Note that the parameters panel can be quite complex. Please have a look to the sample **Camera Viewer sample** and **Object Detection sample** to understand how it works.
 
   

@@ -2,6 +2,8 @@
 
 This tutorial shows how to deploy an application that starts a ZED camera and and sends the live stream to the CMP interface. You will also be able to store the video on your device.  The recorded video will be available on the CMP interface and downloadable. 
 
+[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_02_live_stream_and_recording)
+
 ## Requirements
 You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
@@ -11,35 +13,42 @@ To be able to run this tutorial:
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
 
+This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 
-## Build and deploy this tutorial
-
-### How to build your application
-To build your app just run:
-
+You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
 ```
-$ cd /PATH/TO/tutorial_01_basic_app
-$ ./cmp_builder.sh
+$ edge_agent start
 ```
 
-- The script will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `cmp_builder.sh`.
-- The script will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the CMP interface.
-- Finally you will be asked the **IOT version** you want to use. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
+If you want to run it in backround use :
+```
+$ edge_agent start -b
+```
 
+And to stop it :
+```
+$ edge_agent stop
+```
 
-### How to deploy your application
-`cmp_builder.sh` packages your app by generating a app.zip file. 
-Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the CMP interface:
+## Build and run this tutorial for development
 
-- In your workspace, in the **Applications** section, click on **Create a new app** 
-- Get the .zip an Drag’n’Drop in the dedicated area
-- Select the devices on which you want to deploy  the app and press **Deploy** 
+Run the Edge Agent installed on your device using (note that it's already running by default after Edge Agent installation) :
+```
+$ edge_agent start
+```
 
-**Additional information about deployment and CMP apps :**
+Then to build your app :
+```
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make -j$(nproc)
+```
 
-This README only focus on the source code explaination and the way to deploy the app without giving technical explaination about the app deployment. 
-Please refer to the main README of this repository if you want more information about the CMP apps structure and technical precisions.  
-
+Then to run your app :
+```
+./app_executable
+```
 
 ## What you should see after deployment
 This app have two direct consequences in the CMP interface:
@@ -48,19 +57,15 @@ This app have two direct consequences in the CMP interface:
 
 ### Live video
 In the **Settings** panel of your device, make sure that the **Privacy mode** is disabled, otherwisethe video won't be visible.
-Wait at least until your app is **running**. 
-
-![](./images/tuto_2_running.png " ")
 
 If you click in the **Devices** panel  on the device where the app is deployed, you should see the live video (with a delay of a few seconds).
 
 ![](./images/live_and_recordings.png " ")
 
 
-
 ### Recordings
 
-In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**. It means that everything will be recorded. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **definitly erased**. (see tutorial_07_video_event to understand the **On Event** recording mode).
+In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**. It means that everything will be recorded. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **definitly erased**.
 
 It is the only thing to do to start recording. The recordings are listed by hour and day in the **Video** panel of your device. 
 
@@ -81,8 +86,7 @@ What exactly appends:
     p_zed.reset(new sl::Camera());
 
     //Init sl_iot
-    const char * application_token = ::getenv("SL_APPLICATION_TOKEN");
-    STATUS_CODE status_iot = IoTCloud::init(application_token, p_zed);
+    STATUS_CODE status_iot = IoTCloud::init("streaming_app", p_zed);
 ```
 
 

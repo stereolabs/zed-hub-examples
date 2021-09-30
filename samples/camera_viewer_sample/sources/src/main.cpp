@@ -147,8 +147,8 @@ void applyInitParameters(sl::InitParameters &parameters) {
     
     IoTCloud::reportParameter<std::string>("camera_resolution", PARAMETER_TYPE::DEVICE, reso_str);
 
-    parameters.camera_image_flip = IoTCloud::getParameter<bool>("camera_image_flip", PARAMETER_TYPE::DEVICE, (bool)parameters.camera_image_flip);
-    IoTCloud::reportParameter<bool>("camera_image_flip", PARAMETER_TYPE::DEVICE, (int)parameters.camera_image_flip);
+    parameters.camera_image_flip = IoTCloud::getParameter<int>("camera_image_flip", PARAMETER_TYPE::DEVICE, (int)parameters.camera_image_flip);
+    IoTCloud::reportParameter<int>("camera_image_flip", PARAMETER_TYPE::DEVICE, (int)parameters.camera_image_flip);
 
     parameters.camera_fps = IoTCloud::getParameter<int>("camera_fps", PARAMETER_TYPE::DEVICE, parameters.camera_fps);
     IoTCloud::reportParameter<int>("camera_fps", PARAMETER_TYPE::DEVICE, (int)parameters.camera_fps);
@@ -261,14 +261,28 @@ void main_loop() {
 int main(int argc, char **argv) {
     //Create ZED Object
     p_zed.reset(new sl::Camera());
-
-    // Init sl_iot
+    
+    //In service deployment init IoT with the SL_APPLICATION_TOKEN environment variable
+    //In development you can simply init it with the application name
     const char * application_token = ::getenv("SL_APPLICATION_TOKEN");
-    STATUS_CODE sc = IoTCloud::init(application_token, p_zed);
-    if (sc != STATUS_CODE::SUCCESS) {
-        std::cout << "IoTCloud " << sc << std::endl;
-        full_run = false;
+    STATUS_CODE status_iot;
+    if (!application_token) {
+        status_iot = IoTCloud::init("parameter_app", p_zed);
+    } else {
+        status_iot = IoTCloud::init(application_token, p_zed);
+    }
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Initiliazation error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
+    }
+    
+    //Load application parameter file in development mode
+    if (!application_token) {
+        status_iot = IoTCloud::loadApplicationParameters("parameters.json");
+        if (status_iot != STATUS_CODE::SUCCESS) {
+            std::cout << "parameters.json file not found or malformated" << std::endl;
+            exit(EXIT_FAILURE);
+        }
     }
 
     // Init logger (optional)

@@ -27,20 +27,56 @@ To be able to run this tutorial:
 
 ## Build and deploy this tutorial
 
-### How to build your application
+### How to build your application (for development)
+
+Run the Edge Agent installed on your device using :
+```
+$ edge_agent start
+```
+
+Then to build your app :
+```
+$ cd sources
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make -j$(nproc)
+```
+
+This application use application parameters. Move the `parameters.json` file to the path you specified in the `IoTCloud::loadApplicationParameters` function.
+```
+$ cp ../parameters.json .
+```
+
+Then to run your app :
+```
+./app_executable
+```
+
+To dynamically change the parameters and activate callbacks, edit the `parameters.json` file.
+
+### How to build your application (for service deployment)
 To build your app just run:
 
 ```
-$ cd /PATH/TO/object_detection_sample
-$ ./cmp_builder.sh
+$ cd /PATH/TO/camera_viewer_sample
+$ edge_agent build
 ```
 
-- The script will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `cmp_builder.sh`.
-- The script will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the CMP interface.
-- Finally you will be asked the **IOT version** you want to use. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
+This command is available by installing Edge Agent on your device.
+
+- The command will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `edge_agent build`.
+- The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the CMP interface.
+- Finally you will be asked the **IOT version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
 
 ### How to deploy your application
-`cmp_builder.sh` packages your app by generating a app.zip file. 
+
+Packages your app by generating a app.zip file using :
+
+```
+$ edge_agent build
+```
+
 Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the CMP interface:
 
 - In your workspace, in the **Applications** section, click on **Create a new app** 
@@ -159,6 +195,7 @@ Then you will finf the features described in the tutorials:
 ```c++
 sl::Timestamp current_ts = objects.timestamp;
 if (recordVideoEvent && objects.object_list.size() >= 1){
+    bool is_new_event = true;
     if (counter_no_detection >= nbFramesNoDetBtw2Events){
         event_reference = "detected_person_" + std::to_string(current_ts.getMilliseconds()); 
         IoTCloud::log("New Video Event defined",LOG_LEVEL::INFO);
@@ -166,6 +203,7 @@ if (recordVideoEvent && objects.object_list.size() >= 1){
     }
     else{
         // Do nothing, keep previous event reference --> The current frame will be defined as being part of the previous video event  
+        is_new_event = false;
     }
     EventParameters event_params;
     event_params.timestamp = current_ts.getMilliseconds();
@@ -174,8 +212,15 @@ if (recordVideoEvent && objects.object_list.size() >= 1){
     json event2send; // Use to store all the data associated to the video event. 
     event2send["message"] = "Current event as reference " + event_reference;
     event2send["nb_detected_personn"] = objects.object_list.size();
-
-    IoTCloud::addVideoEvent(event_label, event2send, event_params);
+    if (is_new_event || (event_reference == "first_event" && !first_event_sent)) {
+        IoTCloud::startVideoEvent(event_label, event2send, event_params);
+        first_event_sent = true;
+    }
+    // update every 10 s
+    else if ((uint64) (current_ts.getMilliseconds() >= (uint64) (prev_timestamp.getMilliseconds() + (uint64)10 * 1000ULL)))
+    {
+        IoTCloud::updateVideoEvent(event_label, event2send, event_params);
+    }
 
     counter_no_detection = 0; //reset counter as someone as been detected
 }

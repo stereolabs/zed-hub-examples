@@ -71,15 +71,30 @@ int main(int argc, char **argv) {
     std::shared_ptr<sl::Camera> p_zed;
     p_zed.reset(new sl::Camera());
 
-
-    //Init sl_iot
+    //In service deployment init IoT with the SL_APPLICATION_TOKEN environment variable
+    //In development you can simply init it with the application name
     const char * application_token = ::getenv("SL_APPLICATION_TOKEN");
-    STATUS_CODE status_iot = IoTCloud::init(application_token, p_zed);
+    STATUS_CODE status_iot;
+    if (!application_token) {
+        status_iot = IoTCloud::init("object_app", p_zed);
+    } else {
+        status_iot = IoTCloud::init(application_token, p_zed);
+    }
     if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "IoTCloud " << status_iot << std::endl;
+        std::cout << "Initiliazation error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    //Load application parameter file in development mode
+    if (!application_token) {
+        status_iot = IoTCloud::loadApplicationParameters("parameters.json");
+        if (status_iot != STATUS_CODE::SUCCESS) {
+            std::cout << "parameters.json file not found or malformated" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
     
+    IoTCloud::setLogLevelThreshold(LOG_LEVEL::DEBUG, LOG_LEVEL::INFO);
     //Open the ZED camera
     sl::InitParameters initParameters;
     initParameters.camera_resolution = RESOLUTION::HD2K;
@@ -108,8 +123,6 @@ int main(int argc, char **argv) {
     std::cout<<"[Device CORE app] Enable Object Detection Module"<<std::endl;
     sl::ObjectDetectionParameters obj_det_params;
     obj_det_params.image_sync = true;
-    obj_det_params.enable_tracking = true;
-    obj_det_params.detection_model =  sl::DETECTION_MODEL::MULTI_CLASS_BOX;
     zed_error = p_zed->enableObjectDetection(obj_det_params);
     if (zed_error != ERROR_CODE::SUCCESS) {
         std::cout << sl::toVerbose(zed_error) << "\nExit program." << std::endl;
@@ -159,6 +172,7 @@ int main(int argc, char **argv) {
     int counter_no_detection = 0;
     sl::Objects objects;
     std::string event_reference = "first_event";
+    bool first_event_sent = false;
     sl::Timestamp prev_timestamp = p_zed->getTimestamp(TIME_REFERENCE::CURRENT);
 
     // Images
@@ -193,12 +207,14 @@ int main(int argc, char **argv) {
 
 
         if (recordVideoEvent && counter_reliable_objects >= 1){
+            bool is_new_event = true;
             if (counter_no_detection >= nbFramesNoDetBtw2Events){
                 event_reference = "detected_person_" + std::to_string(current_ts.getMilliseconds()); 
                 IoTCloud::log("New Video Event defined",LOG_LEVEL::INFO);
             }
             else{
                 // Do nothing, keep previous event reference --> The current frame will be defined as being part of the previous video event  
+                is_new_event = false;
             }
             
             EventParameters event_params;
@@ -209,8 +225,17 @@ int main(int argc, char **argv) {
             event2send["message"] = "Current event as reference " + event_reference;
             event2send["nb_detected_personn"] = objects.object_list.size();
 
-            IoTCloud::addVideoEvent(event_label, event2send, event_params);
-
+            if (is_new_event || (event_reference == "first_event" && !first_event_sent)) {
+                IoTCloud::startVideoEvent(event_label, event2send, event_params);
+                first_event_sent = true;
+            }
+            // update every 10 s
+            else if ((uint64) (current_ts.getMilliseconds() >= (uint64) (prev_timestamp.getMilliseconds() + (uint64)10 * 1000ULL)))
+            {
+                IoTCloud::updateVideoEvent(event_label, event2send, event_params);
+            }
+            // else do nothing
+            
             counter_no_detection = 0; //reset counter as someone as been detected
         }
         else {
@@ -245,8 +270,7 @@ int main(int argc, char **argv) {
         /*******     Define and send Telemetry   *********/
         // In this exemple we send every second the number of people detected and there mean distance to the camera
 
-        sl::Timestamp curr_timestamp = p_zed->getTimestamp(sl::TIME_REFERENCE::IMAGE);
-        if (recordTelemetry && (uint64) (curr_timestamp.getMilliseconds() >= (uint64) (prev_timestamp.getMilliseconds() + (uint64)telemetryFreq * 1000ULL))) {
+        if (recordTelemetry && (uint64) (current_ts.getMilliseconds() >= (uint64) (prev_timestamp.getMilliseconds() + (uint64)telemetryFreq * 1000ULL))) {
             float mean_distance = 0;
             // compute objects ( = people)  mean distance from camera. This value will be sent as telemetry  
             for (int i= 0;i< objects.object_list.size();i++) {
@@ -262,7 +286,7 @@ int main(int argc, char **argv) {
             position_telemetry["number_of_detection"] = objects.object_list.size();
             position_telemetry["mean_distance_from_cam"] = mean_distance;
             IoTCloud::sendTelemetry("object_detection", position_telemetry);
-            prev_timestamp = curr_timestamp;
+            prev_timestamp = current_ts;
         }
 
         /*******************************/
