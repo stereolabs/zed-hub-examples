@@ -50,10 +50,9 @@ Then to run your app :
 
 ## The Source Code explained
 
-To init your application, you have to get your ```SL_APPLICATION_TOKEN``` environment variable and use it in the ```IoTCloud::init``` function. `IoTCloud::init` starts communications between your app and the cloud. It must be called before using the IOTCloud API, so before sending logs (`IoTCloud::log`), telemetry(`IoTCloud::sendTelemetry`) custom stream (`IoTCloud::setCustomVideoMat`) and others ...
+To init your application, use the `IoTCloud::init` function that starts communications between your app and the cloud. It must be called before using the IOTCloud API, so before sending logs (`IoTCloud::log`), telemetry(`IoTCloud::sendTelemetry`) custom stream (`IoTCloud::setCustomVideoMat`) and others ...
 ```c++
-    const char * application_token = ::getenv("SL_APPLICATION_TOKEN");
-    STATUS_CODE status_iot = IoTCloud::init(application_token);
+    STATUS_CODE status_iot = IoTCloud::init("basic_app");
 ```
 You can set the log level limit to be displayed. Every log with LOG_LEVEL below the limit will not be print.  ``` setLogLevelThreshold(LOG_LEVEL local_terminal_log_level, LOG_LEVEL cloud_log_level)```
 ```c++

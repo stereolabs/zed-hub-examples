@@ -19,8 +19,7 @@ int main(int argc, char **argv) {
 
 
     //Init sl_iot
-    const char * application_token = ::getenv("SL_APPLICATION_TOKEN");
-    STATUS_CODE status_iot = IoTCloud::init(application_token, p_zed);
+    STATUS_CODE status_iot = IoTCloud::init("event_app", p_zed);
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "IoTCloud " << status_iot << std::endl;
         exit(EXIT_FAILURE);

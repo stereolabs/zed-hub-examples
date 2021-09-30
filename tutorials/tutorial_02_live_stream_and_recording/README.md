@@ -86,8 +86,7 @@ What exactly appends:
     p_zed.reset(new sl::Camera());
 
     //Init sl_iot
-    const char * application_token = ::getenv("SL_APPLICATION_TOKEN");
-    STATUS_CODE status_iot = IoTCloud::init(application_token, p_zed);
+    STATUS_CODE status_iot = IoTCloud::init("streaming_app", p_zed);
 ```
 
 
