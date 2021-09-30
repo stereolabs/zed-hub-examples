@@ -1,8 +1,8 @@
 # cmp-examples
 
 In this repository you will find:
-- [**CMP tutorials**](./tutorials/) that explain how to use the CMP features in your apps.
-- [**Sample apps**](./samples/README.md) that provide you examples of the CMP usage.  
+- [**CMP tutorials**](./tutorials/) that explain how to use the CMP features in your apps and run them.
+- [**Sample apps**](./samples/README.md) that provide you examples of the CMP usage and package/deploy them on the CMP as a service.
 
 The Camera Managment Platform, or CMP for short comes with a few samples demoing its main features. Each sample is writen in C++ and can be deployed as a CMP app. All of them are associated to a Readme that explains how to deploy the app and the main step of the source code. 
 
