@@ -17,6 +17,7 @@ bool led_status_updated = false;
 void onLedStatusUpdate(FunctionEvent &event) {
     event.status = 0;
     led_status_updated = true;
+    std::cout << "Led Status updated !" << std::endl;
 }
 
 int main(int argc, char **argv) {
