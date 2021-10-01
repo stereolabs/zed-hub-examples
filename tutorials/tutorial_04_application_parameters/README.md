@@ -72,44 +72,9 @@ Here are the elements you have to add to your code when you want to define a new
 
 Lets detail these steps:
 
-
-### Add the parameter in the app.json
-
-When you want to define a new parameter you need to "declare" it in the app.json file. To do that you just need to add two lines in release --> default_parameters --> requested :
-- The first one associates the parameter id (a string of your choice) and its default value.
-```
-    "led_status": "false",
-```
-- The second one is optional but recommanded. It describes the parameter and allows to compexify the CMP interface.
-```
-                "$led_status": {"name":"LED Status", "order":1,
-                    "type":"boolean",  "unit":"", "description": "Define whether your ZED LED is turned on or off" }
-```
-
-
-***********
-// augmented Image 
-***********
-
-In the app.json file, we finally have :
-```
-    ...
-
-    "default_parameters": {
-        "requested":{
-            "core": { "disable_app": false },
-            "led_status": "false",
-            "$led_status": {"name":"LED Status", "order":1, 
-                "type":"boolean",  "unit":"", "description": "Define whether your ZED LED is turned on or off" }
-        }
-    }
-
-    ...
-```
-
 ### Associate the parameter to a callback
 
-The parameter is defined in the app.json and associated to a default value.  When this value is modified in the interface you are so far not notified of this modification in your app (even if the new value does is available). To be notify on a parameter modification, you need to associate your parameter to a callback in your C++ code. 
+The parameter is defined in the parameters.json and associated to a default value.  When this value is modified in the interface you are so far not notified of this modification in your app (even if the new value does is available). To be notify on a parameter modification, you need to associate your parameter to a callback in your C++ code. 
 
 In our case we want that the `led_status` parameter defined in the `parameters.json` file be associated to the `onLedStatusChange` callback function.
 In three step we 
