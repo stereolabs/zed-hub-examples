@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
     // Main loop
     int counter_no_detection = 0;
     sl::Objects objects;
-    std::string event_reference = "first_event";
+    std::string event_reference = "";
     bool first_event_sent = false;
     sl::Timestamp prev_timestamp = p_zed->getTimestamp(TIME_REFERENCE::CURRENT);
 
@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
 
         if (recordVideoEvent && counter_reliable_objects >= 1){
             bool is_new_event = true;
-            if (counter_no_detection >= nbFramesNoDetBtw2Events){
+            if (!first_event_sent || counter_no_detection >= nbFramesNoDetBtw2Events){
                 event_reference = "detected_person_" + std::to_string(current_ts.getMilliseconds()); 
                 IoTCloud::log("New Video Event defined",LOG_LEVEL::INFO);
             }
@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
             event2send["message"] = "Current event as reference " + event_reference;
             event2send["nb_detected_personn"] = objects.object_list.size();
 
-            if (is_new_event || (event_reference == "first_event" && !first_event_sent)) {
+            if (is_new_event || !first_event_sent) {
                 IoTCloud::startVideoEvent(event_label, event2send, event_params);
                 first_event_sent = true;
             }

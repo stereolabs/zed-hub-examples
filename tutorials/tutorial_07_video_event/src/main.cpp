@@ -71,7 +71,8 @@ int main(int argc, char **argv) {
     // Main loop
     int counter_no_detection = 0;
     sl::Objects objects;
-    std::string event_reference = "first_event";
+    std::string event_reference = "";
+    bool first_event_sent = false;
 
     while (true) {
         // Grab a new frame from the ZED
@@ -90,7 +91,7 @@ int main(int argc, char **argv) {
         sl::Timestamp current_ts = objects.timestamp;
         if (objects.object_list.size() >= 1){
             bool new_event = true;
-            if (counter_no_detection >= 10){
+            if (counter_no_detection >= 10 || !first_event_sent){
                 event_reference = "detected_person_" + std::to_string(current_ts.getMilliseconds()); 
             }
             else{
@@ -105,7 +106,7 @@ int main(int argc, char **argv) {
             event2send["message"] = "Current event as reference " + event_reference;
             event2send["nb_detected_personn"] = objects.object_list.size();
 
-            if (new_event)
+            if (new_event || !first_event_sent)
                 IoTCloud::startVideoEvent(event_label, event2send, event_params);
             else
                 IoTCloud::updateVideoEvent(event_label, event2send, event_params);
