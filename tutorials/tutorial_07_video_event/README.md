@@ -22,17 +22,17 @@ This tutorial needs Edge Agent. By default when your device is setup, Edge Agent
 
 You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
 ```
-$ edge_agent start
+$ edge_cli start
 ```
 
 If you want to run it in backround use :
 ```
-$ edge_agent start -b
+$ edge_cli start -b
 ```
 
 And to stop it :
 ```
-$ edge_agent stop
+$ edge_cli stop
 ```
 
 ## Build and deploy this tutorial
@@ -41,7 +41,7 @@ $ edge_agent stop
 
 Run the Edge Agent installed on your device using (note that it's already running by default after Edge Agent installation) :
 ```
-$ edge_agent start
+$ edge_cli start
 ```
 
 Then to build your app :
