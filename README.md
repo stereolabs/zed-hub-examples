@@ -35,17 +35,17 @@ The only requirement is to setup a device to install the Edge Agent software and
 
 You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
 ```
-$ edge_agent start
+$ edge_cli start
 ```
 
 If you want to run it in backround use :
 ```
-$ edge_agent start -b
+$ edge_cli start -b
 ```
 
 And to stop it :
 ```
-$ edge_agent stop
+$ edge_cli stop
 ```
 
 ## Deploy a CMP app a service
@@ -82,9 +82,9 @@ The provided tutorials can be a good starting point for your own apps. Here is h
 **Build stage**: 
 The source code needs to be compiled before deploying the app. The code is compiled inside a dedicated docker image. To run the associated container you just need to run 
 ```
-$ edge_agent build
+$ edge_cli build
 ```
- This command, installed with Edge Agent in your device setup, will ask on which kind of device you will deploy your app and will set the `Dockerfile` parameteres in concequence. The `Dockerfile` descibes the build stage. It generates binaries, stored in the `./app` folder. Then an `app.zip` file is generated (still by the edge_agent build command). This `app.zip` file is your packaged app and is ready to be deployed. It contains : 
+ This command, installed with Edge Agent in your device setup, will ask on which kind of device you will deploy your app and will set the `Dockerfile` parameteres in concequence. The `Dockerfile` descibes the build stage. It generates binaries, stored in the `./app` folder. Then an `app.zip` file is generated (still by the edge_cli build command). This `app.zip` file is your packaged app and is ready to be deployed. It contains : 
 - docker-compose.yml
 - app.json 
 - Dockerfile
@@ -147,7 +147,7 @@ CMD ["/app_executable"]
 
 The build Dockerfile is **only used for the c++ applications** and is **not part of your app** meaning that it is never package in the .zip file. It descibes the image used to compile your c++ code. This image is similar to the runtime image (the image used to run your app) but may contain tools required to build the source code and that your runtime image does not need. 
 
-The build Dockerfile is used by the `edge_agent build` command and generate one ore several **binaries**. These binaries are then used by the runtime Image described bu the runtime dockerfile.
+The build Dockerfile is used by the `edge_cli build` command and generate one ore several **binaries**. These binaries are then used by the runtime Image described bu the runtime dockerfile.
 
 
 
