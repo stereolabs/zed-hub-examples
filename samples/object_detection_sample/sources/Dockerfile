@@ -10,8 +10,8 @@ apt-get install -y --no-install-recommends libopencv-dev && \
      rm -rf /var/lib/apt/lists/* && apt autoremove && apt clean
 
 # Compilation
-COPY ./object_detection_sample/sources/src /home/src
-COPY ./object_detection_sample/sources/CMakeLists.txt /home
+COPY ./sources/src /home/src
+COPY ./sources/CMakeLists.txt /home
 
 WORKDIR /home
 RUN mkdir build
