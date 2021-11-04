@@ -31,7 +31,7 @@ To be able to run this tutorial:
 
 Run the Edge Agent installed on your device using :
 ```
-$ edge_agent start
+$ edge_cli start
 ```
 
 Then to build your app :
@@ -60,12 +60,12 @@ To build your app just run:
 
 ```
 $ cd /PATH/TO/camera_viewer_sample
-$ edge_agent build
+$ edge_cli build
 ```
 
 This command is available by installing Edge Agent on your device.
 
-- The command will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `edge_agent build`.
+- The command will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `edge_cli build`.
 - The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the CMP interface.
 - Finally you will be asked the **IOT version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
 
@@ -74,7 +74,7 @@ This command is available by installing Edge Agent on your device.
 Packages your app by generating a app.zip file using :
 
 ```
-$ edge_agent build
+$ edge_cli build
 ```
 
 Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the CMP interface:

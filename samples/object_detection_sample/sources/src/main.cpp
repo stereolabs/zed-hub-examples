@@ -71,15 +71,8 @@ int main(int argc, char **argv) {
     std::shared_ptr<sl::Camera> p_zed;
     p_zed.reset(new sl::Camera());
 
-    //In service deployment init IoT with the SL_APPLICATION_TOKEN environment variable
-    //In development you can simply init it with the application name
-    const char * application_token = ::getenv("SL_APPLICATION_TOKEN");
     STATUS_CODE status_iot;
-    if (!application_token) {
-        status_iot = IoTCloud::init("object_app", p_zed);
-    } else {
-        status_iot = IoTCloud::init(application_token, p_zed);
-    }
+    status_iot = IoTCloud::init("object_app", p_zed);
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initiliazation error " << status_iot << std::endl;
         exit(EXIT_FAILURE);

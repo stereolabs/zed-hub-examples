@@ -26,6 +26,7 @@ int main(int argc, char **argv) {
 
     //Open the ZED camera
     sl::InitParameters initParameters;
+    initParameters.input.setFromSVOFile("/home/abastie/Downloads/record_Jan_29_2021_09_00_AM.svo");
     initParameters.camera_resolution = RESOLUTION::HD720;
     initParameters.depth_mode = DEPTH_MODE::ULTRA;
 
@@ -49,8 +50,9 @@ int main(int argc, char **argv) {
 
         // Insert custom code here
 
+        imgLeftCustom.timestamp.setMilliseconds(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
         // Use this function to set the current image of your live stream
-        IoTCloud::setCustomVideoMat(imgLeftCustom);
+        IoTCloud::setCustomVideoMat(imgLeftCustom, imgLeftCustom.timestamp.getMilliseconds());
 
         // Always refresh IoT at the end of the grab loop
         IoTCloud::refresh();
