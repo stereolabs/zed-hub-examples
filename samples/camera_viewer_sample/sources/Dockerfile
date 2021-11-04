@@ -9,8 +9,8 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata libx11-dev && \
      rm -rf /var/lib/apt/lists/* && apt autoremove && apt clean
 
 # Compilation
-COPY ./camera_viewer_sample/sources/src /home/src
-COPY ./camera_viewer_sample/sources/CMakeLists.txt /home
+COPY ./sources/src /home/src
+COPY ./sources/CMakeLists.txt /home
 
 WORKDIR /home
 RUN mkdir build
