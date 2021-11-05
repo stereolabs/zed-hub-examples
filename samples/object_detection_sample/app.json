@@ -3,7 +3,7 @@
     "description": "An app that starts a ZEd, performs Object Detection and sends logs, telemetry, custom stream and video events.",
      "release":{
         "name": "1.1.0",
-        "description": "IOT 0.47.2, SDK 3.5.4, compatible with ZED2i",
+        "description": "Sample that detects people using ZED SDK and sends video events.",
         "type":"docker-compose",
         "default_parameters": {
             "requested":{
