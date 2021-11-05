@@ -79,6 +79,7 @@ int main(int argc, char **argv) {
     }
 
     //Load application parameter file in development mode
+    char* application_token = ::getenv("SL_APPLICATION_TOKEN");
     if (!application_token) {
         status_iot = IoTCloud::loadApplicationParameters("parameters.json");
         if (status_iot != STATUS_CODE::SUCCESS) {

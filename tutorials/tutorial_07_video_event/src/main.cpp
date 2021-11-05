@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     sl::Objects objects;
     std::string event_reference = "";
     bool first_event_sent = false;
-
+    sl::Timestamp last_ts = 0;
     while (true) {
         // Grab a new frame from the ZED
         status_zed = p_zed->grab();
@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
         */
        
         sl::Timestamp current_ts = objects.timestamp;
-        if (objects.object_list.size() >= 1){
+        if (objects.object_list.size() >= 1 && current_ts.getSeconds() - last_ts.getSeconds() >= 2) {
             bool new_event = true;
             if (counter_no_detection >= 10 || !first_event_sent){
                 event_reference = "detected_person_" + std::to_string(current_ts.getMilliseconds()); 
@@ -100,20 +100,23 @@ int main(int argc, char **argv) {
             }
             EventParameters event_params;
             event_params.timestamp = current_ts.getMilliseconds();
-            event_params.reference = event_reference;    
+            event_params.reference = event_reference;
             std::string event_label = "People Detection"; // or label of your choice
             json event2send; // Use to store all the data associated to the video event. 
             event2send["message"] = "Current event as reference " + event_reference;
             event2send["nb_detected_personn"] = objects.object_list.size();
 
-            if (new_event || !first_event_sent)
+            if (new_event || !first_event_sent) {
                 IoTCloud::startVideoEvent(event_label, event2send, event_params);
-            else
+                first_event_sent = true;
+            }
+            else {
                 IoTCloud::updateVideoEvent(event_label, event2send, event_params);
-
+            }
             counter_no_detection = 0; //reset counter as someone as been detected
+            last_ts = current_ts;
         }
-        else {
+        else if (current_ts.getSeconds() - last_ts.getSeconds() >= 2) {
             counter_no_detection ++;
         }
         /*******************************/
