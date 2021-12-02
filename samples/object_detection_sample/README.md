@@ -1,24 +1,24 @@
 # Object Detection
 
-This sample is a complete exemple that shows you how to perform Object detection in a CMP App. It also shows how to use it to generate:
+This sample is a complete exemple that shows you how to perform Object detection in a ZEDHub App. It also shows how to use it to generate:
 - **Logs** that informs you about the app's status
 - **Telemetry** that stores data linked to the detections
 - **Video Event** that shows you the video on wich someone is detected
 - **Custom Stream** that shows you the live video, with bbox around the detected people
 
-The app also have several **parameters** that can be modified in the CMP interface and will have an impact on the application.
+The app also have several **parameters** that can be modified in the ZEDHub interface and will have an impact on the application.
 
 ![](./images/od_live_view.png " ")
 
 
 
 ## Requirements
-This sample is a mix of the **7 basic tutorials** provided in the `tutorials` folder. You are advice to **read and test them** before running this sample. These tutorials provide many information on the CMP features and will make it easier to understand the **Object Detection Sample**.  
+This sample is a mix of the **7 basic tutorials** provided in the `tutorials` folder. You are advice to **read and test them** before running this sample. These tutorials provide many information on the ZEDHub features and will make it easier to understand the **Object Detection Sample**.  
 
-You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
@@ -66,7 +66,7 @@ $ edge_cli build
 This command is available by installing Edge Agent on your device.
 
 - The command will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `edge_cli build`.
-- The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the CMP interface.
+- The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the ZEDHub interface.
 - Finally you will be asked the **IOT version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
 
 ### How to deploy your application
@@ -77,7 +77,7 @@ Packages your app by generating a app.zip file using :
 $ edge_cli build
 ```
 
-Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the CMP interface:
+Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the ZEDHub interface:
 
 - In your workspace, in the **Applications** section, click on **Create a new app** 
 - Get the .zip an Drag’n’Drop in the dedicated area
@@ -85,14 +85,14 @@ Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/app
 
 
 ## What you should see after deployment
-Make sure that the recordings are enable and that the privacy mode is disabled (Settings panel of your device, in the CMP interface).
-As this app shows you most of the CMP features, you will have:
+Make sure that the recordings are enable and that the privacy mode is disabled (Settings panel of your device, in the ZEDHub interface).
+As this app shows you most of the ZEDHub features, you will have:
 - a **Custom Stream** that shows you the live video, with bbox around the detected people
 - **Logs** that informs you about the app's status
 - **Telemetries** that store data linked to the detections
 - **Video Events** that shows you the video on wich someone is detected
 
-The app also have several **parameters** that can be modified in the CMP interface and will have an impact on the application.
+The app also have several **parameters** that can be modified in the ZEDHub interface and will have an impact on the application.
 
 ### Custom stream
 

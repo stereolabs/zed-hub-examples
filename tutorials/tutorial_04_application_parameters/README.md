@@ -1,15 +1,15 @@
 # Tutorial 4 - Application Parameters
 
-This tutorial shows how to use custom application parameters in your application. These parameters can be modified by everyone in the CMP interface.
+This tutorial shows how to use custom application parameters in your application. These parameters can be modified by everyone in the ZEDHub interface.
 This sample starts a ZED exactly as tutorial_02_live_stream_and_recording does, but it also define one parameter. The first one indicates whether the camera LED must be on or off. 
 
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_04_application_parameters)
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
@@ -62,7 +62,7 @@ To dynamically change the parameters and activate callbacks, edit the `parameter
 
 Here are the elements you have to add to your code when you want to define a new app parameter:
 
-- Add the parameter to the app.json file. If not done, the parameter won't be available in the CMP interface
+- Add the parameter to the app.json file. If not done, the parameter won't be available in the ZEDHub interface
 
 - Associate a callback function to the parameter. Thanks to that the callback is triggered when the parameter value is modified in the interface. It is a way to notifier a parameter's value modification. 
 

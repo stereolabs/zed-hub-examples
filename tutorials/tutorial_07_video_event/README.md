@@ -1,7 +1,7 @@
 # Tutorial 7 - Video Event
 
 A **video event** is **Video recording** associated to a **description** stored in one or several json.
-This application shows how to define a Video Event in a CMP app. This event will be available in the Video Event CMP interface.
+This application shows how to define a Video Event in a ZEDHub app. This event will be available in the Video Event ZEDHub interface.
 In this tutorial a video is concidered as event if **at least on person is detected** in the image. To detect people the **Object Detection** module of the SDK will be used. 
 
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_07_video_event)
@@ -10,10 +10,10 @@ In this tutorial a video is concidered as event if **at least on person is detec
 
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
@@ -59,7 +59,7 @@ Then to run your app :
 ```
 
 ## What you should see after deployment
-Make sure that the recordings are enable and that the privacy mode is disabled (Settings panel of your device, in the CMP interface).
+Make sure that the recordings are enable and that the privacy mode is disabled (Settings panel of your device, in the ZEDHub interface).
 As each time a ZED is opened, you will find the **live stream** and the **recordings** in the **Video Panel** of your device as soon as your app is **running**.
 
 A video is concidered as event if **at least on person is detected** in the image. Therefore if your app is running and that someone is seen by your ZED, you should see an Event in the Video Event panel corresponding to this situation.

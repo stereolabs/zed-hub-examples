@@ -1,6 +1,6 @@
 # Camera Viewer
 
-This sample is a basic exemple that shows you how to display your ZED live view in the CMP Video Panel. It also allows you to continuously record the video. This sample use and explain the following features of the CMP:
+This sample is a basic exemple that shows you how to display your ZED live view in the ZEDHub Video Panel. It also allows you to continuously record the video. This sample use and explain the following features :
 - **Logs** that informs you about the app's status
 - **Live Stream** that shows you the live video from your zed in the **Video** Panel
 - **Recordings** that are listed hour by hour in the **Video** Panel
@@ -11,12 +11,12 @@ This sample is a basic exemple that shows you how to display your ZED live view 
 
 
 ## Requirements
-This sample uses a part of the **7 basic tutorials** provided in the `tutorials` folder. You are advice to **read and test the 3 first tutorials** before running this sample. These tutorials provide many information on the CMP features and will make it easier to understand the **Camera Viewer Sample**.  
+This sample uses a part of the **7 basic tutorials** provided in the `tutorials` folder. You are advice to **read and test the 3 first tutorials** before running this sample. These tutorials provide many information on the ZEDHub features and will make it easier to understand the **Camera Viewer Sample**.  
 
-You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
@@ -64,7 +64,7 @@ $ edge_cli build
 This command is available by installing Edge Agent on your device.
 
 - The command will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `edge_cli build`.
-- The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the CMP interface.
+- The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the ZEDhub interface.
 - Finally you will be asked the **IOT version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
 
 ### How to deploy your application
@@ -75,7 +75,7 @@ Packages your app by generating a app.zip file using :
 $ edge_cli build
 ```
 
-Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the CMP interface:
+Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the ZEDHub interface:
 
 - In your workspace, in the **Applications** section, click on **Create a new app** 
 - Get the .zip an Drag’n’Drop in the dedicated area
@@ -83,7 +83,7 @@ Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/app
 
 
 ## What you should see after deployment
-Make sure that the recordings are enable and that the privacy mode is disabled (Settings panel of your device, in the CMP interface).
+Make sure that the recordings are enable and that the privacy mode is disabled (Settings panel of your device, in the ZEDHub interface).
 thanks to this app you will have access to:
 - a **Live Stream** that shows you the live video
 - **Recordings** listed in the **Video** panel by our
