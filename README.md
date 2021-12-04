@@ -1,4 +1,4 @@
-# cmp-examples
+# zedhub-examples
 
 In this repository you will find:
 - [**ZEDHub tutorials**](./tutorials/) that explain how to use the ZEDHub features in your apps and run them.
