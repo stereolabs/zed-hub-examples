@@ -1,14 +1,14 @@
 # Tutorial 2 - Live Stream and Continuous Recording
 
-This tutorial shows how to deploy an application that starts a ZED camera and and sends the live stream to the CMP interface. You will also be able to store the video on your device.  The recorded video will be available on the CMP interface and downloadable. 
+This tutorial shows how to deploy an application that starts a ZED camera and and sends the live stream to the ZEDHub interface. You will also be able to store the video on your device.  The recorded video will be available on the ZEDHub interface and downloadable. 
 
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_02_live_stream_and_recording)
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device

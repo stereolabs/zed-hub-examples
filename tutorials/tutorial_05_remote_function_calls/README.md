@@ -6,15 +6,15 @@ This tutorial does not require a ZED to be runned.
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_05_remote_function_calls)
 
 #### What is a remote function call ?
-A **remote function call** is a call to a remote function **declared and register by a CMP app**. The app described in this tutorial declares and registers the `additionCallback` remote function. 
+A **remote function call** is a call to a remote function **declared and register by a ZEDHub app**. The app described in this tutorial declares and registers the `additionCallback` remote function. 
 The call to this function can be done from **any computer** connected to the internet, by using a **REST request**. The way to perform this request is explained later in this tutorial.
 
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on **your CMP workspace**. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on **your ZEDHub workspace**. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
@@ -55,12 +55,12 @@ Then to run your app :
 ```
 
 ## What you should see after deployment
-The application in itself only define and register a **callback function** that can be called from anywhere if the app is running. Therefore there is not a lot to see in the CMP interface. Make simply sure that your application has a **building** and finaly a **running status**.  
+The application in itself only define and register a **callback function** that can be called from anywhere if the app is running. Therefore there is not a lot to see in the ZEDHub interface. Make simply sure that your application has a **building** and finaly a **running status**.  
 
 ### Call your remote function
 Before calling your remote function, you have to get the necessary values to use the REST API.
 
-- Your **API token** that you can register from the **API panel** in CMP. Get more informations in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/)
+- Your **API token** that you can register from the **API panel** in ZEDHub. Get more informations in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/)
 
 - Your **region url** that you can get using the REST API in the ```/workspaces``` endpoint. Get more informations in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
 

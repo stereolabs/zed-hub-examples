@@ -5,10 +5,10 @@ This application shows how to change the default live stream of an application, 
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_06_custom_stream)
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on your CMP workspace. The CMP supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the CMP and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
@@ -54,7 +54,7 @@ Then to run your app :
 ```
 
 ## What you should see after deployment
-This app modifies the live stream available on the CMP interface. Instead of the RGB image you should now see the ZED depth image.
+This app modifies the live stream available on the ZEDHub interface. Instead of the RGB image you should now see the ZED depth image.
 
 - In the **Settings** panel of your device, make sure that the **Privacy mode** is disabled, otherwisethe video won't be visible.
 
@@ -92,7 +92,7 @@ Then, your ZED Camera is opened with the ZED SDK. The depth is activated in orde
 
 The main loop of your application grabs the images from the camera with the ```grab``` function.
 Then the depth image is retrieve with `retrieveImage`, stored in `imgLeftCustom` and set as custom image with `setStreamImage`.
-Finaly the `IoTCloud::refresh` function sends this live stream to the CMP interface and handle recording depending on the interface settings.
+Finaly the `IoTCloud::refresh` function sends this live stream to the ZEDHub interface and handle recording depending on the interface settings.
 
 ```c++
     sl::Mat imgLeftCustom;
