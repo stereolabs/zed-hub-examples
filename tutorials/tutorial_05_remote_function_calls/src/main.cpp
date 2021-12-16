@@ -36,7 +36,7 @@ void additionCallback(FunctionEvent& event) {
 
 int main(int argc, char **argv) {
     STATUS_CODE status_iot;
-    status_iot = IoTCloud::initNoZed("callback_app");
+    status_iot = IoTCloud::initNoZED("callback_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initiliazation error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
