@@ -8,9 +8,9 @@ ZED Hub comes with samples demoing its main features. Each sample is writen in C
 
 [**Github repository**](https://github.com/stereolabs/cmp-examples)
 
-## What are the ZED Hub features available and explained in these tutorials:
+## What are the available ZED Hub features explained in these tutorials:
 
-- Live stream : How to display  your camera live video in the ZED Hub interface
+- Live stream : How to display your camera's live video feed in the ZED Hub interface
 - Telemetry : How to upload and store any kind of data in order to analyse and display it later 
 - Application parameters: How to define parameters to your application, settable in the ZED Hub interface
 - Remote functions: How to define and call a remote function
@@ -21,12 +21,12 @@ ZED Hub comes with samples demoing its main features. Each sample is writen in C
 You will deploy these tutorials on one of the devices installed on your ZED Hub workspace. ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZED Hub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - As most of the tutorials require a ZED camera, a ZED should be plugged to this device.
 
 ## What is a ZED Hub app ?
-A ZED Hub app is an application deployed in a Docker container on one of the devices that you installed on your ZED Hub workspace. Note that it can be coded in the langage of your choice and is not limited to a camera usage. It can be everything: a web server, a sensor reporter, an alert notifier, a node-red application ... However the ZED Hub interface is optimized for the camera managment, and is especialy adapted to the ZED 3D cameras. Therefore most of the available tutorials requires a ZED to be runned.
+A ZED Hub app is an application deployed in a Docker container on one of the devices that you installed on your ZED Hub workspace. Note that it can be coded in the langage of your choice and is not limited to a camera usage. It can be everything: a web server, a sensor reporter, an alert notifier, a node-red application ... However the ZED Hub interface is optimized for camera managment, and is especialy adapted to the ZED 3D cameras. Therefore most of the available tutorials requires a ZED to be run.
 
 ## Develop a ZED Hub app
 
@@ -54,18 +54,57 @@ For production, you need to deploy your application on your device as a service,
 Here is the full explanation on how to do it. Examples are available on [**Sample apps**](./samples/).
 
 ### General structure
-A ZED Hub app is runned in a Docker container. The [ZED Dreate a new app** 
+A ZED Hub app is run in a Docker container. The [ZED Hub documentation](https://www.stereolabs.com/docs/cloud/applications/) explains in detail how an app is structured and deployed. 
+To deploy an app you need to upload a .zip file that contains at least:
+- a docker-compose.yml describing how the application should be run
+- a runtime dockerfile listing the steps and commands to compile and run the application.
+- an app.json file that describes your application, specifies its name and release name and defines the parameters (see tutorial_04_application_parameters for more information about it)
+- the source code or the executable 
+
+#### Developing an app in C++
+We recommend you develop your app in C++, as the ZED Hub C++ API **sl_IOT** makes it easier to use the ZED Hub features.
+The provided tutorials are a good starting point for your own apps. Here is how they should be used:
+
+```
+.
+├── app
+│   └── Dockerfile
+├── app.json
+├── docker-compose.yml
+├── README.md
+└── sources
+    ├── CMakeLists.txt
+    ├── Dockerfile
+    └── src
+        └── main.cpp 
+```
+
+**Build stage**: 
+The source code needs to be compiled before deploying the app. The code is compiled inside a dedicated docker image. To run the associated container you just need to run 
+```
+$ edge_cli build
+```
+ This command, installed with Edge Agent in your device setup, will ask on which kind of device you will deploy your app and will set the `Dockerfile` parameters accordingly. The `Dockerfile` describes the build stage. It generates binaries, stored in the `./app` folder. Then, an `app.zip` file is generated (still by the edge_cli build command). This `app.zip` file is your packaged app and is ready to be deployed. It contains : 
+- docker-compose.yml
+- app.json 
+- Dockerfile
+- the binaries generated during the **build stage**
+- an icon.png image (optional)
+
+**Deployment stage**:  
+Now you just need to deploy your app using the ZED Hub interface:
+- In your workspace, in the **Applications** section, click on **Create a new app** 
 - Get the .zip an Drag’n’Drop in the dedicated area
-- Select the devices on which you want to deploy  the app and press **Deploy** 
+- Select the devices on which you want to deploy the app and press **Deploy** 
 
 
 ## Docker complement
-Here are some explaination about the docker related files.  
+This section describes in more detail the different Docker related files used by the ZED Hub.
 
-> **Note** : You need a bit of experience with docker. (As long as you know and understand the basics of building and running a container you’ll be more than fine)
+> **Note** : You will need a bit of experience with docker. (As long as you know and understand the basics of building and running a container you’ll be more than fine)
 
 ### docker-compose.yml
-The **docker-compose.yml** file is the first file that is read when app app is deployed. It many indicates the path to the runtime Dockerfile that indicates how the app must be runned. It also configure the Docker environment.
+The **docker-compose.yml** file is the first file that is read when the "app" app is deployed. It mainly indicates the path to the runtime Dockerfile that indicates how the app must be run. It also configures the Docker environment.
 ```
 version: '2.3'
 services:
@@ -87,7 +126,7 @@ In this example the container of the application will run the **tuto01_service**
 
 ### Runtime Dockerfile
 
-The runtime Dockerfile is the file that described what your **Docker image** or **app** must do when deployed. Basicly it indicates which script or executable must be runned. In the exemple bellow the binary `app_executable` is runned.
+The runtime Dockerfile is the file that describes what your **Docker image** or **app** must do when deployed. It indicates which script or executable must be run. In the example below, the binary `app_executable` is run.
 
 ```
 ARG BASE_IMAGE
@@ -106,23 +145,23 @@ CMD ["/app_executable"]
 
 ### Build Dockerfile
 
-The build Dockerfile is **only used for the c++ applications** and is **not part of your app** meaning that it is never package in the .zip file. It descibes the image used to compile your c++ code. This image is similar to the runtime image (the image used to run your app) but may contain tools required to build the source code and that your runtime image does not need. 
+The build Dockerfile is **only used for C++ applications** and is **not part of your app** meaning that it is never packaged in the .zip file. It describes the image used to compile your C++ code. This image is similar to the runtime image (the image used to run your app) but contains additionnal tools required to build the source code and that your runtime image does not need. 
 
-The build Dockerfile is used by the `edge_cli build` command and generate one ore several **binaries**. These binaries are then used by the runtime Image described bu the runtime dockerfile.
+The build Dockerfile is used by the `edge_cli build` command and generates one or several **binaries**. These binaries are then used by the runtime image described by the runtime dockerfile.
 
 
 
 ## Next steps
-These 7 samples/tutorials can be used as starting point to devlop your own app. Some other tutorials are available to help you to identify where and how modifing these app in order to adapte them to your needs.
+These 7 samples/tutorials can be used as starting points to develop your own app. There are some additionnal, more advanced tutorials available, which can be used and modified in order to fit your specific needs.
 
-### How to upload a new release?
-Lets supposed you modified one of the tutorials and want to deploy this new version.
+### Uploading a new release
+Let's suppose you have modified one of the tutorials and want to deploy your updated version.
 
-- Modify the `app.json` file by giving an other release name. 
+- Modify the `app.json` file by giving it another release name. 
 ```js
     //...
     "release":{
-        "name": "1.0.0",  //modify 1.0.0 by a name of your choice. You are advice to keep the x.x.x shape
+        "name": "1.0.0",  //modify 1.0.0 by a name of your choice. We recommend to keep the x.x.x version scheme
       //... 
     }
     //...
