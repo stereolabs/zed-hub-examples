@@ -1,8 +1,8 @@
 # Tutorial 7 - Video Event
 
-A **video event** is **Video recording** associated to a **description** stored in one or several json.
-This application shows how to define a Video Event in a ZEDHub app. This event will be available in the Video Event ZEDHub interface.
-In this tutorial a video is concidered as event if **at least on person is detected** in the image. To detect people the **Object Detection** module of the SDK will be used. 
+A **video event** is a **Video recording** associated to a **description** stored in one or several json.
+This application shows how to define a Video Event in a ZED Hub app. This event will be available in the Video Event ZED Hub interface.
+In this tutorial a video is considered as event if **at least one person is detected** in the image. To detect people the **Object Detection** module of the SDK will be used. 
 
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_07_video_event)
 
@@ -10,10 +10,10 @@ In this tutorial a video is concidered as event if **at least on person is detec
 
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
@@ -59,14 +59,14 @@ Then to run your app :
 ```
 
 ## What you should see after deployment
-Make sure that the recordings are enable and that the privacy mode is disabled (Settings panel of your device, in the ZEDHub interface).
+Make sure that the recordings are enabled and that the privacy mode is disabled (Settings panel of your device, in the ZED Hub interface).
 As each time a ZED is opened, you will find the **live stream** and the **recordings** in the **Video Panel** of your device as soon as your app is **running**.
 
-A video is concidered as event if **at least on person is detected** in the image. Therefore if your app is running and that someone is seen by your ZED, you should see an Event in the Video Event panel corresponding to this situation.
+A video is considered an event if **at least on person is detected** in the image. Therefore if your app is running and that someone is seen by your ZED, you should see an Event in the Video Event panel corresponding to this situation.
 
 ![](./images/event_detected_people.png " ")
 
-You can click on it. You have access the video and the stored data of the event. You have access to a longer video than the exact event duration ( you can watch a few seconds before and after the event). The blue line indicates which part of the video is associated to the event.
+You can click on it. You have access to the video and the stored data of the event. You have access to a longer video than the exact event duration ( you can watch a few seconds before and after the event). The blue line indicates which part of the video is associated to the event.
 
 ![](./images/event_visualisation.png " ")
 
@@ -85,7 +85,7 @@ The Object detection is enabled with `enableObjectDetection`.Note that the track
     auto zed_error = p_zed->enableObjectDetection(obj_det_params);
 ```
 
-The detection is limited to PERSONN (meaning that the Vehicles for instance are ignore), the detection threshold is set to 50:
+The detection is limited to PERSON (meaning for instance that the Vehicles are ignored), the detection threshold is set to 50:
 
 ```c++
     // Object Detection runtime parameters : detect person only
@@ -98,12 +98,12 @@ The detection is limited to PERSONN (meaning that the Vehicles for instance are 
 
 ### Main loop
 
-Each time a frame is successfuly **grabbed**, the detected object are retrieve with the `retrieveObjects` function and strored in `objects`.
+Each time a frame is successfuly **grabbed**, the detected object are retrieved with the `retrieveObjects` function and stored in `objects`.
 
-Remember that the frame is part of an event as soon as **at least one person is detected**. However a **second rule** is necessary to **distinguish one event from an other**. Once again, this rule depends on your wishes. In this tutorial we decided to define a new event as soon as **no one has been seen for 10 frames**. 
+Remember that the frame is part of an event as soon as **at least one person is detected**. However a **second rule** is necessary to **distinguish one event from an other**. Once again, this rule depends on how you define it. In this tutorial we decided to define a new event as soon as **no one has been seen for 10 frames**. 
 
 A frame is defined as part of a videoEvent if the `IoTCloud::startVideoEvent` is called with the **corresponding timestamp**.
-** Note** that you do not define a new Video event each time you call `IoTCloud::addVideoEvent` but you extend the current one by calling `IoTCloud::updateVideoEvent` by using the same `event.reference`.
+** Note** that you should not define a new Video event each time you call `IoTCloud::addVideoEvent` but you should extend the current one by calling `IoTCloud::updateVideoEvent` by using the same `event.reference`.
 
 ```c++
     EventParameters event_params;

@@ -1,13 +1,13 @@
 # Tutorial 3 - Telemetries
-This tutorial shows you how to send telemetry to the cloud. This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the concecutive position of your camera.  
+This tutorial shows you how to send a telemetry to the cloud. This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the concecutive positions of your camera.  
 
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_03_telemetries)
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
@@ -50,17 +50,17 @@ Then to run your app :
 ```
 
 ## What you should see after deployment
-This app have two direct consequences in the ZEDHub interface:
+This app have two direct consequences in the ZED Hub interface:
 - A live stream should be visible
 - The published telemetry should be accessible
 
 ### Live video
-If you click in the **Devices** panel  on the device where the app is deployed, you should see the live video (with a delay of a few seconds).
+If you click on the device where the app is deployed in the **Devices** panel, you should see the live video (with a delay of a few seconds).
 
 ![](./images/live_and_recordings.png " ")
 
 ###  Telemetry
-If you click go in the **Telemetry** panel, you should see the telemetry of your camera position as follow:
+If you click on the **Telemetry** panel, you should see the telemetry of your camera position as follow:
 
 ![](./images/telemetry.png " ")
 
@@ -69,7 +69,7 @@ If you click go in the **Telemetry** panel, you should see the telemetry of your
 
 This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the concecutive position of your camera.  
 
-What exactly appends:
+What exactly happens:
 
 - Init IOT to enable communications with the cloud. (See tutorial_01_basic_app README for more information).
 
@@ -87,7 +87,7 @@ What exactly appends:
         if (status_zed != ERROR_CODE::SUCCESS) break;
 ```
 
-- Every seconds, get the camera position (Translation and rotation)
+- Every second, get the camera position (Translation and rotation)
 
 ```
     if (curr_timestamp.getMilliseconds() >= prev_timestamp.getMilliseconds() + 1000) {
@@ -99,7 +99,7 @@ What exactly appends:
 ```
 
 - Store the camera position inside a json and call `IoTCloud::sendTelemetry` 
-A label is specified as follow `sendTelemetry(std::string label, json& value)`. It allows to improve the log consultation in the ZEDHub interface as it is possible to sort them by label.
+A label is specified as follows `sendTelemetry(std::string label, json& value)`. It allows to improve the log consultation in the ZEDHub interface as it is possible to sort them by label.
 
 ```
     // Send Telemetry

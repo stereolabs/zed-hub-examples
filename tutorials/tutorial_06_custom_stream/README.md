@@ -5,10 +5,10 @@ This application shows how to change the default live stream of an application, 
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_06_custom_stream)
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZED Hub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
@@ -54,11 +54,11 @@ Then to run your app :
 ```
 
 ## What you should see after deployment
-This app modifies the live stream available on the ZEDHub interface. Instead of the RGB image you should now see the ZED depth image.
+This app modifies the live stream available on the ZED Hub interface. Instead of the RGB image you should now see the ZED depth image.
 
-- In the **Settings** panel of your device, make sure that the **Privacy mode** is disabled, otherwisethe video won't be visible.
+- In the **Settings** panel of your device, make sure that the **Privacy mode** is disabled, otherwise the video won't be visible.
 
-- If you click in the **Devices** panel  on the device where the app is deployed, you should see the custom live video (with a delay of a few seconds). Instead of the RGB image you should now see the ZED depth image. 
+- If you click on the device where the app is deployed in the **Devices** panel, you should see the custom live video (with a delay of a few seconds). Instead of the RGB image you should now see the ZED depth image. 
 
 ![](./images/comparison.png " ")
 
@@ -67,7 +67,7 @@ This app modifies the live stream available on the ZEDHub interface. Instead of 
 
 ### Initialization
 
-Init IOT to enable communications with the cloud. Note that the cloud is init with a ZED pointer p_zed.
+Init IOT to enable communications with the cloud. Note that the cloud is initialized with a ZED pointer p_zed.
 
 ```cpp
     // Create camera object
@@ -91,8 +91,8 @@ Then, your ZED Camera is opened with the ZED SDK. The depth is activated in orde
 ### Main loop and Custom Stream
 
 The main loop of your application grabs the images from the camera with the ```grab``` function.
-Then the depth image is retrieve with `retrieveImage`, stored in `imgLeftCustom` and set as custom image with `setStreamImage`.
-Finaly the `IoTCloud::refresh` function sends this live stream to the ZEDHub interface and handle recording depending on the interface settings.
+Then the depth image is retrieved with `retrieveImage`, stored in `imgLeftCustom` and set as custom image with `setStreamImage`.
+Finaly the `IoTCloud::refresh` function sends this live stream to the ZEDHub interface and handles recording depending on the interface settings.
 
 ```c++
     sl::Mat imgLeftCustom;
@@ -124,7 +124,7 @@ Here is what you have to modify to use OpenCV:
 The build and runtime docker images must have openCV installed. **Note that it is already done in this tutorial.**
 
 
-You just would have to add `libopencv-dev` in the two Dockerfile as follow (already done): 
+You just would have to add `libopencv-dev` in the two Dockerfile as follows (already done): 
 
 Dockerfile.build
 ```Dockerfile
