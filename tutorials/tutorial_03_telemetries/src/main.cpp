@@ -90,5 +90,10 @@ int main(int argc, char **argv) {
     else if(p_zed->isOpened())
         p_zed->close();
     
+    status_iot = IoTCloud::stop();
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Terminating error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
     return 0;
 }
