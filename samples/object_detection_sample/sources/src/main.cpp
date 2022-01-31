@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
     STATUS_CODE status_iot;
     status_iot = IoTCloud::init("object_app", p_zed);
     if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "Initiliazation error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -298,6 +298,12 @@ int main(int argc, char **argv) {
     //Close the camera
     else if(p_zed->isOpened())
         p_zed->close();
+
+    status_iot = IoTCloud::stop();
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Terminating error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
     
     return 0;
 }
