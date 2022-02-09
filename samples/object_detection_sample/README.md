@@ -1,24 +1,24 @@
 # Object Detection
 
-This sample is a complete exemple that shows you how to perform Object detection in a ZEDHub App. It also shows how to use it to generate:
+This sample is a complete example that shows you how to perform Object detection in a ZED Hub App. It also shows how to use it to generate:
 - **Logs** that informs you about the app's status
 - **Telemetry** that stores data linked to the detections
-- **Video Event** that shows you the video on wich someone is detected
+- **Video Event** that shows you the video on which someone is detected
 - **Custom Stream** that shows you the live video, with bbox around the detected people
 
-The app also have several **parameters** that can be modified in the ZEDHub interface and will have an impact on the application.
+The app also have several **parameters** that can be modified in the ZED Hub interface and will have an impact on the application.
 
 ![](./images/od_live_view.png " ")
 
 
 
 ## Requirements
-This sample is a mix of the **7 basic tutorials** provided in the `tutorials` folder. You are advice to **read and test them** before running this sample. These tutorials provide many information on the ZEDHub features and will make it easier to understand the **Object Detection Sample**.  
+This sample is a mix of the **7 basic tutorials** provided in the `tutorials` folder. We recommend to **read and test them** before running this sample. These tutorials provide a lot of information on the ZED Hub features and will make it easier to understand the **Object Detection Sample**.  
 
-You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
@@ -77,7 +77,7 @@ Packages your app by generating a app.zip file using :
 $ edge_cli build
 ```
 
-Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the ZEDHub interface:
+Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the ZED Hub interface:
 
 - In your workspace, in the **Applications** section, click on **Create a new app** 
 - Get the .zip an Drag’n’Drop in the dedicated area
@@ -85,39 +85,39 @@ Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/app
 
 
 ## What you should see after deployment
-Make sure that the recordings are enable and that the privacy mode is disabled (Settings panel of your device, in the ZEDHub interface).
-As this app shows you most of the ZEDHub features, you will have:
+Make sure that the recordings are enabled and that the privacy mode is disabled (Settings panel of your device, in the ZED Hub interface).
+As this app shows you most of the ZED Hub features, you will have:
 - a **Custom Stream** that shows you the live video, with bbox around the detected people
 - **Logs** that informs you about the app's status
 - **Telemetries** that store data linked to the detections
 - **Video Events** that shows you the video on wich someone is detected
 
-The app also have several **parameters** that can be modified in the ZEDHub interface and will have an impact on the application.
+The app also have several **parameters** that can be modified in the ZED Hub interface and will have an impact on the application.
 
 ### Custom stream
 
-A video with Bboxes around people should be available in the **Video** panel
+A video with bounding boxes around people should be available in the **Video** panel
 ![](./images/od_live_view.png " ")
 
 
 ### Logs
-Some logs should inform you about the app status.
+The logs should inform you about the app status.
 ![](./images/od_logs.png " ")
 
 
 ### Telemetry
-Some telemetry containing data about detection should be available and generated every 10 seconds by default.
+The telemetries containing data about detection should be available and generated every 10 seconds by default.
 ![](./images/od_telemetry.png " ")
 
 
 
 ### Video Event
 
-A video is concidered as event if **at least on person is detected** in the image. Therefore if your app is running and that someone is seen by your ZED, you should see an Event in the Video Event panel corresponding to this situation.
+A video is considered as event if **at least on person is detected** in the image. Therefore if your app is running and that someone is seen by your ZED, you should see an Event in the Video Event panel corresponding to this situation.
 ![](./images/od_event.png " ")
 
 
-You can click on it. You have access the video and the stored data of the event. You have access to a longer video than the exact event duration ( you can watch a few seconds before and after the event). The blue line indicates which part of the video is associated to the event.
+You can click on it. You have access to the video and the stored data of the event. You have access to a longer video than the exact event duration ( you can watch a few seconds before and after the event). The blue line indicates which part of the video is associated with the event.
 
 ![](./images/event_panel.png " ")
 
@@ -127,14 +127,14 @@ Five parameters can be used to modify your app behaviour:
 
 - **Draw Bboxes**: If selected, will draw boxes around detected people in on the camera live view
 
-- **Enable Video Events**:  If selected some video Event will be recorded when someone will be detected on the video
+- **Enable Video Events**:  If selected some video Event will be recorded when someone is detected on the video
 
-- **Number of frames without det Btw 2 Events**:  Number of frames without detection between two video event: if no one is seen for the defined number of frame, next time that someone is detected a new event is defined instead of continuing previous event
+- **Number of frames without det Btw 2 Events**:  Number of frames without detection between two video events: if no one is seen for the defined number of frames, the next time that person is detected a new event is defined instead of continuing the previous event
 
 
 - **Record Telemetry**:   If selected, the app will send the number of people detected and other info as telemetry.
 
-- **Telemetry frequency**:   Telemetry frequency defined how often telemetry is generated by the app. Every 10 seconds by default.
+- **Telemetry frequency**:   Telemetry frequency defines how often telemetry is generated by the app. Every 10 seconds by default.
 
 ![](./images/od_params.png " ")
 
@@ -143,7 +143,7 @@ Five parameters can be used to modify your app behaviour:
 
 
 ### Parameters callback
-Some callback are defined and will be called when a parameter will be modified through the interface. The are used to modify the parameter value and to notifie that the change has been done.
+Some callbacks are defined and will be called when a parameter will be modified through the interface. The are used to modify the parameter value and notify that the change has been done.
 
 Callback for `draw_bboxes` parameter
 ```c++
@@ -166,7 +166,7 @@ The Object detection is enabled with `enableObjectDetection`. Note that the trac
     auto zed_error = p_zed->enableObjectDetection(obj_det_params);
 ```
 
-The detection is limited to PERSONN (meaning that the Vehicles for instance are ignore), the detection threshold is set to 50:
+The detection is limited to PERSON (meaning that the Vehicles for instance are ignore), the detection threshold is set to 50:
 
 ```c++
     // Object Detection runtime parameters : detect person only
@@ -186,11 +186,11 @@ The  parameters are associated to the callbacks that have been defined above. He
 
 ### Main loop
 
-Each time a frame is successfuly **grabbed**, the detected object are retrieve with the `retrieveObjects` function and strored in `objects`.
+Each time a frame is successfuly **grabbed**, the detected objects are retrieved by the `retrieveObjects` function and stored in `objects`.
 
-Then you will finf the features described in the tutorials:
+Then you will find the features described in the tutorials:
 
-- **Video event** are defined exactly in the same way than in `tutorial_07_video_event`
+- **Video events** are defined exactly in the same way than in `tutorial_07_video_event`
 
 ```c++
 sl::Timestamp current_ts = objects.timestamp;

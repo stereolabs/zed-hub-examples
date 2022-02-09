@@ -53,5 +53,11 @@ int main(int argc, char **argv) {
 	std::this_thread::sleep_for(1s);
     }
 
+    status_iot = IoTCloud::stop();
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Terminating error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     return 0;
 }

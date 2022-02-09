@@ -1,16 +1,16 @@
 # Tutorial 9 - MQTT Subscriber
 
-> **NOTE**: This tutorial should be runned with the tutorial 8 : **MQTT Subscriber**
+> **NOTE**: This tutorial should be run with the tutorial 8 : **MQTT Publisher**
 
 This tutorial shows you how to communicate between apps on the local network. It subscribes to a MQTT topics and send a log to notify that the messages have been received.
 
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_09_mqtt_subscriber)
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on **your ZEDHub workspace**. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on **your ZED Hub workspace**. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
@@ -52,14 +52,14 @@ Then to run your app :
 
 ## What you should see after deployment
 
-The app subscribe to the MQTT topic where the tutorial 8 (MQTT publisher) publishes: `/v1/local_network/my_custom_data`. A log is published each time a message is received. 
+The app subscribes to the MQTT topic where the tutorial 8 (MQTT publisher) publishes: `/v1/local_network/my_custom_data`. A log is published each time a message is received. 
 
 ![](./images/logs.png " ")
 
 
 ## Code overview
 The app must be **init** to be connected to the local Brocker.
-The app subscribe the topic `/v1/local_network/my_custom_data` composed of the topic prefix `/v1/local_network` and the topic name `my_custom_data`.
+The app subscribes to the topic `/v1/local_network/my_custom_data` composed of the topic prefix `/v1/local_network` and the topic name `my_custom_data`.
 When a message is received the callback `onDataReceived` is triggered.
 
 ```c++
@@ -71,7 +71,7 @@ if (sc != STATUS_CODE::SUCCESS) {
 }
 
 
-// Topic to be listen
+// Topic to listen
 TARGET topic_prefix = TARGET::LOCAL_NETWORK;
 std::string topic_name = "/my_custom_data";
 
@@ -79,7 +79,7 @@ std::string topic_name = "/my_custom_data";
 IoTCloud::subscribeToMqttTopic(topic_name, onDataReceived, topic_prefix);
 ```
 
-`onDataReceived` is defined as follow. Each time a mesasge is received, a log is sent and the message is also displayed in the runtime terminal.
+`onDataReceived` is defined as follows. Each time a message is received, a log is sent and the message is also displayed in the runtime terminal.
 
 ```c++
 void onDataReceived(std::string topic, std::string message, TARGET target, void* arg)

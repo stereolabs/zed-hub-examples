@@ -1,20 +1,20 @@
 # Tutorial 5 - Remote Function Calls
 
-This tutorial shows how to make an application containing a **remote function** that computes an addition called by a **remote function call**.
-This tutorial does not require a ZED to be runned.
+This tutorial shows how to make an application containing a **remote function** that computes an addition operation called by a **remote function call**.
+This tutorial does not require a ZED to be run.
 
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_05_remote_function_calls)
 
 #### What is a remote function call ?
-A **remote function call** is a call to a remote function **declared and register by a ZEDHub app**. The app described in this tutorial declares and registers the `additionCallback` remote function. 
+A **remote function call** is a call to a remote function **declared and registered by a ZED Hub app**. The app described in this tutorial declares and registers the `additionCallback` remote function. 
 The call to this function can be done from **any computer** connected to the internet, by using a **REST request**. The way to perform this request is explained later in this tutorial.
 
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on **your ZEDHub workspace**. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on **your ZED Hub workspace**. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZED Hub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
@@ -55,25 +55,25 @@ Then to run your app :
 ```
 
 ## What you should see after deployment
-The application in itself only define and register a **callback function** that can be called from anywhere if the app is running. Therefore there is not a lot to see in the ZEDHub interface. Make simply sure that your application has a **building** and finaly a **running status**.  
+The application in itself only defines and registers a **callback function** that can be called from anywhere if the app is running. Therefore there is not a lot to see in the ZED Hub interface. Make simply sure that your application has a **building** and finally a **running status**.  
 
 ### Call your remote function
-Before calling your remote function, you have to get the necessary values to use the REST API.
+Before calling your remote function, you have to get the necessary information and credentials to use the REST API.
 
-- Your **API token** that you can register from the **API panel** in ZEDHub. Get more informations in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/)
+- Your **API token** that you can register from the **API panel** in ZED Hub. Get more information in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/)
 
-- Your **region url** that you can get using the REST API in the ```/workspaces``` endpoint. Get more informations in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
+- Your **region url** that you can get using the REST API in the ```/workspaces``` endpoint. Get more information in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
 
-Exemple:
+Example:
 ```
 $ curl -s -H "Content-Type:application/json" -H "Authorization:Bearer ${your_token}" -X GET https://cloud.stereolabs.com/api/v1/workspaces
 
 ```
 
-- Your **workspace id** that you can get using the REST API in the ```/workspaces``` endpoint. Get more informations in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
+- Your **workspace id** that you can get using the REST API in the ```/workspaces``` endpoint. Get more information in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
 
 
-- Your **device id** that you can get using the REST API in the ```/workspaces/$workspace_id/devices``` endpoint. Get more informations in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/devices/)
+- Your **device id** that you can get using the REST API in the ```/workspaces/$workspace_id/devices``` endpoint. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/devices/)
 
 
 To call your remote function, simply use the script ```remote_function_call.sh``` that contains a REST request using curl with the given arguments with num1 and num2 as the numbers you want to use in your addition :
@@ -98,7 +98,7 @@ The `parameters` key of the json contained in the request contains the parameter
        }"
 ```
 
-You can get more informations about remote function calls in the [documentation](https://www.stereolabs.com/docs/cloud/remote-functions/call/).
+You can get more information about remote function calls in the [documentation](https://www.stereolabs.com/docs/cloud/remote-functions/call/).
 
 
 ## Code Overview
@@ -106,14 +106,14 @@ You can get more informations about remote function calls in the [documentation]
 In the C++ code, the app is connected to the cloud by using `IoTCloud::init`, as always.
 
 ### Register your callback function
-Then your remote function parameters are set. Basicly a name is given, `tuto05_add`, and the callback type is set.
+Then your remote function parameters are set. Basically a name is given, `tuto05_add`, and the callback type is set.
 Note that the callback type can be:
 
 - CALLBACK_TYPE::ON_REMOTE_CALL
 
 - CALLBACK_TYPE::ON_RESTART_CALL
 
-Then the remote function is register: the function `additionCallback` associated to the `callback_params` is registered by the cloud.
+Then the remote function is registered: the function `additionCallback` associated to the `callback_params` is registered by the cloud.
 
 ```c++
     CallbackParameters callback_params;
@@ -145,12 +145,12 @@ void myRemoteFunction(FunctionEvent& event) {
 
 ```
 
-The `getEvenParameters` function get the `parameters` json that as been field in the REST request that called the remote function.
+The `getEvenParameters` function retrieves the `parameters` json from the REST request that called the remote function.
 In our case params contains this json (5 and 10 are given as exemple):
 ```
 {
     "num1": 5, 
-	"num2": 10 
+    "num2": 10 
 }
 ```
 
@@ -181,7 +181,7 @@ In case of problem the status is set to 1.
 }
 ```
 
-So we finaly have the following remote function:
+So we finally have the following remote function:
 
 ```c++
 void additionCallback(FunctionEvent& event) {

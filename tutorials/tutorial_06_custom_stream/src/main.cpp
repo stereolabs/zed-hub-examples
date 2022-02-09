@@ -26,7 +26,6 @@ int main(int argc, char **argv) {
 
     //Open the ZED camera
     sl::InitParameters initParameters;
-    initParameters.input.setFromSVOFile("/home/abastie/Downloads/record_Jan_29_2021_09_00_AM.svo");
     initParameters.camera_resolution = RESOLUTION::HD720;
     initParameters.depth_mode = DEPTH_MODE::ULTRA;
 
@@ -70,6 +69,12 @@ int main(int argc, char **argv) {
     //Close the camera
     else if(p_zed->isOpened())
         p_zed->close();
+
+    status_iot = IoTCloud::stop();
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Terminating error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
     
     return 0;
 }

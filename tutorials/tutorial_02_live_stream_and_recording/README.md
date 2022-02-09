@@ -1,14 +1,14 @@
 # Tutorial 2 - Live Stream and Continuous Recording
 
-This tutorial shows how to deploy an application that starts a ZED camera and and sends the live stream to the ZEDHub interface. You will also be able to store the video on your device.  The recorded video will be available on the ZEDHub interface and downloadable. 
+This tutorial shows how to deploy an application that starts a ZED camera and sends the live stream to the ZED Hub interface. You will also be able to store the video on your device.  The recorded video will be available on the ZED Hub interface and downloadable. 
 
 [**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_02_live_stream_and_recording)
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on your ZEDHub workspace. The ZEDHub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZEDHub and created a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
@@ -51,12 +51,12 @@ Then to run your app :
 ```
 
 ## What you should see after deployment
-This app have two direct consequences in the CMP interface:
+This app have two direct consequences in the ZED Hub interface:
 - A live stream should be visible
 - The available recording should be listed
 
 ### Live video
-In the **Settings** panel of your device, make sure that the **Privacy mode** is disabled, otherwisethe video won't be visible.
+In the **Settings** panel of your device, make sure that the **Privacy mode** is disabled, otherwise the video won't be visible.
 
 If you click in the **Devices** panel  on the device where the app is deployed, you should see the live video (with a delay of a few seconds).
 
@@ -65,7 +65,7 @@ If you click in the **Devices** panel  on the device where the app is deployed, 
 
 ### Recordings
 
-In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**. It means that everything will be recorded. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **definitly erased**.
+In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**. It means that everything will be recorded. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **erased**.
 
 It is the only thing to do to start recording. The recordings are listed by hour and day in the **Video** panel of your device. 
 
@@ -74,9 +74,9 @@ It is the only thing to do to start recording. The recordings are listed by hour
 
 ## The Source Code explained
 
-This sample app starts a ZED and get every frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the concecutive position of your camera.  
+This sample app starts a ZED and retrieves every frame. Then, the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the consecutive position of your camera.  
 
-What exactly appends:
+What exactly happens:
 
 - Init IOT to enable communications with the cloud. Note that compared to tutorial 1 where no ZED was required, here the cloud is init with a ZED pointer p_zed.
 
@@ -102,7 +102,7 @@ What exactly appends:
 ```
 
 
-- In a While loop, grab a new frame and call `IoTCloud::refresh()`. Note that the `refresh` is responsible for both **live stream** and **recording**. The image sent correspond of course to the image grabed, so to current frame.
+- In a While loop, grab a new frame and call `IoTCloud::refresh()`. Note that the `refresh` is responsible for both **live stream** and **recording**. The sent image corresponds of course to the grabbed image, so to current frame.
 
 
 ```cpp
@@ -121,4 +121,4 @@ What exactly appends:
 
 ## Custom stream
 
-The CMP support custom stream, meaning you can send as live video the video of your choice. Have a look to **tutorial_06_custom_stream** to learn more about this feature.
+The ZED Hub supports custom streams, meaning you can send as live video the video of your choice. Take a look at **tutorial_06_custom_stream** to learn more about this feature.
