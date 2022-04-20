@@ -42,7 +42,9 @@ int main(int argc, char **argv) {
         status_zed = p_zed->grab();
         if (status_zed != ERROR_CODE::SUCCESS) break;
         
-        // Insert custom code here
+        // Do what you want with the data from the camera.
+        // For examples of what you can do with the zed camera, visit https://github.com/stereolabs/zed-examples
+            
 
         // Always refresh IoT at the end of the grab loop
         IoTCloud::refresh();
@@ -55,10 +57,11 @@ int main(int argc, char **argv) {
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
-    //Close the camera
+    // Close the camera
     else if(p_zed->isOpened())
         p_zed->close();
 
+    // Close the communication with zed hub properly.
     status_iot = IoTCloud::stop();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;

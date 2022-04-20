@@ -24,29 +24,40 @@ import time
 
 
 def main():
-    # initialize the communication to zed hub, without a zed camera. 
-    status = sliot.IoTCloud.init_no_zed("basic app")
+    # initialize the communication to zed hub, with a zed camera.
+    zed = sl.Camera() 
+    status = sliot.IoTCloud.init("streaming_app", zed)
+
     if status != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status)
         exit()
 
-    # set log level
-    sliot.IoTCloud.set_log_level_threshold(
-        sliot.LOG_LEVEL.INFO, sliot.LOG_LEVEL.INFO)
+    # Open the zed camera
+    init_params = sl.InitParameters()
+    init_params.camera_resolution = sl.RESOLUTION.HD2K
+    init_params.depth_mode = sl.DEPTH_MODE.NONE
     
-    # send a log
-    sliot.IoTCloud.log("Initialization succeeded", sliot.LOG_LEVEL.INFO)
+    status = zed.open(init_params)
 
-    # is your application connected to the cloud ?
-    if sliot.IoTCloud.is_initialized() == sliot.STATUS_CODE.SUCCESS:
-        sliot.IoTCloud.log("Application connected", sliot.LOG_LEVEL.INFO)
+    if status != sl.ERROR_CODE.SUCCESS:
+        sliot.IoTCloud.log("Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
+        exit(1)
 
-    # main loop : send a log every 15 secs
-    i = 0
-    while i < 10:
-        sliot.IoTCloud.log("Log " + str(i) + " sent.", sliot.LOG_LEVEL.INFO)
-        time.sleep(15)
-        i = i + 1
+    # Main loop
+    while True:
+        status_zed = zed.grab()
+        if status == sl.ERROR_CODE.SUCCESS:
+
+            # Do what you want with the data from the camera.
+            # For examples of what you can do with the zed camera, visit https://github.com/stereolabs/zed-examples
+            
+            # Ini the end of a grab(), always call a refresh() on the cloud.
+            sliot.IoTCloud.refresh()
+        else:
+            break
+
+    if zed.is_opened():
+        zed.close()
 
     # Close the communication with zed hub properly.
     status = sliot.IoTCloud.stop()
