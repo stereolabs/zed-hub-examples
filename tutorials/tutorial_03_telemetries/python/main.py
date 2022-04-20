@@ -35,26 +35,56 @@ def main():
     # Open the zed camera
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.HD2K
-    init_params.depth_mode = sl.DEPTH_MODE.NONE
     
     status = zed.open(init_params)
-
     if status != sl.ERROR_CODE.SUCCESS:
         sliot.IoTCloud.log("Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
         exit(1)
+
+    # Enable the positionnal tracking and setup the loop
+    positionnal_tracking_params = sl.PositionalTrackingParameters()
+    positionnal_tracking_params.enable_area_memory = True
+    status = zed.enable_positional_tracking(positionnal_tracking_params)
+    if status != sl.ERROR_CODE.SUCCESS:
+        sliot.IoTCloud.log("Enabling positional tracking failed : " + str(status), sliot.LOG_LEVEL.ERROR)
+        exit(1)    
+
+    cam_pose = sl.Pose()
+    runtime_parameters = sl.RuntimeParameters()
+    runtime_parameters.measure3D_reference_frame = sl.REFERENCE_FRAME.WORLD
+    previous_timestamp = sl.Timestamp()
+    previous_timestamp.set_milliseconds(0)
 
     # Main loop
     while True:
         status_zed = zed.grab()
         if status == sl.ERROR_CODE.SUCCESS:
 
-            # Do what you want with the data from the camera.
-            # For examples of what you can do with the zed camera, visit https://github.com/stereolabs/zed-examples
-            
+            # Collect data
+            current_timestamp = zed.get_timestamp(sl.TIME_REFERENCE.IMAGE)
+            if current_timestamp.get_milliseconds() >= previous_timestamp.get_milliseconds():
+                zed.get_position(cam_pose)
+                translation = cam_pose.get_translation()
+                rot = cam_pose.get_rotation_vector()
+
+            # Send the telemetry
+            position_telemetry = {}
+            position_telemetry["tx"] = translation.get()[0]
+            position_telemetry["ty"] = translation.get()[1]
+            position_telemetry["tz"] = translation.get()[2]
+            position_telemetry["rx"] = rot[0]
+            position_telemetry["ry"] = rot[1]
+            position_telemetry["rz"] = rot[2]
+
+            sliot.IoTCloud.send_telemetry("camera_position", position_telemetry)
+            previous_timestamp = current_timestamp
+
             # In the end of a grab(), always call a refresh() on the cloud.
             sliot.IoTCloud.refresh()
         else:
             break
+
+    zed.disable_positional_tracking()
 
     if zed.is_opened():
         zed.close()
