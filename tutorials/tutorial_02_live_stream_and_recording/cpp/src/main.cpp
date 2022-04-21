@@ -23,7 +23,7 @@
 #include <chrono>
 
 #include <sl/Camera.hpp>
-#include <sl_iot/IoTCloud.hpp>
+#include <sl_iot/HubClient.hpp>
 #include <csignal>
 
 using namespace std;
@@ -38,11 +38,12 @@ int main(int argc, char **argv) {
     p_zed.reset(new sl::Camera());
 
     STATUS_CODE status_iot;
-    status_iot = IoTCloud::init("streaming_app", p_zed);
+    status_iot = HubClient::connect("streaming_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initiliazation error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
+    HubClient::registerCamera(p_zed);
  
     //Open the ZED camera
     sl::InitParameters initParameters;
@@ -51,13 +52,14 @@ int main(int argc, char **argv) {
 
     sl::ERROR_CODE status_zed = p_zed->open(initParameters);
     if (status_zed != ERROR_CODE::SUCCESS) {
-        IoTCloud::log("Camera initialization error : "\
+        HubClient::sendLog("Camera initialization error : "\
          + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         exit(EXIT_FAILURE);
     }
 
+    int i = 0;
     // Main loop
-    while (true) {
+    while (i<=100) {
         // Grab a new frame from the ZED
         status_zed = p_zed->grab();
         if (status_zed != ERROR_CODE::SUCCESS) break;
@@ -67,12 +69,13 @@ int main(int argc, char **argv) {
             
 
         // Always refresh IoT at the end of the grab loop
-        IoTCloud::refresh();
+        HubClient::update();
+        i++;
     }
 
     // Handling camera error
     if(status_zed != ERROR_CODE::SUCCESS){
-        IoTCloud::log("Grab failed, restarting camera. "+\
+        HubClient::sendLog("Grab failed, restarting camera. "+\
         std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
@@ -82,11 +85,19 @@ int main(int argc, char **argv) {
         p_zed->close();
 
     // Close the communication with zed hub properly.
-    status_iot = IoTCloud::stop();
+    status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
+        exit(EXIT_FAILURE); 
+    }
+
+    status_iot = HubClient::connect("streaming_app");
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Initiliazation error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
+    std::cout << "Goood " << status_iot << std::endl;
+
     
     return 0;
 }
