@@ -25,31 +25,31 @@ import time
 
 def main():
     # initialize the communication to zed hub, without a zed camera. 
-    status = sliot.IoTCloud.init_no_zed("basic app")
+    status = sliot.HubClient.connect("basic app")
     if status != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status)
         exit()
 
     # set log level
-    sliot.IoTCloud.set_log_level_threshold(
+    sliot.HubClient.set_log_level_threshold(
         sliot.LOG_LEVEL.INFO, sliot.LOG_LEVEL.INFO)
     
     # send a log
-    sliot.IoTCloud.log("Initialization succeeded", sliot.LOG_LEVEL.INFO)
+    sliot.HubClient.send_log("Initialization succeeded", sliot.LOG_LEVEL.INFO)
 
     # is your application connected to the cloud ?
-    if sliot.IoTCloud.is_initialized() == sliot.STATUS_CODE.SUCCESS:
-        sliot.IoTCloud.log("Application connected", sliot.LOG_LEVEL.INFO)
+    if sliot.HubClient.is_connected() == sliot.STATUS_CODE.SUCCESS:
+        sliot.HubClient.send_log("Application connected", sliot.LOG_LEVEL.INFO)
 
     # main loop : send a log every 15 secs
     i = 0
     while i < 10:
-        sliot.IoTCloud.log("Log " + str(i) + " sent.", sliot.LOG_LEVEL.INFO)
+        sliot.HubClient.send_log("Log " + str(i) + " sent.", sliot.LOG_LEVEL.INFO)
         time.sleep(15)
         i = i + 1
 
     # Close the communication with zed hub properly.
-    status = sliot.IoTCloud.stop()
+    status = sliot.HubClient.disconnect()
     if status != sliot.STATUS_CODE.SUCCESS:
         print("Terminating error ", status)
         exit()

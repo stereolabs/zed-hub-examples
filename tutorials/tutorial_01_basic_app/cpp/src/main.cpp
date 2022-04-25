@@ -22,7 +22,7 @@
 #include <string.h>
 #include <chrono>
 
-#include <sl_iot/IoTCloud.hpp>
+#include <sl_iot/HubClient.hpp>
 
 using namespace std;
 using namespace sl;
@@ -33,32 +33,40 @@ int main(int argc, char **argv) {
 
     // initialize the communication to zed hub, without a zed camera. 
     STATUS_CODE status_iot;
-    status_iot = IoTCloud::initNoZED("basic_app");
+    status_iot = HubClient::connect("basic_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
+    string s = "";
+    status_iot = HubClient::getDeviceName(s);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "name error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    std::cout << "name : " << s << std::endl;
+
     //Set log level
-    IoTCloud::setLogLevelThreshold(LOG_LEVEL::INFO,LOG_LEVEL::INFO);
+    HubClient::setLogLevelThreshold(LOG_LEVEL::INFO,LOG_LEVEL::INFO);
      
     //Send a log
-    IoTCloud::log("Initialization succeeded",LOG_LEVEL::INFO);
+    HubClient::sendLog("Initialization succeeded",LOG_LEVEL::INFO);
 
     //Is your application connected to the cloud ?
-    if (IoTCloud::isInitialized()==STATUS_CODE::SUCCESS)
-        IoTCloud::log("Application connected",LOG_LEVEL::INFO);
+    if (HubClient::isConnected()==STATUS_CODE::SUCCESS)
+        HubClient::sendLog("Application connected",LOG_LEVEL::INFO);
 
     // Main loop : Sent a log to the cloud every 15s
     int i = 0;
     while (true) {
-        IoTCloud::log("Log "+std::to_string(i)+" sent.",LOG_LEVEL::INFO);
+        HubClient::sendLog("Log "+std::to_string(i)+" sent.",LOG_LEVEL::INFO);
         std::this_thread::sleep_for(15s);
         i++;
     }
 
     // Close the communication with zed hub properly.
-    status_iot = IoTCloud::stop();
+    status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);

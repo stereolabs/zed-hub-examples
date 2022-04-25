@@ -26,23 +26,30 @@ import time
 def main():
     # initialize the communication to zed hub, with a zed camera.
     zed = sl.Camera() 
-    status = sliot.IoTCloud.init("streaming_app", zed)
+    status = sliot.HubClient.connect("streaming_app")
 
     if status != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status)
         exit()
 
+    status = sliot.HubClient.register_camera(zed)
+    if status != sliot.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status)
+        exit()
+
     # Open the zed camera
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.HD2K
-    init_params.depth_mode = sl.DEPTH_MODE.NONE
+    init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE
     
     status = zed.open(init_params)
 
     if status != sl.ERROR_CODE.SUCCESS:
-        sliot.IoTCloud.log("Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
+        sliot.HubClient.send_log("Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
+    depth = sl.Mat()
+    
     # Main loop
     while True:
         status_zed = zed.grab()
@@ -50,9 +57,22 @@ def main():
 
             # Do what you want with the data from the camera.
             # For examples of what you can do with the zed camera, visit https://github.com/stereolabs/zed-examples
+
+            # For example, you can retrieve a depth image.
+            zed.retrieve_measure(depth, sl.MEASURE.DEPTH);
+
+            # Always update IoT at the end of the grab loop
+            # sliot.HubClient.update();
             
-            # In the end of a grab(), always call a refresh() on the cloud.
-            sliot.IoTCloud.refresh()
+            zed.retrieve_image(depth, sl.VIEW.DEPTH)
+            update = sliot.HubClient.update(depth)
+            
+
+            # If you don't need an image, send update()
+            # It will send the default image and update the cloud.
+            # sliot.HubClient.update()
+
+
         else:
             break
 
@@ -60,7 +80,7 @@ def main():
         zed.close()
 
     # Close the communication with zed hub properly.
-    status = sliot.IoTCloud.stop()
+    status = sliot.HubClient.disconnect()
     if status != sliot.STATUS_CODE.SUCCESS:
         print("Terminating error ", status)
         exit()

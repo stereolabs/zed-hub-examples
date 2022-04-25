@@ -86,7 +86,9 @@ What exactly happens:
     p_zed.reset(new sl::Camera());
 
     //Init sl_iot
-    STATUS_CODE status_iot = IoTCloud::init("streaming_app", p_zed);
+    STATUS_CODE status_iot = HubClient::connect("streaming_app");
+    STATUS_CODE status_iot_registreation = HubClient::registerCamera(p_zed);
+    
 ```
 
 
@@ -102,7 +104,7 @@ What exactly happens:
 ```
 
 
-- In a While loop, grab a new frame and call `IoTCloud::refresh()`. Note that the `refresh` is responsible for both **live stream** and **recording**. The sent image corresponds of course to the grabbed image, so to current frame.
+- In a While loop, grab a new frame and call `HubClient::update()`. Note that the `update` is responsible for both **live stream** and **recording**. The sent image corresponds of course to the grabbed image, so to current frame.
 
 
 ```cpp
@@ -114,8 +116,8 @@ What exactly happens:
         
         // Insert custom code here
 
-        // Always refresh IoT at the end of the grab loop
-        IoTCloud::refresh();
+        // Always update IoT at the end of the grab loop
+        HubClient::update();
     }
 ```
 

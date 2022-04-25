@@ -31,33 +31,48 @@ using namespace sl;
 using namespace sl_iot;
 using json = sl_iot::json;
 
+bool led_status_updated = false;
+
+//Callback on led status update, it sets a boolean to true to turn off/on the led status in the main  loop.
+void onLedStatusUpdate(FunctionEvent &event) {
+    event.status = 0;
+    led_status_updated = true;
+    std::cout << "Led Status updated !" << std::endl;
+}
 
 int main(int argc, char **argv) {
-    // initialize the communication to zed hub, with a zed camera.
+    // Create camera object
     std::shared_ptr<sl::Camera> p_zed;
     p_zed.reset(new sl::Camera());
 
     STATUS_CODE status_iot;
-    status_iot = HubClient::connect("streaming_app");
+    status_iot = HubClient::connect("parameter_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initiliazation error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
-    HubClient::registerCamera(p_zed);
- 
-    //Open the ZED camera
-    sl::InitParameters initParameters;
-    initParameters.camera_resolution = RESOLUTION::HD2K;
-    initParameters.depth_mode = DEPTH_MODE::PERFORMANCE;
 
-    sl::ERROR_CODE status_zed = p_zed->open(initParameters);
-    if (status_zed != ERROR_CODE::SUCCESS) {
-        HubClient::sendLog("Camera initialization error : "\
-         + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+    status_iot = HubClient::registerCamera(p_zed);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    sl::Mat depth;
+    //Open the ZED camera
+    sl::InitParameters initParameters;
+    initParameters.camera_resolution = RESOLUTION::HD2K;
+    initParameters.depth_mode = DEPTH_MODE::NONE;
+
+    sl::ERROR_CODE status_zed = p_zed->open(initParameters);
+    if (status_zed != ERROR_CODE::SUCCESS) {
+        HubClient::sendLog("Camera initialization error : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        exit(EXIT_FAILURE);
+    }
+
+    //Set your parameter callback
+    CallbackParameters callback_param_led;
+    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    HubClient::registerFunction(onLedStatusUpdate, callback_param_led);
 
     // Main loop
     while (true) {
@@ -65,45 +80,33 @@ int main(int argc, char **argv) {
         status_zed = p_zed->grab();
         if (status_zed != ERROR_CODE::SUCCESS) break;
         
-        // Do what you want with the data from the camera.
-        // For examples of what you can do with the zed camera, visit https://github.com/stereolabs/zed-examples
-        // For example, you can retrieve a depth image.
-        // p_zed->retrieveImage(depth, VIEW::DEPTH);
+        if (led_status_updated) {
+            int curr_led_status = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS);
+            bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, curr_led_status);
+            p_zed->setCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, led_status);
+            HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, led_status);
+            led_status_updated = false;
+        }
 
         // Always update IoT at the end of the grab loop
-        // HubClient::update(depth);
-
-        // If you don't need an image, send update()
-        // It will send the default image and update the cloud.
         HubClient::update();
-
     }
 
     // Handling camera error
     if(status_zed != ERROR_CODE::SUCCESS){
-        HubClient::sendLog("Grab failed, restarting camera. "+\
-        std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        HubClient::sendLog("Grab failed, restarting camera. "+std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
-    // Close the camera
+    //Close the camera
     else if(p_zed->isOpened())
         p_zed->close();
 
-    // Close the communication with zed hub properly.
     status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
-        exit(EXIT_FAILURE); 
-    }
-
-    status_iot = HubClient::connect("streaming_app");
-    if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "Initiliazation error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
-    std::cout << "Goood " << status_iot << std::endl;
-
     
     return 0;
 }

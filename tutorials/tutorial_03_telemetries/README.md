@@ -98,7 +98,7 @@ What exactly happens:
 
 ```
 
-- Store the camera position inside a json and call `IoTCloud::sendTelemetry` 
+- Store the camera position inside a json and call `HubClient::sendTelemetry` 
 A label is specified as follows `sendTelemetry(std::string label, json& value)`. It allows to improve the log consultation in the ZEDHub interface as it is possible to sort them by label.
 
 ```
@@ -110,15 +110,15 @@ A label is specified as follows `sendTelemetry(std::string label, json& value)`.
     position_telemetry["rx"] = rotation_vector.x;
     position_telemetry["ry"] = rotation_vector.y;
     position_telemetry["rz"] = rotation_vector.z;
-    IoTCloud::sendTelemetry("camera_position", position_telemetry);
+    HubClient::sendTelemetry("camera_position", position_telemetry);
     prev_timestamp = curr_timestamp;
 ```
 
-- Call IoTCloud::Refresh in order to send the current image to the cloud
+- Call HubClient::update in order to send the current image to the cloud
 (See tutorial_02_live_stream_and_recording  README for more information)
 
 ```  
-    // Always refresh IoT at the end of the grab loop
-    IoTCloud::refresh();
+    // Always update IoT at the end of the grab loop
+    HubClient::update();
     sleep_ms(1);
 ```

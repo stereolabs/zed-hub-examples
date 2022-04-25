@@ -23,7 +23,7 @@
 #include <chrono>
 
 #include <sl/Camera.hpp>
-#include <sl_iot/IoTCloud.hpp>
+#include <sl_iot/HubClient.hpp>
 #include <csignal>
 
 using namespace std;
@@ -38,9 +38,15 @@ int main(int argc, char **argv) {
     p_zed.reset(new sl::Camera());
 
     STATUS_CODE status_iot;
-    status_iot = IoTCloud::init("telemetry_app", p_zed);
+    status_iot = HubClient::connect("telemetry_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initiliazation error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    status_iot = HubClient::registerCamera(p_zed);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
     
@@ -50,7 +56,7 @@ int main(int argc, char **argv) {
 
     sl::ERROR_CODE status_zed = p_zed->open(initParameters);
     if (status_zed != ERROR_CODE::SUCCESS) {
-        IoTCloud::log("Camera initialization error : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        HubClient::sendLog("Camera initialization error : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         exit(EXIT_FAILURE);
     }
 
@@ -59,7 +65,7 @@ int main(int argc, char **argv) {
     positional_tracking_param.enable_area_memory = true;
     status_zed = p_zed->enablePositionalTracking(positional_tracking_param);
     if (status_zed != ERROR_CODE::SUCCESS) {
-        IoTCloud::log("Enabling positional tracking failed : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        HubClient::sendLog("Enabling positional tracking failed : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         exit(EXIT_FAILURE);
     }
 
@@ -88,21 +94,21 @@ int main(int argc, char **argv) {
             position_telemetry["rx"] = rotation_vector.x;
             position_telemetry["ry"] = rotation_vector.y;
             position_telemetry["rz"] = rotation_vector.z;
-            IoTCloud::sendTelemetry("camera_position", position_telemetry);
+            HubClient::sendTelemetry("camera_position", position_telemetry);
             prev_timestamp = curr_timestamp;
         }
 
         // Insert custom code here
 
-        // Always refresh IoT at the end of the grab loop
-        IoTCloud::refresh();
+        // Always update IoT at the end of the grab loop
+        HubClient::update();
         sleep_ms(1);
     }
 
     p_zed->disablePositionalTracking();
     // Handling camera error
     if(status_zed != ERROR_CODE::SUCCESS){
-        IoTCloud::log("Grab failed, restarting camera. "+std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        HubClient::sendLog("Grab failed, restarting camera. "+std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
@@ -110,7 +116,7 @@ int main(int argc, char **argv) {
     else if(p_zed->isOpened())
         p_zed->close();
     
-    status_iot = IoTCloud::stop();
+    status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
