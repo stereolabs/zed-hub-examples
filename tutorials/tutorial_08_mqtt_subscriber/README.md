@@ -64,9 +64,15 @@ When a message is received the callback `onDataReceived` is triggered.
 
 ```c++
 //Init sl_iot
-STATUS_CODE sc = IoTCloud::init(val, p_zed);
+STATUS_CODE sc = HubClient::connect(val);
 if (sc != STATUS_CODE::SUCCESS) {
-    IoTCloud::log("Failed to Init Cloud", LOG_LEVEL::ERROR);
+    HubClient::sendLog("Failed to Init Cloud", LOG_LEVEL::ERROR);
+    exit(EXIT_FAILURE);
+}
+
+sc = HubClient::registerCamera(p_zed);
+if (status_iot != STATUS_CODE::SUCCESS) {
+    HubClient::sendLog("Failed to register the camera", LOG_LEVEL::ERROR);
     exit(EXIT_FAILURE);
 }
 
@@ -76,7 +82,7 @@ TARGET topic_prefix = TARGET::LOCAL_NETWORK;
 std::string topic_name = "/my_custom_data";
 
 //
-IoTCloud::subscribeToMqttTopic(topic_name, onDataReceived, topic_prefix);
+HubClient::subscribeToMqttTopic(topic_name, onDataReceived, topic_prefix);
 ```
 
 `onDataReceived` is defined as follows. Each time a message is received, a log is sent and the message is also displayed in the runtime terminal.
@@ -87,6 +93,6 @@ void onDataReceived(std::string topic, std::string message, TARGET target, void*
     std::cout << "Message received !" << std::endl;
     json my_raw_data = json::parse(message);
     std::cout << "My received message : " << my_raw_data << std::endl;
-    IoTCloud::log("MQTT message received on topic " + topic,LOG_LEVEL::INFO); 
+    HubClient::sendLog("MQTT message received on topic " + topic,LOG_LEVEL::INFO); 
 }
 ```

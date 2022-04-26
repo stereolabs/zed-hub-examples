@@ -26,10 +26,6 @@ import paho.mqtt.client as mqttClient
 import os
 import json
 
-led_status_updated = False
-global mqtt
-
-
 class slMqttClient:
     def __init__(self):
         f = open('/usr/local/sl_iot/settings/env.json')

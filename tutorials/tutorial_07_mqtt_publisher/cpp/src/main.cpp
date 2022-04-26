@@ -2,7 +2,7 @@
 #include <string.h>
 #include <chrono>
 
-#include <sl_iot/IoTCloud.hpp>
+#include <sl_iot/HubClient.hpp>
 #include <csignal>
 #include <ctime>
 
@@ -15,7 +15,7 @@ using json = sl_iot::json;
 int main(int argc, char **argv) {
 
     STATUS_CODE status_iot;
-    status_iot = IoTCloud::initNoZed("mqtt_pub_app");
+    status_iot = HubClient::connect("mqtt_pub_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initiliazation error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
@@ -34,13 +34,13 @@ int main(int argc, char **argv) {
         my_message_js["my_custom data"] = 54;
         my_message_js["timestamp"] = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
 
-        IoTCloud::publishOnMqttTopic(topic_name, my_message_js, topic_prefix);
-        IoTCloud::log("MQTT message published", LOG_LEVEL::INFO);
+        HubClient::publishOnMqttTopic(topic_name, my_message_js, topic_prefix);
+        HubClient::sendLog("MQTT message published", LOG_LEVEL::INFO);
 
         sleep_ms(10000); // 10 seconds
     }
 
-    status_iot = IoTCloud::stop();
+    status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);

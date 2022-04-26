@@ -2,7 +2,7 @@
 #include <string.h>
 #include <chrono>
 
-#include <sl_iot/IoTCloud.hpp>
+#include <sl_iot/HubClient.hpp>
 #include <csignal>
 #include <ctime>
 
@@ -17,14 +17,14 @@ void onDataReceived(std::string topic, std::string message, TARGET target, void*
     std::cout << "Message received !" << std::endl;
     json my_raw_data = json::parse(message);
     std::cout << "My received message : " << my_raw_data << std::endl;
-    IoTCloud::log("MQTT message received on topic " + topic,LOG_LEVEL::INFO); 
+    HubClient::sendLog("MQTT message received on topic " + topic,LOG_LEVEL::INFO); 
 }
 
 
 int main(int argc, char **argv) {
 
     STATUS_CODE status_iot;
-    status_iot = IoTCloud::initNoZed("basic_app");
+    status_iot = HubClient::connect("basic_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initiliazation error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
     std::string topic_name = "/my_custom_data";
 
     //
-    IoTCloud::subscribeToMqttTopic(topic_name, onDataReceived, topic_prefix);
+    HubClient::subscribeToMqttTopic(topic_name, onDataReceived, topic_prefix);
 
     // Main loop
     while (true) {
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
         sleep_ms(1000);
     }
 
-    status_iot = IoTCloud::stop();
+    status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);

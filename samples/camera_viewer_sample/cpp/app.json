@@ -1,5 +1,5 @@
 {
-    "name": "Camera Viewer Sample",
+    "name": "Camera Viewer CLIV2",
     "description": "An application that opens the camera to provide streaming and recording capabilities. This sample is based on the default Camera Viewer app that is automatically deployed on all devices.",
      "release":{
         "name": "1.0.0",

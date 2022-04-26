@@ -71,10 +71,10 @@ You can click on it. You have access to the video and the stored data of the eve
 ![](./images/event_visualisation.png " ")
 
 
-## Code overview
+## Code overview - C++
 
 ### Initialisation
-As usual, the app is init with `IoTCloud::init` and the ZED is started with  the ZED SDK `open` function.
+As usual, the app is init with `HubClient::init` and the ZED is started with  the ZED SDK `open` function.
 The Object detection is enabled with `enableObjectDetection`.Note that the tracking is required to use it (`enablePositionalTracking` must be called).
 
 ```c++
@@ -102,8 +102,8 @@ Each time a frame is successfuly **grabbed**, the detected object are retrieved 
 
 Remember that the frame is part of an event as soon as **at least one person is detected**. However a **second rule** is necessary to **distinguish one event from an other**. Once again, this rule depends on how you define it. In this tutorial we decided to define a new event as soon as **no one has been seen for 10 frames**. 
 
-A frame is defined as part of a videoEvent if the `IoTCloud::startVideoEvent` is called with the **corresponding timestamp**.
-** Note** that you should not define a new Video event each time you call `IoTCloud::addVideoEvent` but you should extend the current one by calling `IoTCloud::updateVideoEvent` by using the same `event.reference`.
+A frame is defined as part of a videoEvent if the `HubClient::startVideoEvent` is called with the **corresponding timestamp**.
+** Note** that you should not define a new Video event each time you call `HubClient::addVideoEvent` but you should extend the current one by calling `HubClient::updateVideoEvent` by using the same `event.reference`.
 
 ```c++
     EventParameters event_params;
@@ -115,9 +115,9 @@ A frame is defined as part of a videoEvent if the `IoTCloud::startVideoEvent` is
     event2send["nb_detected_personn"] = objects.object_list.size();
 
     if (new_event)
-        IoTCloud::startVideoEvent(event_label, event2send, event_params);
+        HubClient::startVideoEvent(event_label, event2send, event_params);
     else
-        IoTCloud::updateVideoEvent(event_label, event2send, event_params);
+        HubClient::updateVideoEvent(event_label, event2send, event_params);
 
 
 ```

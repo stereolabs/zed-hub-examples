@@ -59,9 +59,15 @@ First the app must be **Init**. It allows to connect the app to the local brocke
 ```c++
     //Init sl_iot
     const char * application_token = ::getenv("SL_APPLICATION_TOKEN");
-    STATUS_CODE status_iot = IoTCloud::init(application_token);
+    STATUS_CODE status_iot = HubClient::connect(application_token);
     if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "IoTCloud " << status_iot << std::endl;
+        std::cout << "HubClient " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    status_iot = HubClient::registerCamera(p_zed);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 ```
@@ -83,7 +89,7 @@ Finally a message is sent every 10 seconds
         my_message_js["my_custom data"] = 54;
         my_message_js["timestamp"] = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
 
-        IoTCloud::publishOnMqttTopic(topic_name, my_message_js, topic_prefix);
+        HubClient::publishOnMqttTopic(topic_name, my_message_js, topic_prefix);
         sleep_ms(10000); // 10 seconds
     }
 ```

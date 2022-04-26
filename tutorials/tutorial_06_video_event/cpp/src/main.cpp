@@ -3,7 +3,7 @@
 #include <chrono>
 
 #include <sl/Camera.hpp>
-#include <sl_iot/IoTCloud.hpp>
+#include <sl_iot/HubClient.hpp>
 #include <csignal>
 
 using namespace std;
@@ -19,9 +19,15 @@ int main(int argc, char **argv) {
 
 
     //Init sl_iot
-    STATUS_CODE status_iot = IoTCloud::init("event_app", p_zed);
+    STATUS_CODE status_iot = HubClient::connect("event_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "IoTCloud " << status_iot << std::endl;
+        std::cout << "HubClient " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    
+    status_iot = HubClient::registerCamera(p_zed);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
     
@@ -32,7 +38,7 @@ int main(int argc, char **argv) {
 
     sl::ERROR_CODE status_zed = p_zed->open(initParameters);
     if (status_zed != ERROR_CODE::SUCCESS) {
-        IoTCloud::log("Camera initialization error : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        HubClient::sendLog("Camera initialization error : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         exit(EXIT_FAILURE);
     }
 
@@ -107,12 +113,14 @@ int main(int argc, char **argv) {
             event2send["nb_detected_personn"] = objects.object_list.size();
 
             if (new_event || !first_event_sent) {
-                IoTCloud::startVideoEvent(event_label, event2send, event_params);
+                HubClient::startVideoEvent(event_label, event2send, event_params);
                 first_event_sent = true;
+                std::cout << "Event started" << std::endl;
             }
             else {
-                IoTCloud::updateVideoEvent(event_label, event2send, event_params);
-            }
+                HubClient::updateVideoEvent(event_label, event2send, event_params);
+                std::cout << "Event updated" << std::endl;
+}
             counter_no_detection = 0; //reset counter as someone as been detected
             last_ts = current_ts;
         }
@@ -121,13 +129,13 @@ int main(int argc, char **argv) {
         }
         /*******************************/
 
-        // Always refresh IoT at the end of the grab loop
-        IoTCloud::refresh();
+        // Always update IoT at the end of the grab loop
+        HubClient::update();
     }
 
     // Handling camera error
     if(status_zed != ERROR_CODE::SUCCESS){
-        IoTCloud::log("Grab failed, restarting camera. "+std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        HubClient::sendLog("Grab failed, restarting camera. "+std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
@@ -135,7 +143,7 @@ int main(int argc, char **argv) {
     else if(p_zed->isOpened())
         p_zed->close();
 
-    status_iot = IoTCloud::stop();
+    status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
