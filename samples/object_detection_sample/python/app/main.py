@@ -191,20 +191,6 @@ def main():
     sliot.HubClient.load_application_parameters("parameters.json")
     mqtt = slMqttClient()
 
-    # MQTT subscription
-    # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
-    # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
-    mqtt.subscribe_callback("draw_bboxes", "on_display_parameters_update",
-                            sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
-    mqtt.subscribe_callback(
-        "recordVideoEvent", "on_video_event_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
-    mqtt.subscribe_callback(
-        "nbFramesNoDetBtw2Events", "on_video_event_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
-    mqtt.subscribe_callback(
-        "recordTelemetry", "on_telemetry_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
-    mqtt.subscribe_callback(
-        "telemetryFreq", "on_telemetry_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
-
     recordVideoEvent = True
     nbFramesNoDetBtw2Events = 30  # number of frame
     recordTelemetry = True
@@ -258,6 +244,7 @@ def main():
             "Object detection initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
+    # Setup callback for parameters
     # Object Detection runtime parameters : detect person only
     # see  the ZED Doc for the other available classes https://www.stereolabs.com/docs/api/group__Object__group.html#ga13b0c230bc8fee5bbaaaa57a45fa1177
     object_detection_runtime_params = sl.ObjectDetectionRuntimeParameters()
@@ -269,10 +256,22 @@ def main():
     runtime_params = sl.RuntimeParameters()
     runtime_params.measure3D_reference_frame = sl.REFERENCE_FRAME.CAMERA
 
-    # get values defined by the ZED HUB interface.
-    # Last argument is default value in case of failuredraw_bboxes = sliot.HubClient.get_parameter_bool("draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION, draw_bboxes)
     # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
     # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
+    mqtt.subscribe_callback("draw_bboxes", "on_display_parameters_update",
+                            sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+    mqtt.subscribe_callback(
+        "recordVideoEvent", "on_video_event_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+    mqtt.subscribe_callback(
+        "nbFramesNoDetBtw2Events", "on_video_event_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+    mqtt.subscribe_callback(
+        "recordTelemetry", "on_telemetry_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+    mqtt.subscribe_callback(
+        "telemetryFreq", "on_telemetry_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+
+    # get values defined by the ZED HUB interface.
+    # Last argument is default value in case of failuredraw_bboxes = sliot.HubClient.get_parameter_bool("draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION, draw_bboxes)
+
     recordVideoEvent = sliot.HubClient.get_parameter_bool(
         "recordVideoEvent", sliot.PARAMETER_TYPE.APPLICATION, recordVideoEvent)
     nbFramesNoDetBtw2Events = sliot.HubClient.get_parameter_int(
@@ -296,7 +295,7 @@ def main():
     # Main loop
     while True:
         status_zed = zed.grab(runtime_params)
-        if status == sl.ERROR_CODE.SUCCESS:
+        if status_zed == sl.ERROR_CODE.SUCCESS:
 
             zed.retrieve_objects(objects, object_detection_runtime_params)
             # /*******     Define event   *********/
