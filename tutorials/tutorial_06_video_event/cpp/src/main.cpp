@@ -42,8 +42,6 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-
-
     // Enable Position tracking (mandatory for object detection)
     sl::PositionalTrackingParameters trck_params;
     trck_params.set_as_static = false;

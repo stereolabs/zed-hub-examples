@@ -54,6 +54,7 @@ def main():
             "Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
+    # Enable Position tracking (mandatory for object detection)
     track_params = sl.PositionalTrackingParameters()
     track_params.set_as_static = False
     status = zed.enable_positional_tracking(track_params)
@@ -62,6 +63,7 @@ def main():
             "Positionnal tracking initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
+    # Enable the Objects detection module
     object_detection_params = sl.ObjectDetectionParameters()
     object_detection_params.image_sync = True
     object_detection_params.enable_tracking = True
@@ -72,6 +74,8 @@ def main():
             "Object detection initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
+    # Object Detection runtime parameters : detect person only
+    # see  the ZED Doc for the other available classes https://www.stereolabs.com/docs/api/group__Object__group.html#ga13b0c230bc8fee5bbaaaa57a45fa1177 
     object_detection_runtime_params = sl.ObjectDetectionRuntimeParameters()
     object_detection_runtime_params.detection_confidence_threshold = 50
     object_detection_runtime_params.object_class_filter = []

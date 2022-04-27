@@ -3,7 +3,7 @@
 #include <chrono>
 
 #include <sl/Camera.hpp>
-#include <sl_iot/IoTCloud.hpp>
+#include <sl_iot/HubClient.hpp>
 #include <csignal>
 #include <opencv2/opencv.hpp>
 
@@ -44,24 +44,24 @@ cv::Mat slMat2cvMat(Mat& input) {
 // Parameteres callbacks
 void onDisplayParametersUpdate(FunctionEvent &event) {
     event.status = 0;
-    draw_bboxes = IoTCloud::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
-    IoTCloud::log("New parameter : draw_bboxes modified",LOG_LEVEL::INFO);
+    draw_bboxes = HubClient::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
+    HubClient::sendLog("New parameter : draw_bboxes modified",LOG_LEVEL::INFO);
 
 }
 
 void onVideoEventUpdate(FunctionEvent &event) {
     event.status = 0;
-    recordVideoEvent = IoTCloud::getParameter<bool>("recordVideoEvent", PARAMETER_TYPE::APPLICATION, recordVideoEvent);
-    nbFramesNoDetBtw2Events = IoTCloud::getParameter<int>("nbFramesNoDetBtw2Events", PARAMETER_TYPE::APPLICATION, nbFramesNoDetBtw2Events);
-    IoTCloud::log("New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified",LOG_LEVEL::INFO);
+    recordVideoEvent = HubClient::getParameter<bool>("recordVideoEvent", PARAMETER_TYPE::APPLICATION, recordVideoEvent);
+    nbFramesNoDetBtw2Events = HubClient::getParameter<int>("nbFramesNoDetBtw2Events", PARAMETER_TYPE::APPLICATION, nbFramesNoDetBtw2Events);
+    HubClient::sendLog("New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified",LOG_LEVEL::INFO);
 
 }
 
 void onTelemetryUpdate(FunctionEvent &event) {
     event.status = 0;
-    recordTelemetry = IoTCloud::getParameter<bool>("recordTelemetry", PARAMETER_TYPE::APPLICATION, recordTelemetry);
-    telemetryFreq = IoTCloud::getParameter<float>("telemetryFreq", PARAMETER_TYPE::APPLICATION, telemetryFreq);
-    IoTCloud::log("New parameters : recordTelemetry or telemetryFreq modified",LOG_LEVEL::INFO);
+    recordTelemetry = HubClient::getParameter<bool>("recordTelemetry", PARAMETER_TYPE::APPLICATION, recordTelemetry);
+    telemetryFreq = HubClient::getParameter<float>("telemetryFreq", PARAMETER_TYPE::APPLICATION, telemetryFreq);
+    HubClient::sendLog("New parameters : recordTelemetry or telemetryFreq modified",LOG_LEVEL::INFO);
 }
 
 
@@ -72,35 +72,35 @@ int main(int argc, char **argv) {
     p_zed.reset(new sl::Camera());
 
     STATUS_CODE status_iot;
-    status_iot = IoTCloud::init("object_app", p_zed);
+    status_iot = HubClient::connect("object_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
+    status_iot = HubClient::registerCamera(p_zed);
+
     //Load application parameter file in development mode
     char* application_token = ::getenv("SL_APPLICATION_TOKEN");
     if (!application_token) {
-        status_iot = IoTCloud::loadApplicationParameters("parameters.json");
+        status_iot = HubClient::loadApplicationParameters("parameters.json");
         if (status_iot != STATUS_CODE::SUCCESS) {
             std::cout << "parameters.json file not found or malformated" << std::endl;
             exit(EXIT_FAILURE);
         }
     }
     
-    IoTCloud::setLogLevelThreshold(LOG_LEVEL::DEBUG, LOG_LEVEL::INFO);
+    HubClient::setLogLevelThreshold(LOG_LEVEL::DEBUG, LOG_LEVEL::INFO);
     //Open the ZED camera
     sl::InitParameters initParameters;
     initParameters.camera_resolution = RESOLUTION::HD2K;
-    initParameters.depth_mode = DEPTH_MODE::PERFORMANCE;
+    initParameters.depth_mode = DEPTH_MODE::NEURAL;
 
     sl::ERROR_CODE status_zed = p_zed->open(initParameters);
     if (status_zed != ERROR_CODE::SUCCESS) {
-        IoTCloud::log("Camera initialization error : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        HubClient::sendLog("Camera initialization error : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         exit(EXIT_FAILURE);
     }
-
-
 
     // Enable Position tracking (mandatory for object detection)
     sl::PositionalTrackingParameters trck_params;
@@ -140,24 +140,24 @@ int main(int argc, char **argv) {
 
     CallbackParameters callback_display_param;
     callback_display_param.setParameterCallback("onDisplayParametersUpdate", "draw_bboxes", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
-    IoTCloud::registerFunction(onDisplayParametersUpdate, callback_display_param);
+    HubClient::registerFunction(onDisplayParametersUpdate, callback_display_param);
 
     CallbackParameters callback_event_param;
     callback_event_param.setParameterCallback("onVideoEventUpdate", "recordVideoEvent|nbFramesNoDetBtw2Events", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
-    IoTCloud::registerFunction(onVideoEventUpdate, callback_event_param);
+    HubClient::registerFunction(onVideoEventUpdate, callback_event_param);
 
 
     CallbackParameters callback_telemetry_param;
     callback_telemetry_param.setParameterCallback("onTelemetryUpdate", "recordTelemetry|telemetryFreq", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
-    IoTCloud::registerFunction(onTelemetryUpdate, callback_telemetry_param);
+    HubClient::registerFunction(onTelemetryUpdate, callback_telemetry_param);
 
     // get values defined by the CMP interface. 
     // Last argument is default value in case of failure
-    draw_bboxes = IoTCloud::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
-    recordVideoEvent = IoTCloud::getParameter<bool>("recordVideoEvent", PARAMETER_TYPE::APPLICATION, recordVideoEvent);
-    nbFramesNoDetBtw2Events = IoTCloud::getParameter<int>("nbFramesNoDetBtw2Events", PARAMETER_TYPE::APPLICATION, nbFramesNoDetBtw2Events);
-    recordTelemetry = IoTCloud::getParameter<bool>("recordTelemetry", PARAMETER_TYPE::APPLICATION, recordTelemetry);
-    telemetryFreq = IoTCloud::getParameter<float>("telemetryFreq", PARAMETER_TYPE::APPLICATION, telemetryFreq);
+    draw_bboxes = HubClient::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
+    recordVideoEvent = HubClient::getParameter<bool>("recordVideoEvent", PARAMETER_TYPE::APPLICATION, recordVideoEvent);
+    nbFramesNoDetBtw2Events = HubClient::getParameter<int>("nbFramesNoDetBtw2Events", PARAMETER_TYPE::APPLICATION, nbFramesNoDetBtw2Events);
+    recordTelemetry = HubClient::getParameter<bool>("recordTelemetry", PARAMETER_TYPE::APPLICATION, recordTelemetry);
+    telemetryFreq = HubClient::getParameter<float>("telemetryFreq", PARAMETER_TYPE::APPLICATION, telemetryFreq);
 
     /****************************/
 
@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
             bool is_new_event = true;
             if (!first_event_sent || counter_no_detection >= nbFramesNoDetBtw2Events){
                 event_reference = "detected_person_" + std::to_string(current_ts.getMilliseconds()); 
-                IoTCloud::log("New Video Event defined",LOG_LEVEL::INFO);
+                HubClient::sendLog("New Video Event defined",LOG_LEVEL::INFO);
             }
             else{
                 // Do nothing, keep previous event reference --> The current frame will be defined as being part of the previous video event  
@@ -220,13 +220,13 @@ int main(int argc, char **argv) {
             event2send["nb_detected_personn"] = objects.object_list.size();
 
             if (is_new_event || !first_event_sent) {
-                IoTCloud::startVideoEvent(event_label, event2send, event_params);
+                HubClient::startVideoEvent(event_label, event2send, event_params);
                 first_event_sent = true;
             }
             // update every 10 s
             else if ((uint64) (current_ts.getMilliseconds() >= (uint64) (prev_timestamp.getMilliseconds() + (uint64)10 * 1000ULL)))
             {
-                IoTCloud::updateVideoEvent(event_label, event2send, event_params);
+                HubClient::updateVideoEvent(event_label, event2send, event_params);
             }
             // else do nothing
             
@@ -235,30 +235,7 @@ int main(int argc, char **argv) {
         else {
             counter_no_detection ++;
         }
-        /*******************************/
 
-
-        /*******     Custom stream : Draw bboxes on custom stream   *********/
-        if(draw_bboxes){
-            p_zed->retrieveImage(imgLeftCustom, sl::VIEW::LEFT, sl::MEM::CPU, imgLeftCustom.getResolution());
-
-
-            float ratio_x = (float)leftImageCpuCV.cols/(float)image_raw_res.width;
-            float ratio_y = (float)leftImageCpuCV.rows/(float)image_raw_res.height;
-
-
-            for (int i= 0;i< objects.object_list.size();i++) {
-                if (objects.object_list[i].tracking_state == sl::OBJECT_TRACKING_STATE::OK) {
-                    sl::uint2 tl = objects.object_list[i].bounding_box_2d[0];
-                    sl::uint2 br = objects.object_list[i].bounding_box_2d[2];
-                    cv::Rect ROI = cv::Rect(cv::Point2i(tl.x*ratio_x, tl.y*ratio_y), cv::Point2i(br.x*ratio_x, br.y*ratio_y));
-                    cv::Scalar color = cv::Scalar(50, 200, 50, 255);
-                    cv::rectangle(leftImageCpuCV, ROI, color,2);
-                }
-            }
-
-            IoTCloud::setCustomVideoMat(imgLeftCustom);
-        }
         /*******************************/
 
         /*******     Define and send Telemetry   *********/
@@ -279,19 +256,44 @@ int main(int argc, char **argv) {
             sl_iot::json position_telemetry;
             position_telemetry["number_of_detection"] = objects.object_list.size();
             position_telemetry["mean_distance_from_cam"] = mean_distance;
-            IoTCloud::sendTelemetry("object_detection", position_telemetry);
+            HubClient::sendTelemetry("object_detection", position_telemetry);
             prev_timestamp = current_ts;
         }
 
+
+        /*******************************/
+        /*******     Custom stream : Draw bboxes on custom stream   *********/
+        if(draw_bboxes){
+            p_zed->retrieveImage(imgLeftCustom, sl::VIEW::LEFT, sl::MEM::CPU, imgLeftCustom.getResolution());
+
+
+            float ratio_x = (float)leftImageCpuCV.cols/(float)image_raw_res.width;
+            float ratio_y = (float)leftImageCpuCV.rows/(float)image_raw_res.height;
+
+
+            for (int i= 0;i< objects.object_list.size();i++) {
+                if (objects.object_list[i].tracking_state == sl::OBJECT_TRACKING_STATE::OK) {
+                    sl::uint2 tl = objects.object_list[i].bounding_box_2d[0];
+                    sl::uint2 br = objects.object_list[i].bounding_box_2d[2];
+                    cv::Rect ROI = cv::Rect(cv::Point2i(tl.x*ratio_x, tl.y*ratio_y), cv::Point2i(br.x*ratio_x, br.y*ratio_y));
+                    cv::Scalar color = cv::Scalar(50, 200, 50, 255);
+                    cv::rectangle(leftImageCpuCV, ROI, color,2);
+                }
+            }
+
+            HubClient::update(imgLeftCustom);
+        }
+
+        else
         /*******************************/
 
-        // Always refresh IoT at the end of the grab loop
-        IoTCloud::refresh();
+        // Always update IoT at the end of the grab loop
+            HubClient::update();
     }
 
     // Handling camera error
     if(status_zed != ERROR_CODE::SUCCESS){
-        IoTCloud::log("Grab failed, restarting camera. "+std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        HubClient::sendLog("Grab failed, restarting camera. "+std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
@@ -299,7 +301,7 @@ int main(int argc, char **argv) {
     else if(p_zed->isOpened())
         p_zed->close();
 
-    status_iot = IoTCloud::stop();
+    status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);

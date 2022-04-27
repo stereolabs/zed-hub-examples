@@ -50,16 +50,17 @@ Then to run your app :
 
 ## The Source Code explained
 
-To init your application, use the `HubClient::init` function that starts communications between your app and the cloud. It must be called before using the HubClient API, so before sending logs (`HubClient::log`), telemetry(`HubClient::sendTelemetry`) custom stream (`HubClient::setCustomVideoMat`) and others ...
+To init your application, use the `HubClient::connect` function that starts communications between your app and the cloud. It must be called before using the HubClient API, so before sending logs (`HubClient::sendLog`), telemetry(`HubClient::sendTelemetry`) and others. Then, register your zed camera to the client.
 ```c++
     STATUS_CODE status_iot = HubClient::connect("basic_app");
+    status_iot = HubClient::registerCamera(p_zed);
 ```
 You can set the log level limit to be displayed. Every log with LOG_LEVEL below the limit will not be print.  ``` setLogLevelThreshold(LOG_LEVEL local_terminal_log_level, LOG_LEVEL cloud_log_level)```
 ```c++
     HubClient::setLogLevelThreshold(LOG_LEVEL::INFO,LOG_LEVEL::INFO);
 ```
 
-You can send a simple log to the cloud with ```HubClient::logInfo```
+You can send a simple log to the cloud with ```HubClient::sendLogInfo```
 ```c++
     HubClient::sendLog("Application connected",LOG_LEVEL::INFO);
 ```

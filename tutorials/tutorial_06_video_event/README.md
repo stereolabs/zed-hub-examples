@@ -74,7 +74,7 @@ You can click on it. You have access to the video and the stored data of the eve
 ## Code overview - C++
 
 ### Initialisation
-As usual, the app is init with `HubClient::init` and the ZED is started with  the ZED SDK `open` function.
+As usual, the app is init with `HubClient::connect` and `HubClient::registerCamera` and the ZED is started with  the ZED SDK `open` function.
 The Object detection is enabled with `enableObjectDetection`.Note that the tracking is required to use it (`enablePositionalTracking` must be called).
 
 ```c++

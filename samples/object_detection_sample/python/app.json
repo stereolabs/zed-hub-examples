@@ -1,6 +1,6 @@
 {
-    "name": "Object Detection Sample",
-    "description": "An app that starts a ZEd, performs Object Detection and sends logs, telemetry, custom stream and video events.",
+    "name": "Object Detection Python Sample",
+    "description": "An app that starts a ZEd, performs Object Detection and sends logs, telemetry and video events.",
      "release":{
         "name": "1.1.0",
         "description": "Sample that detects people using ZED SDK and sends video events.",

@@ -3,7 +3,7 @@
 #include <chrono>
 
 #include <sl/Camera.hpp>
-#include <sl_iot/IoTCloud.hpp>
+#include <sl_iot/HubClient.hpp>
 #include <csignal>
 
 using namespace std;
@@ -26,7 +26,7 @@ bool local_stream_change = false;
 ///
 void onInitParamUpdate(FunctionEvent &event) {
     event.status = 0;
-    IoTCloud::log("Init Parameters Update. Re-opening the camera.",LOG_LEVEL::INFO);
+    HubClient::sendLog("Init Parameters Update. Re-opening the camera.",LOG_LEVEL::INFO);
     run=false;
 }
 
@@ -38,10 +38,10 @@ void onLedStatusUpdate(FunctionEvent &event) {
     event.status = 0;
     sdk_guard.lock();
     int curr_led_status = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS);
-    bool led_status = IoTCloud::getParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, curr_led_status);
+    bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, curr_led_status);
     p_zed->setCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, led_status);
     sdk_guard.unlock();
-    IoTCloud::reportParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, led_status);
+    HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, led_status);
 }
 
 ///
@@ -52,11 +52,11 @@ void onGammaUpdate(FunctionEvent &event) {
     event.status = 0;
     sdk_guard.lock();
     int curr_gamma = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::GAMMA);
-    int gamma = IoTCloud::getParameter<int>("camera_gamma", PARAMETER_TYPE::DEVICE, curr_gamma);
+    int gamma = HubClient::getParameter<int>("camera_gamma", PARAMETER_TYPE::DEVICE, curr_gamma);
     p_zed->setCameraSettings(sl::VIDEO_SETTINGS::GAMMA, gamma);
     sdk_guard.unlock();
-    IoTCloud::purgeVideoStream();
-    IoTCloud::reportParameter<int>("camera_gamma", PARAMETER_TYPE::DEVICE, gamma);
+    HubClient::purgeVideoStream();
+    HubClient::reportParameter<int>("camera_gamma", PARAMETER_TYPE::DEVICE, gamma);
 }
 
 ///
@@ -67,11 +67,11 @@ void onGainUpdate(FunctionEvent &event) {
     event.status = 0;
     sdk_guard.lock();
     int curr_gain = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::GAIN);
-    int gain = IoTCloud::getParameter<int>("camera_gain", PARAMETER_TYPE::DEVICE, curr_gain);
+    int gain = HubClient::getParameter<int>("camera_gain", PARAMETER_TYPE::DEVICE, curr_gain);
     p_zed->setCameraSettings(sl::VIDEO_SETTINGS::GAIN, gain);
     sdk_guard.unlock();
-    IoTCloud::purgeVideoStream();
-    IoTCloud::reportParameter<int>("camera_gain", PARAMETER_TYPE::DEVICE, gain);
+    HubClient::purgeVideoStream();
+    HubClient::reportParameter<int>("camera_gain", PARAMETER_TYPE::DEVICE, gain);
 }
 
 ///
@@ -82,11 +82,11 @@ void onAutoExposureUpdate(FunctionEvent &event) {
     event.status = 0;
     sdk_guard.lock();
     int curr_auto_exposure = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::AEC_AGC);
-    bool auto_exposure = IoTCloud::getParameter<bool>("camera_auto_exposure", PARAMETER_TYPE::DEVICE, curr_auto_exposure);
+    bool auto_exposure = HubClient::getParameter<bool>("camera_auto_exposure", PARAMETER_TYPE::DEVICE, curr_auto_exposure);
     p_zed->setCameraSettings(sl::VIDEO_SETTINGS::AEC_AGC, auto_exposure);
     sdk_guard.unlock();
-    IoTCloud::purgeVideoStream();
-    IoTCloud::reportParameter<bool>("camera_auto_exposure", PARAMETER_TYPE::DEVICE, auto_exposure);
+    HubClient::purgeVideoStream();
+    HubClient::reportParameter<bool>("camera_auto_exposure", PARAMETER_TYPE::DEVICE, auto_exposure);
 }
 
 ///
@@ -97,11 +97,11 @@ void onExposureUpdate(FunctionEvent &event) {
     event.status = 0;
     sdk_guard.lock();
     int curr_exposure = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::EXPOSURE);
-    int exposure = IoTCloud::getParameter<int>("camera_exposure", PARAMETER_TYPE::DEVICE, curr_exposure);
+    int exposure = HubClient::getParameter<int>("camera_exposure", PARAMETER_TYPE::DEVICE, curr_exposure);
     p_zed->setCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, exposure);
     sdk_guard.unlock();
-    IoTCloud::purgeVideoStream();
-    IoTCloud::reportParameter<int>("camera_exposure", PARAMETER_TYPE::DEVICE, exposure);
+    HubClient::purgeVideoStream();
+    HubClient::reportParameter<int>("camera_exposure", PARAMETER_TYPE::DEVICE, exposure);
 }
 
 
@@ -113,7 +113,7 @@ void onExposureUpdate(FunctionEvent &event) {
 void onLocalStreamUpdate(FunctionEvent &event) {
     event.status = 0;
     local_stream_change = true;
-    bool local_stream = IoTCloud::getParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, false);
+    bool local_stream = HubClient::getParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, false);
 
     if (local_stream){
 
@@ -135,7 +135,7 @@ void onLocalStreamUpdate(FunctionEvent &event) {
 }
 
 void applyInitParameters(sl::InitParameters &parameters) {
-    std::string reso_str = IoTCloud::getParameter<std::string>("camera_resolution", PARAMETER_TYPE::DEVICE, sl::toString(parameters.camera_resolution).c_str());
+    std::string reso_str = HubClient::getParameter<std::string>("camera_resolution", PARAMETER_TYPE::DEVICE, sl::toString(parameters.camera_resolution).c_str());
     if (reso_str == "HD2K")
         parameters.camera_resolution = RESOLUTION::HD2K;
     else if (reso_str == "HD720")
@@ -145,13 +145,13 @@ void applyInitParameters(sl::InitParameters &parameters) {
     else if (reso_str == "WVGA")
         parameters.camera_resolution = RESOLUTION::VGA;
     
-    IoTCloud::reportParameter<std::string>("camera_resolution", PARAMETER_TYPE::DEVICE, reso_str);
+    HubClient::reportParameter<std::string>("camera_resolution", PARAMETER_TYPE::DEVICE, reso_str);
 
-    parameters.camera_image_flip = IoTCloud::getParameter<int>("camera_image_flip", PARAMETER_TYPE::DEVICE, (int)parameters.camera_image_flip);
-    IoTCloud::reportParameter<int>("camera_image_flip", PARAMETER_TYPE::DEVICE, (int)parameters.camera_image_flip);
+    parameters.camera_image_flip = HubClient::getParameter<int>("camera_image_flip", PARAMETER_TYPE::DEVICE, (int)parameters.camera_image_flip);
+    HubClient::reportParameter<int>("camera_image_flip", PARAMETER_TYPE::DEVICE, (int)parameters.camera_image_flip);
 
-    parameters.camera_fps = IoTCloud::getParameter<int>("camera_fps", PARAMETER_TYPE::DEVICE, parameters.camera_fps);
-    IoTCloud::reportParameter<int>("camera_fps", PARAMETER_TYPE::DEVICE, (int)parameters.camera_fps);
+    parameters.camera_fps = HubClient::getParameter<int>("camera_fps", PARAMETER_TYPE::DEVICE, parameters.camera_fps);
+    HubClient::reportParameter<int>("camera_fps", PARAMETER_TYPE::DEVICE, (int)parameters.camera_fps);
 }
 
 void main_loop() {
@@ -165,7 +165,7 @@ void main_loop() {
     // Open init parameters
     sl::ERROR_CODE errZed = p_zed->open(initParameters);
     if (errZed != ERROR_CODE::SUCCESS) {
-        IoTCloud::log("Camera initialization error : " + std::string(toString(errZed)), LOG_LEVEL::ERROR);
+        HubClient::sendLog("Camera initialization error : " + std::string(toString(errZed)), LOG_LEVEL::ERROR);
         full_run = false;
         exit(EXIT_FAILURE);
     }
@@ -174,42 +174,42 @@ void main_loop() {
     if (run) {
         CallbackParameters callback_param;
         callback_param.setParameterCallback("onParamChange", "camera_resolution|camera_fps|camera_image_flip" ,CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
-        IoTCloud::registerFunction(onInitParamUpdate, callback_param);
+        HubClient::registerFunction(onInitParamUpdate, callback_param);
 
         CallbackParameters callback_param_led;
         callback_param_led.setParameterCallback("onLedStatusChange", "led_status" ,CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
-        IoTCloud::registerFunction(onLedStatusUpdate, callback_param_led);
+        HubClient::registerFunction(onLedStatusUpdate, callback_param_led);
 
         CallbackParameters callback_param_auto_exposure;
         callback_param_auto_exposure.setParameterCallback("onAutoExposureChange", "camera_auto_exposure" ,CALLBACK_TYPE::ON_PARAMETER_UPDATE,PARAMETER_TYPE::DEVICE);
-        IoTCloud::registerFunction(onAutoExposureUpdate, callback_param_auto_exposure);
+        HubClient::registerFunction(onAutoExposureUpdate, callback_param_auto_exposure);
 
         CallbackParameters callback_param_exposure;
         callback_param_exposure.setParameterCallback("onExposureChange", "camera_exposure" ,CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
-        IoTCloud::registerFunction(onExposureUpdate, callback_param_exposure);
+        HubClient::registerFunction(onExposureUpdate, callback_param_exposure);
 
         CallbackParameters callback_param_gain;
         callback_param_gain.setParameterCallback("onGainChange", "camera_gain" ,CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
-        IoTCloud::registerFunction(onGainUpdate, callback_param_exposure);
+        HubClient::registerFunction(onGainUpdate, callback_param_exposure);
 
         CallbackParameters callback_param_gamma;
         callback_param_gamma.setParameterCallback("onGammaChange", "camera_gamma" ,CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
-        IoTCloud::registerFunction(onGammaUpdate, callback_param_gamma);
+        HubClient::registerFunction(onGammaUpdate, callback_param_gamma);
 
         CallbackParameters callback_param_stream;
         callback_param_stream.setParameterCallback("onLocalStreamChange", "local_stream" ,CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
-        IoTCloud::registerFunction(onLocalStreamUpdate, callback_param_stream);
+        HubClient::registerFunction(onLocalStreamUpdate, callback_param_stream);
 
     }
 
-    bool local_stream = IoTCloud::getParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, false);
+    bool local_stream = HubClient::getParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, false);
     if (local_stream) {
         StreamingParameters stream_param;
         stream_param.codec = sl::STREAMING_CODEC::H264;
         p_zed->enableStreaming(stream_param);
     }
 
-    IoTCloud::reportParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, local_stream);
+    HubClient::reportParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, local_stream);
     run = true;
     int frame = 0;
     int grab_fps_warning_state = 0;
@@ -232,7 +232,7 @@ void main_loop() {
                         break;
                     case 1:
                         if (p_zed->getTimestamp(sl::TIME_REFERENCE::CURRENT).getMilliseconds()-timestamp_warning_grab_fps>5*1000) { //warning if too low during at least 5 seconds
-                            IoTCloud::log("Grab fps low " + to_string((int)grab_fps), LOG_LEVEL::WARNING);
+                            HubClient::sendLog("Grab fps low " + to_string((int)grab_fps), LOG_LEVEL::WARNING);
                             grab_fps_warning_state=2;
                         }
                         break;
@@ -241,11 +241,11 @@ void main_loop() {
                     }
                 } else grab_fps_warning_state = 0;
             }
-            IoTCloud::refresh();
+            HubClient::update();
         } else {
             std::string error_str = sl::toString(err).c_str();
             int size_devices = sl::Camera::getDeviceList().size();
-            IoTCloud::log("Camera grab error: "+error_str+". ( Number of camera detected : "+ to_string(size_devices) + " ) ", LOG_LEVEL::ERROR);
+            HubClient::sendLog("Camera grab error: "+error_str+". ( Number of camera detected : "+ to_string(size_devices) + " ) ", LOG_LEVEL::ERROR);
             if (p_zed->isOpened())
                 p_zed->close();
 
@@ -263,16 +263,17 @@ int main(int argc, char **argv) {
     p_zed.reset(new sl::Camera());
     
     STATUS_CODE status_iot;
-    status_iot = IoTCloud::init("camera_viewer", p_zed);
+    status_iot = HubClient::connect("camera_viewer");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
+    status_iot = HubClient::registerCamera(p_zed);
     
     //Load application parameter file in development mode
     char* application_token = ::getenv("SL_APPLICATION_TOKEN");
     if (!application_token) {
-        status_iot = IoTCloud::loadApplicationParameters("parameters.json");
+        status_iot = HubClient::loadApplicationParameters("parameters.json");
         if (status_iot != STATUS_CODE::SUCCESS) {
             std::cout << "parameters.json file not found or malformated" << std::endl;
             exit(EXIT_FAILURE);
@@ -280,7 +281,7 @@ int main(int argc, char **argv) {
     }
 
     // Init logger (optional)
-    IoTCloud::setLogLevelThreshold(LOG_LEVEL::DEBUG,LOG_LEVEL::DEBUG);
+    HubClient::setLogLevelThreshold(LOG_LEVEL::DEBUG,LOG_LEVEL::DEBUG);
 
     // Setup Init Parameters
     initParameters.camera_resolution = RESOLUTION::HD2K;
@@ -288,13 +289,13 @@ int main(int argc, char **argv) {
     initParameters.sdk_verbose = true;
     initParameters.sdk_gpu_id = -1;
 
-    // -------------------- MAIN LOOP -------------------------------
+    // -------------------HubClient::log- MAIN LOOP -------------------------------
     while (full_run) {
         main_loop();
         sl::sleep_ms(30);
     }
 
-    status_iot = IoTCloud::stop();
+    status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);

@@ -41,7 +41,7 @@ $ cmake ..
 $ make -j$(nproc)
 ```
 
-This application use application parameters. Move the `parameters.json` file to the path you specified in the `IoTCloud::loadApplicationParameters` function.
+This application use application parameters. Move the `parameters.json` file to the path you specified in the `HubClient::loadApplicationParameters` function.
 ```
 $ cp ../parameters.json .
 ```
@@ -139,7 +139,7 @@ The app parameters can be modified in the parameters pop up window. They also ne
 void onLocalStreamUpdate(FunctionEvent &event) {
     event.status = 0;
     local_stream_change = true;
-    bool local_stream = IoTCloud::getParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, false);
+    bool local_stream = HubClient::getParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, false);
 
     if (local_stream){
 
@@ -174,9 +174,9 @@ What exactly appends:
     p_zed.reset(new sl::Camera());
 
     //Init sl_iot
-    STATUS_CODE status_iot = IoTCloud::init("camera_app", p_zed);
+    STATUS_CODE status_iot = HubClient::connect("camera_app");
+    status_iot = HubClient::registerCamera(p_zed);
 ```
-
 
 - Open the ZED with `p_zed->open(initParameters)` in the restart loop but before the main loop. [ZED Documentation](https://www.stereolabs.com/docs/video/camera-controls/#camera-configuration)
 
@@ -191,16 +191,16 @@ What exactly appends:
         ... 
     CallbackParameters callback_param;
     callback_param.setParameterCallback("onParamChange", "camera_resolution|camera_fps|camera_image_flip" ,CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
-    IoTCloud::registerFunction(onInitParamUpdate, callback_param);
+    HubClient::registerFunction(onInitParamUpdate, callback_param);
         ...
 ```
 
 ### Main loop
-- In the main loop, grab a new frame and call `IoTCloud::refresh()`. Note that the `refresh` is responsible for both **live stream** and **recording**. The sent image corresponds to the grabbed image, so to current frame.
+- In the main loop, grab a new frame and call `HubClient::update()`. Note that the `update` is responsible for both **live stream** and **recording**. The sent image corresponds to the grabbed image, so to current frame.
 
 
 ```c++
-    IoTCloud::refresh();
+    HubClient::update();
 ```
 
 Some logs are also sent if the grab FPS is too low for a too long time.
@@ -215,7 +215,7 @@ if (frame > 40) {
             break;
         case 1:
             if (p_zed->getTimestamp(sl::TIME_REFERENCE::CURRENT).getMilliseconds()-timestamp_warning_grab_fps>5*1000) { //warning if too low during at least 5 seconds
-                IoTCloud::log("Grab fps low " + to_string((int)grab_fps), LOG_LEVEL::WARNING);
+                HubClient::sendLog("Grab fps low " + to_string((int)grab_fps), LOG_LEVEL::WARNING);
                 grab_fps_warning_state=2;
             }
             break;

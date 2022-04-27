@@ -123,4 +123,4 @@ What exactly happens:
 
 ## Custom stream
 
-The ZED Hub supports custom streams, meaning you can send as live video the video of your choice. Take a look at **tutorial_06_custom_stream** to learn more about this feature.
+The ZED Hub supports custom streams, meaning you can send as live video the video of your choice. To do that, just add the `sl::Mat` you built as an argument of `update()`.
