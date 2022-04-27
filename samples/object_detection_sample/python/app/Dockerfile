@@ -13,4 +13,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata libpng-dev && \
 
 #Copy your binary
 COPY . /
+RUN apt-get update
+RUN apt-get install ffmpeg libsm6 libxext6  -y
+RUN python3 -m pip install -r ./requirements.txt
 CMD ["python3", "./main.py"]

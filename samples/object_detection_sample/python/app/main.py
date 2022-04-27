@@ -23,72 +23,188 @@ import pyzed.sl_iot as sliot
 import time
 import cv2
 import numpy as np
-from time import perf_counter 
+import paho.mqtt.client as mqttClient
+import json
+import os
 
 # Parameters, defined as global variables
-global draw_bboxes
-global recordVideoEvent
-global nbFramesNoDetBtw2Events
-global recordTelemetry
-global telemetryFreq
+draw_bboxes = False
+recordVideoEvent = True
+nbFramesNoDetBtw2Events = 30
+recordTelemetry = True
+telemetryFreq = 10.0
 
-def convert_np_to_sl_mat(initial_image : sl.Mat, a : np.ndarray, deep_copy = True) -> sl.Mat:
-    height, width, layers = a.shape
-    print("###################")
-    if deep_copy:
-        mat_type = sl.MAT_TYPE.U8_C4
-        resolution = sl.Resolution()
-        resolution.width = width
-        resolution.height = height
 
-        pointer, read_only_flag = a.__array_interface__['data']
-        # pointer = a.data
-        mat = sl.Mat()
-        # mat.init_mat_type(width, height, sl.MAT_TYPE.U8_C4)
-        # mat.init_mat_resolution_cpu(resolution, mat_type, str(pointer), a.itemsize * width)
-        mat.init_mat_cpu(width, height, mat_type, str(pointer), a.itemsize * width)
-        # mat.init_mat_cpu(width, height, mat_type, "helloworld", a.itemsize * width)
-        print("c1mat : ", mat.get_value(206, 206)[1])
-        return mat
-    # else:
-    #     mat = sl.Mat()
-    #     mat.init_mat_type(width, height, sl.MAT_TYPE.U8_C4)
-    #     for i in range(width):
-    #         for j in range(height):
-    #             mat.set_value(i,j, a[j][i])
+class slMqttClient:
+    def __init__(self):
+        if os.path.exists('/usr/local/sl_iot/settings/env.json'):
+            f = open('/usr/local/sl_iot/settings/env.json')
+            variables = json.load(f)
+            # print(json.dumps(variables, indent=4, sort_keys=False))
+            for key in variables.keys():
+                if(key in os.environ):
+                    print("Original : ", os.environ[key])
+                else:
+                    os.environ[key] = variables[key]
+                print(key, ", ", os.environ[key])
         
-    #     print("c2mat : ", mat.get_value(0, 0)[1])
-    #     return mat
+        else:
+            print("No env file found in /usr/local/sl_iot/settings/env.json")
+
+        #######################################################################
+        #                                                                     #
+        #   MQTT configuration   #
+        #   The docs are at https://cloud.stereolabs.com/doc/mqtt-api/        #
+        #                                                                     #
+        #######################################################################
+        broker_address = os.environ.get("SL_MQTT_HOST")  # Broker address
+        mqtt_port = int(os.environ.get("SL_MQTT_PORT"))  # Broker port
+        mqtt_user = "application"  # Connection username
+        app_token = os.environ.get(
+            "SL_APPLICATION_TOKEN")  # Connection password
+
+        app_name = os.environ.get("SL_APPLICATION_NAME")  # Connection password
+        self.device_id = str(os.environ.get("SL_DEVICE_ID"))
+        logs_topic = "/v1/devices/" + self.device_id + "/logs"
+
+        # Topic where the cloud publishes parameter modifications
+        self.app_ID = str(os.environ.get("SL_APPLICATION_ID"))
+
+        self.subscriptions = {}
+        """
+        client that listen to the app parameter modifications
+        """
+        client_id = "sample_object_detection"
+
+        self.client = mqttClient.Client(client_id)  # create new instance
+
+        print("Connecting MQTT")
+        # the callback is handled directly with MQTT, unlike in C++
+        #############     Get the environment variables      ##################
+        # set username and password
+        self.client.username_pw_set(mqtt_user, password=app_token)
+
+        self.client.on_connect = self.on_connect  # attach function to callback
+        self.client.on_disconnect = self.on_disconnect  # attach function to callback
+        self.client.on_message = self.on_message  # attach function to callback
+        self.client.on_publish = self.on_publish  # attach function to callback
+
+        print("Connecting to broker")
+        # connect to broker
+        self.client.connect(broker_address, port=mqtt_port)
+
+        #################        start MQTT CLIENT thread            ##################
+        self.client.loop_start()
+        print("Connected to MQTT")
+
+    ####### alert MQTT #######
+    def on_connect(self, client, userdata, flags, rc):
+        if rc == 0:
+            print("MQTT service connected to broker. Subscribing...")
+        else:
+            print("MQTT service Connection failed")
+
+    def on_disconnect(self, client, userdata, rc=0):
+        print("MQTT service disconnected")
+
+    def on_publish(self, client, userdata, result):  # create function for callback
+        print("message published")
+        pass
+
+    def subscribe_callback(self, remote_name: str, callback_name: str, callback_type: sliot.CALLBACK_TYPE, parameter_type: sliot.PARAMETER_TYPE):
+        topic = ""
+        parameter_type_addition = ""
+        
+        if parameter_type == sliot.PARAMETER_TYPE.APPLICATION:
+            parameter_type_addition = "/apps/" + self.app_ID
+
+        if callback_type == sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE:
+            topic = "/v1/devices/" + self.device_id + \
+                parameter_type_addition + "/twin/update"
+        elif callback_type == sliot.CALLBACK_TYPE.ON_REMOTE_CALL:
+            topic = "/v1/devices/" + self.device_id + \
+                parameter_type_addition + "/functions/in"
+
+        if topic != "":
+            self.client.subscribe(topic)
+            if topic not in self.subscriptions:
+                self.subscriptions[topic] = {}
+            self.subscriptions[topic][remote_name] = callback_name
+            print("Subcribed to topic ")
+
+    def on_message(self, client, inference_thread_manager, message):
+        '''
+        Note that you must subscribe a topic to be able to receive messages (and of course a message must be published on this topic)
+        '''
+        if message.topic in self.subscriptions:
+            message_received = json.loads(str(message.payload.decode()))
+            print(message_received)
+            # check all subscriptions
+            for remote_name in self.subscriptions[message.topic].keys():
+                # if a subscription fits with the remote name we received
+                if "parameters.requested." + remote_name in message_received:
+                    # call the stored callback
+                    callback_name = self.subscriptions[message.topic][remote_name]
+                    b = globals()[callback_name]()
 
 def on_display_parameters_update():
-    print("NOT IMPLEMENTED")
-    exit(1)
-    # event.status = 0;
-    # draw_bboxes = HubClient::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
-    # HubClient::sendLog("New parameter : draw_bboxes modified",LOG_LEVEL::INFO);
+    global draw_bboxes
+    print("Display parameter updated.")
+    draw_bboxes = sliot.HubClient.get_parameter_bool(
+        "draw_bboxes", sliot.PARAMETER_TYPE.DEVICE)
+    sliot.HubClient.send_log(
+        "New parameter : draw_bboxes modified to " + str(draw_bboxes), sliot.LOG_LEVEL.INFO)
+    return True
 
 
-def on_videoEvent_update():
-    print("NOT IMPLEMENTED")
-    exit(1)
-    # event.status = 0;
-    # recordVideoEvent = HubClient::getParameter<bool>("recordVideoEvent", PARAMETER_TYPE::APPLICATION, recordVideoEvent);
-    # nbFramesNoDetBtw2Events = HubClient::getParameter<int>("nbFramesNoDetBtw2Events", PARAMETER_TYPE::APPLICATION, nbFramesNoDetBtw2Events);
-    # HubClient::sendLog("New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified",LOG_LEVEL::INFO);
+def on_video_event_update():
+    global recordVideoEvent
+    global nbFramesNoDetBtw2Events
+    print("Video event updated")
+    recordVideoEvent = sliot.HubClient.get_parameter_bool(
+        "recordVideoEvent", sliot.PARAMETER_TYPE.DEVICE, recordVideoEvent)
+    nbFramesNoDetBtw2Events = sliot.HubClient.get_parameter_int(
+        "nbFramesNoDetBtw2Events", sliot.PARAMETER_TYPE.DEVICE, nbFramesNoDetBtw2Events)
+    sliot.HubClient.send_log(
+        "New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified", sliot.LOG_LEVEL.INFO)
 
 
 def on_telemetry_update():
-    print("NOT IMPLEMENTED")
-    exit(1)
-    # event.status = 0;
-    # recordTelemetry = HubClient::getParameter<bool>("recordTelemetry", PARAMETER_TYPE::APPLICATION, recordTelemetry);
-    # telemetryFreq = HubClient::getParameter<float>("telemetryFreq", PARAMETER_TYPE::APPLICATION, telemetryFreq);
-    # HubClient::sendLog("New parameters : recordTelemetry or telemetryFreq modified",LOG_LEVEL::INFO);
+    global recordTelemetry
+    global telemetryFreq
+    print("telemetry updated")
+    recordTelemetry = sliot.HubClient.get_parameter_bool(
+        "recordTelemetry", Psliot.PARAMETER_TYPE.DEVICE, recordTelemetry)
+    telemetryFreq = sliot.HubClient.get_parameter_float(
+        "telemetryFreq", sliot.PARAMETER_TYPE.DEVICE, telemetryFreq)
+    sliot.HubClient.send_log(
+        "New parameters : recordTelemetry or telemetryFreq modified", sliot.LOG_LEVEL.INFO)
 
 
 def main():
+    global draw_bboxes
+    global nbFramesNoDetBtw2Events
+    global nbFramesNoDetBtw2Events
+    global recordTelemetry
+    global telemetryFreq
 
-    draw_bboxes = True
+    sliot.HubClient.load_application_parameters("parameters.json")
+    mqtt = slMqttClient()
+
+    # MQTT subscription
+    # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
+    # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
+    mqtt.subscribe_callback("draw_bboxes", "on_display_parameters_update",
+                            sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+    mqtt.subscribe_callback(
+        "recordVideoEvent", "on_video_event_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+    mqtt.subscribe_callback(
+        "nbFramesNoDetBtw2Events", "on_video_event_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+    mqtt.subscribe_callback(
+        "recordTelemetry", "on_telemetry_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+    mqtt.subscribe_callback(
+        "telemetryFreq", "on_telemetry_update", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+
     recordVideoEvent = True
     nbFramesNoDetBtw2Events = 30  # number of frame
     recordTelemetry = True
@@ -153,8 +269,10 @@ def main():
     runtime_params = sl.RuntimeParameters()
     runtime_params.measure3D_reference_frame = sl.REFERENCE_FRAME.CAMERA
 
-    # get values defined by the CMP interface.
+    # get values defined by the ZED HUB interface.
     # Last argument is default value in case of failuredraw_bboxes = sliot.HubClient.get_parameter_bool("draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION, draw_bboxes)
+    # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
+    # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
     recordVideoEvent = sliot.HubClient.get_parameter_bool(
         "recordVideoEvent", sliot.PARAMETER_TYPE.APPLICATION, recordVideoEvent)
     nbFramesNoDetBtw2Events = sliot.HubClient.get_parameter_int(
@@ -163,6 +281,8 @@ def main():
         "recordTelemetry", sliot.PARAMETER_TYPE.APPLICATION, recordTelemetry)
     telemetryFreq = sliot.HubClient.get_parameter_float(
         "telemetryFreq", sliot.PARAMETER_TYPE.APPLICATION, telemetryFreq)
+    draw_bboxes = sliot.HubClient.get_parameter_bool(
+        "draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION, True)
 
     counter_no_detection = 0
     objects = sl.Objects()
@@ -215,7 +335,8 @@ def main():
                 event2send["nb_detected_personn"] = len(objects.object_list)
 
                 if (is_new_event or not first_event_sent):
-                    sliot.HubClient.start_video_event(event_label, event2send, event_params)
+                    sliot.HubClient.start_video_event(
+                        event_label, event2send, event_params)
                     first_event_sent = True
 
                 #  update every 10 s
@@ -257,35 +378,31 @@ def main():
             if(draw_bboxes):
                 zed.retrieve_image(image_left_custom, sl.VIEW.LEFT,
                                    sl.MEM.CPU, image_left_custom.get_resolution())
-                
+
                 # Retrieve the image in a numpy array sharing the same pointer than the sl.Mat
+                # That mean, with deepCopy = False
                 # So that the modifications we'll do will persist when giving back the sl.Mat to the update() method
                 image_left_ocv = image_left_custom.get_data(sl.MEM.CPU, False)
 
-                alpha_channel = image_left_ocv[:,:,3]
-                rgb_channels = image_left_ocv[:,:,:3]
+                alpha_channel = image_left_ocv[:, :, 3]
+                rgb_channels = image_left_ocv[:, :, :3]
                 rows, cols, layers = image_left_ocv.shape
                 ratio_x = (float)(cols/(float)(image_raw_res.width))
                 ratio_y = (float)(rows/(float)(image_raw_res.height))
 
                 for obj in objects.object_list:
                     if (obj.tracking_state == sl.OBJECT_TRACKING_STATE.OK):
-                        tl = obj.bounding_box_2d[0];
-                        br = obj.bounding_box_2d[2];
-                        cv2.rectangle(image_left_ocv
-                                        , ((int)(tl[0]*ratio_x), (int)(tl[1]*ratio_y))
-                                        ,((int)(br[0]*ratio_x), (int)(br[1]*ratio_y))
-                                        , (50, 200, 50)
-                                        , 4)
+                        tl = obj.bounding_box_2d[0]
+                        br = obj.bounding_box_2d[2]
+                        cv2.rectangle(image_left_ocv, ((int)(tl[0]*ratio_x), (int)(tl[1]*ratio_y)), ((
+                            int)(br[0]*ratio_x), (int)(br[1]*ratio_y)), (50, 200, 50), 4)
 
                 image_left_custom.timestamp = sl.get_current_timestamp()
-                print(image_left_custom.timestamp.get_milliseconds())
                 sliot.HubClient.update(image_left_custom)
 
             else:
                 # Always update IoT at the end of the grab loop
                 sliot.HubClient.update()
-
 
     if zed.is_opened():
         zed.close()
