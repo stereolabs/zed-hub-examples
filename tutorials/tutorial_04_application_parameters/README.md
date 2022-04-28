@@ -3,7 +3,7 @@
 This tutorial shows how to use custom application parameters in your application. These parameters can be modified by everyone in the ZED Hub interface.
 This sample starts a ZED exactly as tutorial_02_live_stream_and_recording does, but it also define one parameter. The first one indicates whether the camera LED must be on or off. 
 
-[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_04_application_parameters)
+[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_04_application_parameters)
 
 ## Requirements
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).

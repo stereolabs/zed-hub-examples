@@ -4,7 +4,7 @@ A **video event** is a **Video recording** associated to a **description** store
 This application shows how to define a Video Event in a ZED Hub app. This event will be available in the Video Event ZED Hub interface.
 In this tutorial a video is considered as event if **at least one person is detected** in the image. To detect people the **Object Detection** module of the SDK will be used. 
 
-[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_07_video_event)
+[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_06_video_event)
 
 ![](./images/event_detected_people.png " ")
 

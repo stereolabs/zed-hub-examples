@@ -2,7 +2,7 @@
 
 This tutorial shows you how to communicate between apps on the local network.
 
-[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_08_mqtt_publisher)
+[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_07_mqtt_publisher)
 
 ## Requirements
 You will deploy this tutorial on one of the devices installed on **your ZED Hub workspace**. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).

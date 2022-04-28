@@ -3,7 +3,7 @@
 This tutorial shows how to make an application containing a **remote function** that computes an addition operation called by a **remote function call**.
 This tutorial does not require a ZED to be run.
 
-[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_05_remote_function_calls)
+[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_05_remote_function_calls)
 
 #### What is a remote function call ?
 A **remote function call** is a call to a remote function **declared and registered by a ZED Hub app**. The app described in this tutorial declares and registers the `additionCallback` remote function. 

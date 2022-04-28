@@ -1,7 +1,7 @@
 # Tutorial 3 - Telemetries
 This tutorial shows you how to send a telemetry to the cloud. This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the concecutive positions of your camera.  
 
-[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_03_telemetries)
+[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_03_telemetries)
 
 ## Requirements
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).

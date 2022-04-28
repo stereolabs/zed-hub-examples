@@ -53,4 +53,4 @@ $ edge_cli stop
 Once you have successfully been able to run and test the apps in a development environment, you can look into deploying the same apps in production-ready environments with our [Deploy a ZED Hub app as a service](./deploy_as_a_service.md) tutorial.
 
 ## Next steps
-These 7 samples/tutorials can be used as starting points to develop your own app. There are some additionnal, more advanced tutorials available, which can be used and modified in order to fit your specific needs.
+These samples and tutorials can be used as starting points to develop your own app. There are some additionnal, more advanced tutorials available, which can be used and modified in order to fit your specific needs.
