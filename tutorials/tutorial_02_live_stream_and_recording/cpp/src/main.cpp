@@ -33,14 +33,14 @@ using json = sl_iot::json;
 
 
 int main(int argc, char **argv) {
-    // initialize the communication to zed hub, with a zed camera.
+    // Initialize the communication to ZED Hub, with a zed camera.
     std::shared_ptr<sl::Camera> p_zed;
     p_zed.reset(new sl::Camera());
 
     STATUS_CODE status_iot;
     status_iot = HubClient::connect("streaming_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "Initiliazation error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
     HubClient::registerCamera(p_zed);
@@ -90,20 +90,12 @@ int main(int argc, char **argv) {
     else if(p_zed->isOpened())
         p_zed->close();
 
-    // Close the communication with zed hub properly.
+    // Close the communication with ZED Hub properly.
     status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE); 
     }
 
-    status_iot = HubClient::connect("streaming_app");
-    if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "Initiliazation error " << status_iot << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    std::cout << "Goood " << status_iot << std::endl;
-
-    
     return 0;
 }

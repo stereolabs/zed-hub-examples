@@ -1,2 +1,0 @@
-paho_mqtt==1.6.1
-pyzediot==0.1

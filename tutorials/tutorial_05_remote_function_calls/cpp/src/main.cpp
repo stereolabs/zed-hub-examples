@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     std::cout << "Waiting for remote function to be called." << std::endl;
     // Main loop
     while (true) {
-	std::this_thread::sleep_for(1s);
+        std::this_thread::sleep_for(1s);
     }
 
     status_iot = HubClient::disconnect();

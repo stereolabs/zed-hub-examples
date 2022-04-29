@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 
         /*******     Define event   *********/
         /*
-        Let's define a video event as a video on wich you can detect someone at least every 10 frames.
+        Let's define a video event as a video on which you can detect someone at least every 10 frames.
         If nobody is detected for 10 frames, a new event is defined next time someone is detected.
         Cf README.md to understand how to use the event_reference to define a new event.
         */

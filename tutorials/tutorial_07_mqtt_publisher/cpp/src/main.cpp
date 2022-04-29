@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     STATUS_CODE status_iot;
     status_iot = HubClient::connect("mqtt_pub_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "Initiliazation error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 

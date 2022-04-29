@@ -24,11 +24,11 @@ import time
 
 
 def main():
-    # initialize the communication to zed hub, without a zed camera. 
-    status = sliot.HubClient.connect("basic app")
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status)
-        exit()
+    # initialize the communication to ZED Hub, without a zed camera.
+    status_iot = sliot.HubClient.connect("basic_app")
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_iot)
+        exit(1)
 
     # set log level
     sliot.HubClient.set_log_level_threshold(
@@ -43,18 +43,19 @@ def main():
 
     # main loop : send a log every 15 secs
     i = 0
-    while i < 10:
+    while True:
         sliot.HubClient.send_log("Log " + str(i) + " sent.", sliot.LOG_LEVEL.INFO)
         time.sleep(15)
-        i = i + 1
+        i += 1
 
-    # Close the communication with zed hub properly.
-    status = sliot.HubClient.disconnect()
-    if status != sliot.STATUS_CODE.SUCCESS:
+    # Close the communication with ZED Hub properly.
+    status_iot = sliot.HubClient.disconnect()
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("Terminating error ", status)
-        exit()
+        exit(1)
     
     return
+
 
 if __name__ == "__main__":
     main()

@@ -20,22 +20,20 @@
 
 import pyzed.sl as sl
 import pyzed.sl_iot as sliot
-import time
-import json
 import paho.mqtt.client as mqttClient
 import os
 import json
 
 led_status_updated = False
 
+
 class slMqttClient:
     def __init__(self):
         if os.path.exists('/usr/local/sl_iot/settings/env.json'):
             f = open('/usr/local/sl_iot/settings/env.json')
             variables = json.load(f)
-            # print(json.dumps(variables, indent=4, sort_keys=False))
             for key in variables.keys():
-                if(key in os.environ):
+                if key in os.environ:
                     print("Original : ", os.environ[key])
                 else:
                     os.environ[key] = variables[key]
@@ -53,8 +51,7 @@ class slMqttClient:
         broker_address = os.environ.get("SL_MQTT_HOST")  # Broker address
         mqtt_port = int(os.environ.get("SL_MQTT_PORT"))  # Broker port
         mqtt_user = "application"  # Connection username
-        app_token = os.environ.get(
-            "SL_APPLICATION_TOKEN")  # Connection password
+        app_token = os.environ.get("SL_APPLICATION_TOKEN")  # Connection password
 
         app_name = os.environ.get("SL_APPLICATION_NAME")  # Connection password
         self.device_id = str(os.environ.get("SL_DEVICE_ID"))
@@ -64,9 +61,7 @@ class slMqttClient:
         self.app_ID = str(os.environ.get("SL_APPLICATION_ID"))
 
         self.subscriptions = {}
-        """
-        client that listen to the app parameter modifications
-        """
+        # Client that listens to the app parameter modifications
         client_id = "tutorial_4_applications_parameters"
 
         self.client = mqttClient.Client(client_id)  # create new instance
@@ -102,7 +97,6 @@ class slMqttClient:
 
     def on_publish(self, client, userdata, result):  # create function for callback
         print("message published")
-        pass
 
     def subscribe_callback(self, remote_name: str, callback_name: str, callback_type: sliot.CALLBACK_TYPE, parameter_type: sliot.PARAMETER_TYPE):
         topic = ""
@@ -125,24 +119,23 @@ class slMqttClient:
             self.subscriptions[topic][remote_name] = callback_name
             print("Subcribed to topic ")
 
-
     def on_message(self, client, inference_thread_manager, message):
-        '''
-        Note that you must subscribe a topic to be able to receive messages (and of course a message must be published on this topic)
-        '''
+        """
+        Note that you must subscribe to a topic to be able to receive messages
+        (and of course a message must be published on this topic)
+        """
         if message.topic in self.subscriptions:
             message_received = json.loads(str(message.payload.decode()))
-            # print(message_received)
-            # check all subscriptions
+            # Check all subscriptions
             for remote_name in self.subscriptions[message.topic].keys():
-                # if a subscription fits with the remote name we received
+                # If a subscription fits with the remote name we received
                 if ("parameters.requested." + remote_name in message_received) or ('name' in message_received and message_received['name'] == remote_name):
-                    # call the stored callback
+                    # Call the stored callback
                     print(message_received)
                     callback_name = self.subscriptions[message.topic][remote_name]
                     b = globals()[callback_name](message_received)
 
-                    ## If it's a remote call, we need to respond.
+                    # If it's a remote call, we need to respond.
                     if message.topic.endswith("/functions/in"):
                         response = {
                             "name": message_received["name"],
@@ -154,40 +147,41 @@ class slMqttClient:
                         }
                         self.client.publish(message.topic.replace("/functions/in", "/functions/out"), json.dumps(response))
 
+
 def on_display_parameters_update(message_received):
     global led_status_updated
     led_status_updated = True
     print("led status updated !")
 
+
 def main():
-    # initialize the communication to zed hub, with a zed camera.
+    # initialize the communication to ZED Hub, with a zed camera.
     global led_status_updated
     led_status_updated = True
     mqtt = slMqttClient()
     zed = sl.Camera() 
-    status = sliot.HubClient.connect("streaming_app")
+    status_iot = sliot.HubClient.connect("parameter_app")
 
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status)
-        exit()
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_iot)
+        exit(1)
 
-    status = sliot.HubClient.register_camera(zed)
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status)
-        exit()
+    status_iot = sliot.HubClient.register_camera(zed)
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_iot)
+        exit(1)
 
     # Open the zed camera
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.HD2K
     init_params.depth_mode = sl.DEPTH_MODE.NONE
     
-    status = zed.open(init_params)
-
-    if status != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log("Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
+    status_zed = zed.open(init_params)
+    if status_zed != sl.ERROR_CODE.SUCCESS:
+        sliot.HubClient.send_log("Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
-    # Setup callback for parameters
+    # Set your parameter callback
     # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
     # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
     mqtt.subscribe_callback("led_status", "on_display_parameters_update",
@@ -196,29 +190,29 @@ def main():
     # Main loop
     while True:
         status_zed = zed.grab()
-        if status == sl.ERROR_CODE.SUCCESS:
-
-            if(led_status_updated):
-                curr_led_status = zed.get_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS)
-                led_status = sliot.HubClient.get_parameter_bool("led_status", sliot.PARAMETER_TYPE.DEVICE, bool(curr_led_status))
-                sliot.HubClient.report_parameter("led_status", sliot.PARAMETER_TYPE.DEVICE, led_status)
-                zed.set_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS, led_status)
-                led_status_updated = False
-
-            # In the end of a grab(), always call a update() on the cloud.
-            sliot.HubClient.update()
-        else:
+        if status_zed != sl.ERROR_CODE.SUCCESS:
             break
-    
-    print("Grab error ", status)
+
+        if led_status_updated:
+            curr_led_status = zed.get_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS)
+            led_status = sliot.HubClient.get_parameter_bool("led_status", sliot.PARAMETER_TYPE.DEVICE, bool(curr_led_status))
+            sliot.HubClient.report_parameter("led_status", sliot.PARAMETER_TYPE.DEVICE, led_status)
+            zed.set_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS, led_status)
+            led_status_updated = False
+
+        # In the end of a grab(), always call a update() on the cloud.
+        sliot.HubClient.update()
+
+    print("Grab error ", status_zed)
+    # Close the camera
     if zed.is_opened():
         zed.close()
 
-    # Close the communication with zed hub properly.
-    status = sliot.HubClient.disconnect()
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Terminating error ", status)
-        exit()
+    # Close the communication with ZED Hub properly.
+    status_iot = sliot.HubClient.disconnect()
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Terminating error ", status_iot)
+        exit(1)
     
     return
     

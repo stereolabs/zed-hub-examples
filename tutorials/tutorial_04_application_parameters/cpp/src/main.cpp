@@ -33,7 +33,7 @@ using json = sl_iot::json;
 
 bool led_status_updated = false;
 
-//Callback on led status update, it sets a boolean to true to turn off/on the led status in the main  loop.
+//Callback on led status update, it sets a boolean to true to turn off/on the led status in the main loop.
 void onLedStatusUpdate(FunctionEvent &event) {
     event.status = 0;
     led_status_updated = true;
@@ -82,9 +82,9 @@ int main(int argc, char **argv) {
         
         if (led_status_updated) {
             int curr_led_status = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS);
-            bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, curr_led_status);
+            bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, curr_led_status);
             p_zed->setCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, led_status);
-            HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, led_status);
+            HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, led_status);
             led_status_updated = false;
         }
 

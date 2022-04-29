@@ -30,8 +30,7 @@ using namespace sl_iot;
 using json = sl_iot::json;
 
 int main(int argc, char **argv) {
-
-    // initialize the communication to zed hub, without a zed camera. 
+    // Initialize the communication to ZED Hub, without a zed camera.
     STATUS_CODE status_iot;
     status_iot = HubClient::connect("basic_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
@@ -65,7 +64,7 @@ int main(int argc, char **argv) {
         i++;
     }
 
-    // Close the communication with zed hub properly.
+    // Close the communication with ZED Hub properly.
     status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;

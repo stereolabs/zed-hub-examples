@@ -24,35 +24,35 @@ import time
 
 
 def main():
-    # initialize the communication to zed hub, with a zed camera.
+    # initialize the communication to ZED Hub, with a zed camera.
     zed = sl.Camera() 
-    status = sliot.HubClient.connect("streaming_app")
+    status_iot = sliot.HubClient.connect("telemetry_app")
 
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status)
-        exit()
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_iot)
+        exit(1)
 
-    status = sliot.HubClient.register_camera(zed)
+    status_iot = sliot.HubClient.register_camera(zed)
 
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status)
-        exit()
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_iot)
+        exit(1)
 
     # Open the zed camera
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.HD2K
     
-    status = zed.open(init_params)
-    if status != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log("Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
+    status_zed = zed.open(init_params)
+    if status_zed != sl.ERROR_CODE.SUCCESS:
+        sliot.HubClient.send_log("Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
     # Enable the positionnal tracking and setup the loop
     positionnal_tracking_params = sl.PositionalTrackingParameters()
     positionnal_tracking_params.enable_area_memory = True
-    status = zed.enable_positional_tracking(positionnal_tracking_params)
-    if status != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log("Enabling positional tracking failed : " + str(status), sliot.LOG_LEVEL.ERROR)
+    status_zed = zed.enable_positional_tracking(positionnal_tracking_params)
+    if status_zed != sl.ERROR_CODE.SUCCESS:
+        sliot.HubClient.send_log("Enabling positional tracking failed : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
         exit(1)    
 
     cam_pose = sl.Pose()
@@ -64,14 +64,15 @@ def main():
     # Main loop
     while True:
         status_zed = zed.grab()
-        if status == sl.ERROR_CODE.SUCCESS:
+        if status_zed != sl.ERROR_CODE.SUCCESS:
+            break
 
-            # Collect data
-            current_timestamp = zed.get_timestamp(sl.TIME_REFERENCE.IMAGE)
-            if current_timestamp.get_milliseconds() >= previous_timestamp.get_milliseconds():
-                zed.get_position(cam_pose)
-                translation = cam_pose.get_translation()
-                rot = cam_pose.get_rotation_vector()
+        # Collect data
+        current_timestamp = zed.get_timestamp(sl.TIME_REFERENCE.IMAGE)
+        if current_timestamp.get_milliseconds() >= previous_timestamp.get_milliseconds() + 1000:
+            zed.get_position(cam_pose)
+            translation = cam_pose.get_translation()
+            rot = cam_pose.get_rotation_vector()
 
             # Send the telemetry
             position_telemetry = {}
@@ -85,23 +86,26 @@ def main():
             sliot.HubClient.send_telemetry("camera_position", position_telemetry)
             previous_timestamp = current_timestamp
 
-            # In the end of a grab(), always call a update() on the cloud.
-            sliot.HubClient.update()
-        else:
-            break
+        # Insert custom code here
+
+        # In the end of a grab(), always call a update() on the cloud.
+        sliot.HubClient.update()
+        time.sleep(0.001)
 
     zed.disable_positional_tracking()
 
+    # Cloe the camera
     if zed.is_opened():
         zed.close()
 
-    # Close the communication with zed hub properly.
-    status = sliot.HubClient.disconnect()
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Terminating error ", status)
-        exit()
+    # Close the communication with ZED Hub properly.
+    status_iot = sliot.HubClient.disconnect()
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Terminating error ", status_iot)
+        exit(1)
     
     return
+
 
 if __name__ == "__main__":
     main()

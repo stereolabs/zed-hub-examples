@@ -18,22 +18,20 @@
 #
 ########################################################################
 
-import pyzed.sl as sl
 import pyzed.sl_iot as sliot
 import time
-import json
 import paho.mqtt.client as mqttClient
 import os
 import json
+
 
 class slMqttClient:
     def __init__(self):
         if os.path.exists('/usr/local/sl_iot/settings/env.json'):
             f = open('/usr/local/sl_iot/settings/env.json')
             variables = json.load(f)
-            # print(json.dumps(variables, indent=4, sort_keys=False))
             for key in variables.keys():
-                if(key in os.environ):
+                if key in os.environ:
                     print("Original : ", os.environ[key])
                 else:
                     os.environ[key] = variables[key]
@@ -51,8 +49,7 @@ class slMqttClient:
         broker_address = os.environ.get("SL_MQTT_HOST")  # Broker address
         mqtt_port = int(os.environ.get("SL_MQTT_PORT"))  # Broker port
         mqtt_user = "application"  # Connection username
-        app_token = os.environ.get(
-            "SL_APPLICATION_TOKEN")  # Connection password
+        app_token = os.environ.get("SL_APPLICATION_TOKEN")  # Connection password
 
         app_name = os.environ.get("SL_APPLICATION_NAME")  # Connection password
         self.device_id = str(os.environ.get("SL_DEVICE_ID"))
@@ -62,9 +59,7 @@ class slMqttClient:
         self.app_ID = str(os.environ.get("SL_APPLICATION_ID"))
 
         self.subscriptions = {}
-        """
-        client that listen to the app parameter modifications
-        """
+        # Client that listens to the app parameter modifications
         client_id = "tutorial_5_remote_function"
 
         self.client = mqttClient.Client(client_id)  # create new instance
@@ -124,22 +119,22 @@ class slMqttClient:
             print("Subcribed to topic ")
 
     def on_message(self, client, inference_thread_manager, message):
-        '''
-        Note that you must subscribe a topic to be able to receive messages (and of course a message must be published on this topic)
-        '''
+        """
+        Note that you must subscribe a topic to be able to receive messages
+        (and of course a message must be published on this topic)
+        """
         if message.topic in self.subscriptions:
             message_received = json.loads(str(message.payload.decode()))
-            # print(message_received)
-            # check all subscriptions
+            # Check all subscriptions
             for remote_name in self.subscriptions[message.topic].keys():
-                # if a subscription fits with the remote name we received
+                # If a subscription fits with the remote name we received
                 if ("parameters.requested." + remote_name in message_received) or ('name' in message_received and message_received['name'] == remote_name):
-                    # call the stored callback
+                    # Call the stored callback
                     print(message_received)
                     callback_name = self.subscriptions[message.topic][remote_name]
                     b = globals()[callback_name](message_received)
 
-                    ## If it's a remote call, we need to respond.
+                    # If it's a remote call, we need to respond.
                     if message.topic.endswith("/functions/in"):
                         response = {
                             "name": message_received["name"],
@@ -151,12 +146,15 @@ class slMqttClient:
                         }
                         self.client.publish(message.topic.replace("/functions/in", "/functions/out"), json.dumps(response))
 
+
 def addition_callback(params: dict):
     num1 = params["parameters"]["num1"]
     num2 = params["parameters"]["num2"]
 
-    if(isinstance(num1, int) and isinstance(num2, int)):
+    # Check if parameters are valid
+    if isinstance(num1, int) and isinstance(num2, int):
         result = num1 + num2
+        # Log your result
         log = "Addition called : " + \
             str(num1) + " + " + str(num2) + " = " + str(result)
         sliot.HubClient.send_log(log, sliot.LOG_LEVEL.INFO)
@@ -168,30 +166,11 @@ def addition_callback(params: dict):
 
 
 def main():
-    # initialize the communication to zed hub, with a zed camera.
     mqtt = slMqttClient()
-    zed = sl.Camera()
-    status = sliot.HubClient.connect("streaming_app")
+    status_iot = sliot.HubClient.connect("callback_app")
 
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status)
-        exit()
-
-    status = sliot.HubClient.register_camera(zed)
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status)
-        exit()
-
-    # Open the zed camera
-    init_params = sl.InitParameters()
-    init_params.camera_resolution = sl.RESOLUTION.HD2K
-    init_params.depth_mode = sl.DEPTH_MODE.NONE
-
-    status = zed.open(init_params)
-
-    if status != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log(
-            "Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_iot)
         exit(1)
 
     # Setup callback
@@ -199,26 +178,17 @@ def main():
     # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
     mqtt.subscribe_callback("tuto05_add", "addition_callback",
                             sliot.CALLBACK_TYPE.ON_REMOTE_CALL, sliot.PARAMETER_TYPE.DEVICE)
-    
+
+    print("Waiting for remote function to be called.")
     # Main loop
     while True:
-        status_zed = zed.grab()
-        if status == sl.ERROR_CODE.SUCCESS:
+        time.sleep(1)
 
-            # In the end of a grab(), always call a update() on the cloud.
-            sliot.HubClient.update()
-        else:
-            break
-
-    print("Grab error ", status)
-    if zed.is_opened():
-        zed.close()
-
-    # Close the communication with zed hub properly.
+    # Close the communication with ZED Hub properly.
     status = sliot.HubClient.disconnect()
     if status != sliot.STATUS_CODE.SUCCESS:
         print("Terminating error ", status)
-        exit()
+        exit(1)
 
     return
 

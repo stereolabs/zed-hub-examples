@@ -24,17 +24,16 @@ void onDataReceived(std::string topic, std::string message, TARGET target, void*
 int main(int argc, char **argv) {
 
     STATUS_CODE status_iot;
-    status_iot = HubClient::connect("basic_app");
+    status_iot = HubClient::connect("mqtt_sub_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "Initiliazation error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    // Topic to be listen
+    // Topic to listen
     TARGET topic_prefix = TARGET::LOCAL_NETWORK;
     std::string topic_name = "/my_custom_data";
 
-    //
     HubClient::subscribeToMqttTopic(topic_name, onDataReceived, topic_prefix);
 
     // Main loop
