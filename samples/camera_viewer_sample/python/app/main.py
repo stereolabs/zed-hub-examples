@@ -135,21 +135,34 @@ class slMqttClient:
             self.subscriptions[topic][remote_name] = callback_name
             print("Subcribed to topic ")
 
+
     def on_message(self, client, inference_thread_manager, message):
         '''
         Note that you must subscribe a topic to be able to receive messages (and of course a message must be published on this topic)
         '''
         if message.topic in self.subscriptions:
             message_received = json.loads(str(message.payload.decode()))
-            print(message_received)
+            # print(message_received)
             # check all subscriptions
             for remote_name in self.subscriptions[message.topic].keys():
                 # if a subscription fits with the remote name we received
-                if "parameters.requested." + remote_name in message_received:
+                if ("parameters.requested." + remote_name in message_received) or ('name' in message_received and message_received['name'] == remote_name):
                     # call the stored callback
+                    print(message_received)
                     callback_name = self.subscriptions[message.topic][remote_name]
-                    b = globals()[callback_name]()
+                    b = globals()[callback_name](message_received)
 
+                    ## If it's a remote call, we need to respond.
+                    if message.topic.endswith("/functions/in"):
+                        response = {
+                            "name": message_received["name"],
+                            "call_id": message_received["id"],
+                            "status": 0,
+                            "result": {
+                                "success": b
+                            }
+                        }
+                        self.client.publish(message.topic.replace("/functions/in", "/functions/out"), json.dumps(response))
 
 # def on_display_parameters_update():
 #     global draw_bboxes
@@ -161,7 +174,7 @@ class slMqttClient:
 #     return True
 
 
-def on_video_event_update():
+def on_video_event_update(message_received):
     global recordVideoEvent
     global nbFramesNoDetBtw2Events
     print("Video event updated")
@@ -173,7 +186,7 @@ def on_video_event_update():
         "New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified", sliot.LOG_LEVEL.INFO)
 
 
-def on_telemetry_update():
+def on_telemetry_update(message_received):
     global recordTelemetry
     global telemetryFreq
     print("telemetry updated")
@@ -188,7 +201,7 @@ def on_telemetry_update():
 # \brief Callback generated when init parameters have been changed on the cloud interface
 # \param event from FunctionEvent
 #
-def on_init_param_change():
+def on_init_param_change(message_received):
     global sdk_guard
     global zed
     global init_params
@@ -204,7 +217,7 @@ def on_init_param_change():
 # \brief Callback generated when GAMMA video settings has been changed on the cloud interface
 # \param event from FunctionEvent
 #
-def on_gamma_update():
+def on_gamma_update(message_received):
     global sdk_guard
     global zed
     sdk_guard.acquire()
@@ -219,7 +232,7 @@ def on_gamma_update():
 # \brief Callback generated when GAMMA video settings has been changed on the cloud interface
 # \param event from FunctionEvent
 #
-def on_gain_update():
+def on_gain_update(message_received):
     global sdk_guard
     global zed
     sdk_guard.acquire();
@@ -234,7 +247,7 @@ def on_gain_update():
 # \brief Callback generated when AEC/AGC video settings has been changed on the cloud interface
 # \param event from FunctionEvent
 #
-def on_autoexposure_update():
+def on_autoexposure_update(message_received):
 
     global sdk_guard
     global zed
@@ -250,7 +263,7 @@ def on_autoexposure_update():
 # \brief Callback generated when Exposure video settings has been changed on the cloud interface
 # \param event from FunctionEvent
 #
-def on_exposure_update():
+def on_exposure_update(message_received):
     global sdk_guard
     global zed
     sdk_guard.acquire()
@@ -266,7 +279,7 @@ def on_exposure_update():
 # the stream mode of the zed is enabled or disabled depending on the value
 # \param event from FunctionEvent
 #
-def on_local_stream_update():
+def on_local_stream_update(message_received):
     global sdk_guard
     global zed
     local_stream_change = True

@@ -28,13 +28,19 @@ import json
 
 class slMqttClient:
     def __init__(self):
-        f = open('/usr/local/sl_iot/settings/env.json')
-        variables = json.load(f)
-        for key in variables.keys():
-            if(key in os.environ):
-                print("Original : ", os.environ[key])
-            os.environ[key] = variables[key]
-            print(key, ", ", os.environ[key])
+        if os.path.exists('/usr/local/sl_iot/settings/env.json'):
+            f = open('/usr/local/sl_iot/settings/env.json')
+            variables = json.load(f)
+            # print(json.dumps(variables, indent=4, sort_keys=False))
+            for key in variables.keys():
+                if(key in os.environ):
+                    print("Original : ", os.environ[key])
+                else:
+                    os.environ[key] = variables[key]
+                print(key, ", ", os.environ[key])
+
+        else:
+            print("No env file found in /usr/local/sl_iot/settings/env.json")
 
         #######################################################################
         #                                                                     #
@@ -49,19 +55,19 @@ class slMqttClient:
             "SL_APPLICATION_TOKEN")  # Connection password
 
         app_name = os.environ.get("SL_APPLICATION_NAME")  # Connection password
-        device_id = str(os.environ.get("SL_DEVICE_ID"))
+        self.device_id = str(os.environ.get("SL_DEVICE_ID"))
+        logs_topic = "/v1/devices/" + self.device_id + "/logs"
 
-        app_ID = str(os.environ.get("SL_APPLICATION_ID"))
+        # Topic where the cloud publishes parameter modifications
+        self.app_ID = str(os.environ.get("SL_APPLICATION_ID"))
 
-        self.function_topic_in = "/v1/devices/" + device_id + "/functions/in"
-        self.function_topic_out = "/v1/devices/" + device_id + "/functions/out"
         self.subscriptions = {}
         """
         client that listen to the app parameter modifications
         """
-        client_name = "tutorial_5_remote_functions"
+        client_id = "tutorial_5_remote_function"
 
-        self.client = mqttClient.Client(client_name)  # create new instance
+        self.client = mqttClient.Client(client_id)  # create new instance
 
         print("Connecting MQTT")
         # the callback is handled directly with MQTT, unlike in C++
@@ -85,8 +91,7 @@ class slMqttClient:
     ####### alert MQTT #######
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
-            print("MQTT service connected to broker, subscription done.")
-
+            print("MQTT service connected to broker. Subscribing...")
         else:
             print("MQTT service Connection failed")
 
@@ -97,36 +102,58 @@ class slMqttClient:
         print("message published")
         pass
 
+    def subscribe_callback(self, remote_name: str, callback_name: str, callback_type: sliot.CALLBACK_TYPE, parameter_type: sliot.PARAMETER_TYPE):
+        topic = ""
+        parameter_type_addition = ""
+
+        if parameter_type == sliot.PARAMETER_TYPE.APPLICATION:
+            parameter_type_addition = "/apps/" + self.app_ID
+
+        if callback_type == sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE:
+            topic = "/v1/devices/" + self.device_id + \
+                parameter_type_addition + "/twin/update"
+        elif callback_type == sliot.CALLBACK_TYPE.ON_REMOTE_CALL:
+            topic = "/v1/devices/" + self.device_id + \
+                parameter_type_addition + "/functions/in"
+
+        if topic != "":
+            self.client.subscribe(topic)
+            if topic not in self.subscriptions:
+                self.subscriptions[topic] = {}
+            self.subscriptions[topic][remote_name] = callback_name
+            print("Subcribed to topic ")
+
     def on_message(self, client, inference_thread_manager, message):
         '''
         Note that you must subscribe a topic to be able to receive messages (and of course a message must be published on this topic)
         '''
-        if message.topic == self.function_topic_in:
-            message_received = json.loads(str(message.payload.decode("utf-8")))
-            if("name" in message_received):
-                if message_received["name"] in self.subscriptions:
-                    # We subscribed to this. We can run the callback that is attached to that name.
-                    b = globals()[self.subscriptions[message_received["name"]]](
-                        message_received["parameters"])
-                    response = {
-                        "name": message_received["name"],
-                        "call_id": message_received["id"],
-                        "status": 0,
-                        "result": {
-                            "success": b
+        if message.topic in self.subscriptions:
+            message_received = json.loads(str(message.payload.decode()))
+            # print(message_received)
+            # check all subscriptions
+            for remote_name in self.subscriptions[message.topic].keys():
+                # if a subscription fits with the remote name we received
+                if ("parameters.requested." + remote_name in message_received) or ('name' in message_received and message_received['name'] == remote_name):
+                    # call the stored callback
+                    print(message_received)
+                    callback_name = self.subscriptions[message.topic][remote_name]
+                    b = globals()[callback_name](message_received)
+
+                    ## If it's a remote call, we need to respond.
+                    if message.topic.endswith("/functions/in"):
+                        response = {
+                            "name": message_received["name"],
+                            "call_id": message_received["id"],
+                            "status": 0,
+                            "result": {
+                                "success": b
+                            }
                         }
-                    }
-                    self.client.publish(self.function_topic_out, json.dumps(response))
-
-    def subscribe_callback(self, remote_name: str, callback_name: str):
-        self.client.subscribe(self.function_topic_in)
-        self.subscriptions[remote_name] = callback_name
-        print("Subcribed to topic ")
-
+                        self.client.publish(message.topic.replace("/functions/in", "/functions/out"), json.dumps(response))
 
 def addition_callback(params: dict):
-    num1 = params["num1"]
-    num2 = params["num2"]
+    num1 = params["parameters"]["num1"]
+    num2 = params["parameters"]["num2"]
 
     if(isinstance(num1, int) and isinstance(num2, int)):
         result = num1 + num2
@@ -167,9 +194,12 @@ def main():
             "Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
-    # MQTT subscription
-    mqtt.subscribe_callback("tuto05_add", "addition_callback")
-
+    # Setup callback
+    # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
+    # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
+    mqtt.subscribe_callback("tuto05_add", "addition_callback",
+                            sliot.CALLBACK_TYPE.ON_REMOTE_CALL, sliot.PARAMETER_TYPE.DEVICE)
+    
     # Main loop
     while True:
         status_zed = zed.grab()
