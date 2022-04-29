@@ -30,14 +30,19 @@ led_status_updated = False
 
 class slMqttClient:
     def __init__(self):
-        f = open('/usr/local/sl_iot/settings/env.json')
-        variables = json.load(f)
-        # print(json.dumps(variables, indent=4, sort_keys=False))
-        for key in variables.keys():
-            if(key in os.environ):
-                print("Original : ", os.environ[key])
-            os.environ[key] = variables[key]
-            print(key, ", ", os.environ[key])
+        if os.path.exists('/usr/local/sl_iot/settings/env.json'):
+            f = open('/usr/local/sl_iot/settings/env.json')
+            variables = json.load(f)
+            # print(json.dumps(variables, indent=4, sort_keys=False))
+            for key in variables.keys():
+                if(key in os.environ):
+                    print("Original : ", os.environ[key])
+                else:
+                    os.environ[key] = variables[key]
+                print(key, ", ", os.environ[key])
+        
+        else:
+            print("No env file found in /usr/local/sl_iot/settings/env.json")
 
         #######################################################################
         #                                                                     #
@@ -48,17 +53,17 @@ class slMqttClient:
         broker_address = os.environ.get("SL_MQTT_HOST")  # Broker address
         mqtt_port = int(os.environ.get("SL_MQTT_PORT"))  # Broker port
         mqtt_user = "application"  # Connection username
-        app_token = os.environ.get("SL_APPLICATION_TOKEN")  # Connection password
+        app_token = os.environ.get(
+            "SL_APPLICATION_TOKEN")  # Connection password
 
         app_name = os.environ.get("SL_APPLICATION_NAME")  # Connection password
-        device_id = str(os.environ.get("SL_DEVICE_ID"))
-        logs_topic = "/v1/devices/" + device_id + "/logs"
+        self.device_id = str(os.environ.get("SL_DEVICE_ID"))
+        logs_topic = "/v1/devices/" + self.device_id + "/logs"
 
-        ## Topic where the cloud publishes parameter modifications
-        app_ID = str(os.environ.get("SL_APPLICATION_ID"))
-        # self.update_app_param_topic = "/v1/devices/" + device_id + "/apps/"+ app_ID + "/twin/update"
-        self.update_app_param_topic = "/v1/devices/" + device_id + "/twin/update"
+        # Topic where the cloud publishes parameter modifications
+        self.app_ID = str(os.environ.get("SL_APPLICATION_ID"))
 
+        self.subscriptions = {}
         """
         client that listen to the app parameter modifications
         """
@@ -69,7 +74,8 @@ class slMqttClient:
         print("Connecting MQTT")
         # the callback is handled directly with MQTT, unlike in C++
         #############     Get the environment variables      ##################
-        self.client.username_pw_set(mqtt_user, password=app_token)  # set username and password
+        # set username and password
+        self.client.username_pw_set(mqtt_user, password=app_token)
 
         self.client.on_connect = self.on_connect  # attach function to callback
         self.client.on_disconnect = self.on_disconnect  # attach function to callback
@@ -77,7 +83,8 @@ class slMqttClient:
         self.client.on_publish = self.on_publish  # attach function to callback
 
         print("Connecting to broker")
-        self.client.connect(broker_address, port=mqtt_port)  # connect to broker
+        # connect to broker
+        self.client.connect(broker_address, port=mqtt_port)
 
         #################        start MQTT CLIENT thread            ##################
         self.client.loop_start()
@@ -87,39 +94,61 @@ class slMqttClient:
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             print("MQTT service connected to broker. Subscribing...")
-            self.client.subscribe(self.update_app_param_topic) 
-            
         else:
             print("MQTT service Connection failed")
 
-
-    def on_disconnect(self, client, userdata,rc=0):
+    def on_disconnect(self, client, userdata, rc=0):
         print("MQTT service disconnected")
-
 
     def on_publish(self, client, userdata, result):  # create function for callback
         print("message published")
         pass
 
+    def subscribe_callback(self, remote_name: str, callback_name: str, callback_type: sliot.CALLBACK_TYPE, parameter_type: sliot.PARAMETER_TYPE):
+        topic = ""
+        parameter_type_addition = ""
+
+        if parameter_type == sliot.PARAMETER_TYPE.APPLICATION:
+            parameter_type_addition = "/apps/" + self.app_ID
+
+        if callback_type == sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE:
+            topic = "/v1/devices/" + self.device_id + \
+                parameter_type_addition + "/twin/update"
+        elif callback_type == sliot.CALLBACK_TYPE.ON_REMOTE_CALL:
+            topic = "/v1/devices/" + self.device_id + \
+                parameter_type_addition + "/functions/in"
+
+        if topic != "":
+            self.client.subscribe(topic)
+            if topic not in self.subscriptions:
+                self.subscriptions[topic] = {}
+            self.subscriptions[topic][remote_name] = callback_name
+            print("Subcribed to topic ")
 
     def on_message(self, client, inference_thread_manager, message):
         '''
         Note that you must subscribe a topic to be able to receive messages (and of course a message must be published on this topic)
         '''
+        if message.topic in self.subscriptions:
+            message_received = json.loads(str(message.payload.decode()))
+            print(message_received)
+            # check all subscriptions
+            for remote_name in self.subscriptions[message.topic].keys():
+                # if a subscription fits with the remote name we received
+                if "parameters.requested." + remote_name in message_received:
+                    # call the stored callback
+                    callback_name = self.subscriptions[message.topic][remote_name]
+                    b = globals()[callback_name]()
 
-        if message.topic == self.update_app_param_topic:
-            # print("New parameter update received")
-            new_app_parameters = json.loads(str(message.payload.decode()))
-            # print (new_app_parameters)
-            if "parameters.requested.led_status" in new_app_parameters:
-                global led_status_updated
-                led_status_updated = True
-            # update_parameters(new_app_parameters)
+def on_display_parameters_update():
+    global led_status_updated
+    led_status_updated = True
+    print("led status updated !")
 
 def main():
     # initialize the communication to zed hub, with a zed camera.
     global led_status_updated
-    led_status_updated = False
+    led_status_updated = True
     mqtt = slMqttClient()
     zed = sl.Camera() 
     status = sliot.HubClient.connect("streaming_app")
@@ -144,6 +173,12 @@ def main():
         sliot.HubClient.send_log("Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
+    # Setup callback for parameters
+    # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
+    # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
+    mqtt.subscribe_callback("led_status", "on_display_parameters_update",
+                            sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    
     # Main loop
     while True:
         status_zed = zed.grab()
@@ -151,11 +186,10 @@ def main():
 
             if(led_status_updated):
                 curr_led_status = zed.get_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS)
-                led_status = sliot.HubClient.get_parameter_bool("led_status", sliot.PARAMETER_TYPE.DEVICE, curr_led_status)
+                led_status = sliot.HubClient.get_parameter_bool("led_status", sliot.PARAMETER_TYPE.DEVICE, bool(curr_led_status))
                 sliot.HubClient.report_parameter("led_status", sliot.PARAMETER_TYPE.DEVICE, led_status)
                 zed.set_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS, led_status)
                 led_status_updated = False
-                print("updated to ", led_status)
 
             # In the end of a grab(), always call a update() on the cloud.
             sliot.HubClient.update()
