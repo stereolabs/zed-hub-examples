@@ -20,13 +20,10 @@
 
 import pyzed.sl as sl
 import pyzed.sl_iot as sliot
-import time
-import cv2
-import numpy as np
 import paho.mqtt.client as mqttClient
 import json
 import os
-from threading import Thread, Lock
+from threading import Lock
 
 # Parameters, defined as global variables
 draw_bboxes = False
@@ -38,14 +35,14 @@ sdk_guard = Lock()
 zed = sl.Camera()
 init_params = sl.InitParameters()
 
+
 class slMqttClient:
     def __init__(self):
         if os.path.exists('/usr/local/sl_iot/settings/env.json'):
             f = open('/usr/local/sl_iot/settings/env.json')
             variables = json.load(f)
-            # print(json.dumps(variables, indent=4, sort_keys=False))
             for key in variables.keys():
-                if(key in os.environ):
+                if key in os.environ:
                     print("Original : ", os.environ[key])
                 else:
                     os.environ[key] = variables[key]
@@ -63,8 +60,7 @@ class slMqttClient:
         broker_address = os.environ.get("SL_MQTT_HOST")  # Broker address
         mqtt_port = int(os.environ.get("SL_MQTT_PORT"))  # Broker port
         mqtt_user = "application"  # Connection username
-        app_token = os.environ.get(
-            "SL_APPLICATION_TOKEN")  # Connection password
+        app_token = os.environ.get("SL_APPLICATION_TOKEN")  # Connection password
 
         app_name = os.environ.get("SL_APPLICATION_NAME")  # Connection password
         self.device_id = str(os.environ.get("SL_DEVICE_ID"))
@@ -74,10 +70,8 @@ class slMqttClient:
         self.app_ID = str(os.environ.get("SL_APPLICATION_ID"))
 
         self.subscriptions = {}
-        """
-        client that listen to the app parameter modifications
-        """
-        client_id = "sample_object_detection"
+        # Client that listens to the app parameter modifications
+        client_id = "sample_camera_viewer"
 
         self.client = mqttClient.Client(client_id)  # create new instance
 
@@ -123,10 +117,10 @@ class slMqttClient:
 
         if callback_type == sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE:
             topic = "/v1/devices/" + self.device_id + \
-                parameter_type_addition + "/twin/update"
+                    parameter_type_addition + "/twin/update"
         elif callback_type == sliot.CALLBACK_TYPE.ON_REMOTE_CALL:
             topic = "/v1/devices/" + self.device_id + \
-                parameter_type_addition + "/functions/in"
+                    parameter_type_addition + "/functions/in"
 
         if topic != "":
             self.client.subscribe(topic)
@@ -135,24 +129,23 @@ class slMqttClient:
             self.subscriptions[topic][remote_name] = callback_name
             print("Subcribed to topic ")
 
-
     def on_message(self, client, inference_thread_manager, message):
-        '''
-        Note that you must subscribe a topic to be able to receive messages (and of course a message must be published on this topic)
-        '''
+        """
+        Note that you must subscribe a topic to be able to receive messages
+        (and of course a message must be published on this topic)
+        """
         if message.topic in self.subscriptions:
             message_received = json.loads(str(message.payload.decode()))
-            # print(message_received)
-            # check all subscriptions
+            # Check all subscriptions
             for remote_name in self.subscriptions[message.topic].keys():
-                # if a subscription fits with the remote name we received
+                # If a subscription fits with the remote name we received
                 if ("parameters.requested." + remote_name in message_received) or ('name' in message_received and message_received['name'] == remote_name):
-                    # call the stored callback
+                    # Call the stored callback
                     print(message_received)
                     callback_name = self.subscriptions[message.topic][remote_name]
                     b = globals()[callback_name](message_received)
 
-                    ## If it's a remote call, we need to respond.
+                    # If it's a remote call, we need to respond.
                     if message.topic.endswith("/functions/in"):
                         response = {
                             "name": message_received["name"],
@@ -163,15 +156,6 @@ class slMqttClient:
                             }
                         }
                         self.client.publish(message.topic.replace("/functions/in", "/functions/out"), json.dumps(response))
-
-# def on_display_parameters_update():
-#     global draw_bboxes
-#     print("Display parameter updated.")
-#     draw_bboxes = sliot.HubClient.get_parameter_bool(
-#         "draw_bboxes", sliot.PARAMETER_TYPE.DEVICE)
-#     sliot.HubClient.send_log(
-#         "New parameter : draw_bboxes modified to " + str(draw_bboxes), sliot.LOG_LEVEL.INFO)
-#     return True
 
 
 def on_video_event_update(message_received):
@@ -191,11 +175,12 @@ def on_telemetry_update(message_received):
     global telemetryFreq
     print("telemetry updated")
     recordTelemetry = sliot.HubClient.get_parameter_bool(
-        "recordTelemetry", Psliot.PARAMETER_TYPE.DEVICE, recordTelemetry)
+        "recordTelemetry", sliot.PARAMETER_TYPE.DEVICE, recordTelemetry)
     telemetryFreq = sliot.HubClient.get_parameter_float(
         "telemetryFreq", sliot.PARAMETER_TYPE.DEVICE, telemetryFreq)
     sliot.HubClient.send_log(
         "New parameters : recordTelemetry or telemetryFreq modified", sliot.LOG_LEVEL.INFO)
+
 
 #
 # \brief Callback generated when init parameters have been changed on the cloud interface
@@ -213,6 +198,7 @@ def on_init_param_change(message_received):
     zed.open(init_params)
     sdk_guard.release()
 
+
 #
 # \brief Callback generated when GAMMA video settings has been changed on the cloud interface
 # \param event from FunctionEvent
@@ -228,6 +214,7 @@ def on_gamma_update(message_received):
     sliot.HubClient.purge_video_stream()
     sliot.HubClient.report_parameter("camera_gamma", sliot.PARAMETER_TYPE.DEVICE, gamma);
 
+
 #
 # \brief Callback generated when GAMMA video settings has been changed on the cloud interface
 # \param event from FunctionEvent
@@ -242,6 +229,7 @@ def on_gain_update(message_received):
     sdk_guard.release();
     sliot.HubClient.purge_video_stream()
     sliot.HubClient.report_parameter("camera_gain", sliot.PARAMETER_TYPE.DEVICE, gain)
+
 
 #
 # \brief Callback generated when AEC/AGC video settings has been changed on the cloud interface
@@ -259,6 +247,7 @@ def on_autoexposure_update(message_received):
     sliot.HubClient.purge_video_stream()
     sliot.HubClient.report_parameter("camera_auto_exposure", sliot.PARAMETER_TYPE.DEVICE, auto_exposure);
 
+
 #
 # \brief Callback generated when Exposure video settings has been changed on the cloud interface
 # \param event from FunctionEvent
@@ -274,6 +263,7 @@ def on_exposure_update(message_received):
     sliot.HubClient.purge_video_stream()
     sliot.HubClient.report_parameter("camera_exposure", sliot.PARAMETER_TYPE.DEVICE, exposure)
 
+
 #
 # \brief Callback generated when the ap parameter local_stream has been modified in the interface.
 # the stream mode of the zed is enabled or disabled depending on the value
@@ -283,32 +273,33 @@ def on_local_stream_update(message_received):
     global sdk_guard
     global zed
     local_stream_change = True
-    local_stream = sliot.HubClient.get_parameter_bool("local_stream", PARAMETER_TYPE.APPLICATION, False)
+    local_stream = sliot.HubClient.get_parameter_bool("local_stream", sliot.PARAMETER_TYPE.APPLICATION, False)
 
-    if (local_stream):
+    if local_stream:
         stream_param = sl.StreamingParameters()
         stream_param.codec = sl.STREAMING_CODEC.H264
 
         # restart streaming with new parameters
         zed.disable_streaming()
-        zed_error = zed.enable_streaming(stream_param);
+        zed_error = zed.enable_streaming(stream_param)
         if (zed_error != sl.ERROR_CODE.SUCCESS):
-            print("[onAppStreamParamUpdate] " << str(zed_error) << "\nExit program.");
+            print("[onAppStreamParamUpdate] " + str(zed_error) + "\nExit program.");
             zed.close()
             exit(1)
     else:
         zed.disable_streaming()
 
+
 def update_init_params_from_cloud(init_params: sl.InitParameters):
     reso_str = sliot.HubClient.get_parameter_string(
         "camera_resolution", sliot.PARAMETER_TYPE.DEVICE, str(init_params.camera_resolution))
-    if (reso_str == "HD2K"):
+    if reso_str == "HD2K":
         init_params.camera_resolution = sl.RESOLUTION.HD2K
-    elif (reso_str == "HD720"):
+    elif reso_str == "HD720":
         init_params.camera_resolution = sl.RESOLUTION.HD720
-    elif (reso_str == "HD1080"):
+    elif reso_str == "HD1080":
         init_params.camera_resolution = sl.RESOLUTION.HD1080
-    elif (reso_str == "WVGA"):
+    elif reso_str == "WVGA":
         init_params.camera_resolution = sl.RESOLUTION.VGA
 
     sliot.HubClient.report_parameter(
@@ -332,23 +323,23 @@ def main():
 
     mqtt = slMqttClient()
 
-    # initialize the communication to zed hub, with a zed camera.
+    # Initialize the communication to ZED Hub, with a zed camera.
     zed = sl.Camera()
-    status = sliot.HubClient.connect("camera_viewer_sample")
+    status_iot = sliot.HubClient.connect("camera_viewer_sample")
 
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status)
-        exit()
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_iot)
+        exit(1)
 
-    status = sliot.HubClient.register_camera(zed)
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status)
-        exit()
+    status_iot = sliot.HubClient.register_camera(zed)
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_iot)
+        exit(1)
 
-    status = sliot.HubClient.load_application_parameters("parameters.json")
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("parameters.json file not found or malformated", status)
-        exit()
+    status_iot = sliot.HubClient.load_application_parameters("parameters.json")
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("parameters.json file not found or malformated", status_iot)
+        exit(1)
 
     # Setup init parameters
     init_params = sl.InitParameters()
@@ -421,11 +412,11 @@ def main():
     if zed.is_opened():
         zed.close()
 
-    # Close the communication with zed hub properly.
+    # Close the communication with ZED Hub properly.
     status = sliot.HubClient.disconnect()
     if status != sliot.STATUS_CODE.SUCCESS:
         print("Terminating error ", status)
-        exit()
+        exit(1)
 
     return
 

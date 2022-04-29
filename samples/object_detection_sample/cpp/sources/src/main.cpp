@@ -83,7 +83,6 @@ void onTelemetryUpdate(FunctionEvent &event) {
 }
 
 
-
 int main(int argc, char **argv) {
     // Create camera object
     std::shared_ptr<sl::Camera> p_zed;
@@ -143,7 +142,7 @@ int main(int argc, char **argv) {
     }
 
     // Object Detection runtime parameters : detect person only
-    // see  the ZED Doc for the other available classes https://www.stereolabs.com/docs/api/group__Object__group.html#ga13b0c230bc8fee5bbaaaa57a45fa1177 
+    // see the ZED Doc for the other available classes https://www.stereolabs.com/docs/api/group__Object__group.html#ga13b0c230bc8fee5bbaaaa57a45fa1177
     ObjectDetectionRuntimeParameters objectTracker_parameters_rt;
     objectTracker_parameters_rt.detection_confidence_threshold = 50;
     objectTracker_parameters_rt.object_class_filter.clear();
@@ -257,7 +256,7 @@ int main(int argc, char **argv) {
         /*******************************/
 
         /*******     Define and send Telemetry   *********/
-        // In this exemple we send every second the number of people detected and there mean distance to the camera
+        // In this example we send every second the number of people detected and there mean distance to the camera
 
         if (recordTelemetry && (uint64) (current_ts.getMilliseconds() >= (uint64) (prev_timestamp.getMilliseconds() + (uint64)telemetryFreq * 1000ULL))) {
             float mean_distance = 0;
