@@ -24,6 +24,8 @@ import paho.mqtt.client as mqttClient
 import os
 import json
 
+from typing import Callable
+
 
 class slMqttClient:
     def __init__(self):
@@ -97,7 +99,7 @@ class slMqttClient:
         print("message published")
         pass
 
-    def subscribe_callback(self, remote_name: str, callback_name: str, callback_type: sliot.CALLBACK_TYPE, parameter_type: sliot.PARAMETER_TYPE):
+    def subscribe_callback(self, remote_name: str, callback: Callable, callback_type: sliot.CALLBACK_TYPE, parameter_type: sliot.PARAMETER_TYPE):
         topic = ""
         parameter_type_addition = ""
 
@@ -115,7 +117,7 @@ class slMqttClient:
             self.client.subscribe(topic)
             if topic not in self.subscriptions:
                 self.subscriptions[topic] = {}
-            self.subscriptions[topic][remote_name] = callback_name
+            self.subscriptions[topic][remote_name] = callback
             print("Subcribed to topic ")
 
     def on_message(self, client, inference_thread_manager, message):
@@ -131,8 +133,8 @@ class slMqttClient:
                 if ("parameters.requested." + remote_name in message_received) or ('name' in message_received and message_received['name'] == remote_name):
                     # Call the stored callback
                     print(message_received)
-                    callback_name = self.subscriptions[message.topic][remote_name]
-                    b = globals()[callback_name](message_received)
+                    callback = self.subscriptions[message.topic][remote_name]
+                    b = callback(message_received)
 
                     # If it's a remote call, we need to respond.
                     if message.topic.endswith("/functions/in"):
@@ -140,9 +142,7 @@ class slMqttClient:
                             "name": message_received["name"],
                             "call_id": message_received["id"],
                             "status": 0,
-                            "result": {
-                                "success": b
-                            }
+                            "result": b
                         }
                         self.client.publish(message.topic.replace("/functions/in", "/functions/out"), json.dumps(response))
 
@@ -158,11 +158,11 @@ def addition_callback(params: dict):
         log = "Addition called : " + \
             str(num1) + " + " + str(num2) + " = " + str(result)
         sliot.HubClient.send_log(log, sliot.LOG_LEVEL.INFO)
-        return True
+        return result
 
     else:
         print("There was an issue with the parameters type.")
-    return False
+    return None
 
 
 def main():
@@ -176,7 +176,7 @@ def main():
     # Setup callback
     # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
     # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
-    mqtt.subscribe_callback("tuto05_add", "addition_callback",
+    mqtt.subscribe_callback("tuto05_add", addition_callback,
                             sliot.CALLBACK_TYPE.ON_REMOTE_CALL, sliot.PARAMETER_TYPE.DEVICE)
 
     print("Waiting for remote function to be called.")
