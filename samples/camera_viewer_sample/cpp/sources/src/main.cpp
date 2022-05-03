@@ -18,13 +18,8 @@
 // #
 // ########################################################################
 
-#include <stdio.h>
-#include <string.h>
-#include <chrono>
-
 #include <sl/Camera.hpp>
 #include <sl_iot/HubClient.hpp>
-#include <csignal>
 
 using namespace std;
 using namespace sl;
@@ -44,8 +39,7 @@ bool local_stream_change = false;
 /// \brief Callback generated when init parameters have been changed on the cloud interface
 /// \param event from FunctionEvent
 ///
-void onInitParamUpdate(FunctionEvent &event)
-{
+void onInitParamUpdate(FunctionEvent &event) {
     event.status = 0;
     HubClient::sendLog("Init Parameters Update. Re-opening the camera.", LOG_LEVEL::INFO);
     run = false;
@@ -55,8 +49,7 @@ void onInitParamUpdate(FunctionEvent &event)
 /// \brief Callback generated when LED status has been changed on the cloud interface
 /// \param event from FunctionEvent
 ///
-void onLedStatusUpdate(FunctionEvent &event)
-{
+void onLedStatusUpdate(FunctionEvent &event) {
     event.status = 0;
     sdk_guard.lock();
     int curr_led_status = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS);
@@ -70,8 +63,7 @@ void onLedStatusUpdate(FunctionEvent &event)
 /// \brief Callback generated when GAMMA video settings has been changed on the cloud interface
 /// \param event from FunctionEvent
 ///
-void onGammaUpdate(FunctionEvent &event)
-{
+void onGammaUpdate(FunctionEvent &event) {
     event.status = 0;
     sdk_guard.lock();
     int curr_gamma = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::GAMMA);
@@ -86,8 +78,7 @@ void onGammaUpdate(FunctionEvent &event)
 /// \brief Callback generated when GAMMA video settings has been changed on the cloud interface
 /// \param event from FunctionEvent
 ///
-void onGainUpdate(FunctionEvent &event)
-{
+void onGainUpdate(FunctionEvent &event) {
     event.status = 0;
     sdk_guard.lock();
     int curr_gain = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::GAIN);
@@ -102,8 +93,7 @@ void onGainUpdate(FunctionEvent &event)
 /// \brief Callback generated when AEC/AGC video settings has been changed on the cloud interface
 /// \param event from FunctionEvent
 ///
-void onAutoExposureUpdate(FunctionEvent &event)
-{
+void onAutoExposureUpdate(FunctionEvent &event) {
     event.status = 0;
     sdk_guard.lock();
     int curr_auto_exposure = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::AEC_AGC);
@@ -118,8 +108,7 @@ void onAutoExposureUpdate(FunctionEvent &event)
 /// \brief Callback generated when Exposure video settings has been changed on the cloud interface
 /// \param event from FunctionEvent
 ///
-void onExposureUpdate(FunctionEvent &event)
-{
+void onExposureUpdate(FunctionEvent &event) {
     event.status = 0;
     sdk_guard.lock();
     int curr_exposure = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::EXPOSURE);
@@ -135,14 +124,12 @@ void onExposureUpdate(FunctionEvent &event)
 /// the stream mode of the zed is enabled or disabled depending on the value
 /// \param event from FunctionEvent
 ///
-void onLocalStreamUpdate(FunctionEvent &event)
-{
+void onLocalStreamUpdate(FunctionEvent &event) {
     event.status = 0;
     local_stream_change = true;
     bool local_stream = HubClient::getParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, false);
 
-    if (local_stream)
-    {
+    if (local_stream) {
 
         StreamingParameters stream_param;
         stream_param.codec = sl::STREAMING_CODEC::H264;
@@ -156,15 +143,12 @@ void onLocalStreamUpdate(FunctionEvent &event)
             p_zed->close();
             exit(EXIT_FAILURE);
         }
-    }
-    else
-    {
+    } else {
         p_zed->disableStreaming();
     }
 }
 
-void updateInitParamsFromCloud(sl::InitParameters &parameters)
-{
+void updateInitParamsFromCloud(sl::InitParameters &parameters) {
     std::string reso_str = HubClient::getParameter<std::string>("camera_resolution", PARAMETER_TYPE::DEVICE, sl::toString(parameters.camera_resolution).c_str());
     if (reso_str == "HD2K")
         parameters.camera_resolution = RESOLUTION::HD2K;
@@ -184,15 +168,13 @@ void updateInitParamsFromCloud(sl::InitParameters &parameters)
     HubClient::reportParameter<int>("camera_fps", PARAMETER_TYPE::DEVICE, (int)parameters.camera_fps);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     // Create ZED Object
     p_zed.reset(new sl::Camera());
 
     STATUS_CODE status_iot;
     status_iot = HubClient::connect("camera_viewer");
-    if (status_iot != STATUS_CODE::SUCCESS)
-    {
+    if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -200,12 +182,11 @@ int main(int argc, char **argv)
 
     // Load application parameter file in development mode
     char *application_token = ::getenv("SL_APPLICATION_TOKEN");
-    if (!application_token)
-    {
+    if (!application_token) {
         status_iot = HubClient::loadApplicationParameters("parameters.json");
-        if (status_iot != STATUS_CODE::SUCCESS)
-        {
-            std::cout << "parameters.json file not found or malformated" << std::endl;
+        if (status_iot != STATUS_CODE::SUCCESS) {
+            std::cout << "parameters.json file not found or malformated"
+                      << std::endl;
             exit(EXIT_FAILURE);
         }
     }
@@ -222,16 +203,16 @@ int main(int argc, char **argv)
     // -------------------HubClient::log- MAIN LOOP -------------------------------
     // Get Init Parameters from cloud parameters
     updateInitParamsFromCloud(initParameters);
-    
+
     // Override parameters
     initParameters.sdk_verbose = true;
     initParameters.sensors_required = true;
 
     // Open init parameters
     sl::ERROR_CODE errZed = p_zed->open(initParameters);
-    if (errZed != ERROR_CODE::SUCCESS)
-    {
-        HubClient::sendLog("Camera initialization error : " + std::string(toString(errZed)), LOG_LEVEL::ERROR);
+    if (errZed != ERROR_CODE::SUCCESS) {
+        HubClient::sendLog("Camera initialization error : " +
+                           std::string(toString(errZed)), LOG_LEVEL::ERROR);
         full_run = false;
         exit(EXIT_FAILURE);
     }
@@ -239,51 +220,66 @@ int main(int argc, char **argv)
     // Setup callback for parameters
 
     CallbackParameters callback_param;
-    callback_param.setParameterCallback("onParamChange", "camera_resolution|camera_fps|camera_image_flip", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    callback_param.setParameterCallback("onParamChange",
+                                        "camera_resolution|camera_fps|camera_image_flip",
+                                        CALLBACK_TYPE::ON_PARAMETER_UPDATE,
+                                        PARAMETER_TYPE::DEVICE);
     HubClient::registerFunction(onInitParamUpdate, callback_param);
 
     CallbackParameters callback_param_auto_exposure;
-    callback_param_auto_exposure.setParameterCallback("onAutoExposureChange", "camera_auto_exposure", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
-    HubClient::registerFunction(onAutoExposureUpdate, callback_param_auto_exposure);
+    callback_param_auto_exposure.setParameterCallback("onAutoExposureChange",
+                                                      "camera_auto_exposure",
+                                                      CALLBACK_TYPE::ON_PARAMETER_UPDATE,
+                                                      PARAMETER_TYPE::DEVICE);
+    HubClient::registerFunction(onAutoExposureUpdate,
+                                callback_param_auto_exposure);
 
     CallbackParameters callback_param_exposure;
-    callback_param_exposure.setParameterCallback("onExposureChange", "camera_exposure", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    callback_param_exposure.setParameterCallback("onExposureChange",
+                                                 "camera_exposure",
+                                                 CALLBACK_TYPE::ON_PARAMETER_UPDATE,
+                                                 PARAMETER_TYPE::DEVICE);
     HubClient::registerFunction(onExposureUpdate, callback_param_exposure);
 
     CallbackParameters callback_param_gain;
-    callback_param_gain.setParameterCallback("onGainChange", "camera_gain", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    callback_param_gain.setParameterCallback("onGainChange", "camera_gain",
+                                             CALLBACK_TYPE::ON_PARAMETER_UPDATE,
+                                             PARAMETER_TYPE::DEVICE);
     HubClient::registerFunction(onGainUpdate, callback_param_exposure);
 
     CallbackParameters callback_param_gamma;
-    callback_param_gamma.setParameterCallback("onGammaChange", "camera_gamma", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    callback_param_gamma.setParameterCallback("onGammaChange", "camera_gamma",
+                                              CALLBACK_TYPE::ON_PARAMETER_UPDATE,
+                                              PARAMETER_TYPE::DEVICE);
     HubClient::registerFunction(onGammaUpdate, callback_param_gamma);
 
     CallbackParameters callback_param_stream;
-    callback_param_stream.setParameterCallback("onLocalStreamChange", "local_stream", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
+    callback_param_stream.setParameterCallback("onLocalStreamChange",
+                                               "local_stream",
+                                               CALLBACK_TYPE::ON_PARAMETER_UPDATE,
+                                               PARAMETER_TYPE::APPLICATION);
     HubClient::registerFunction(onLocalStreamUpdate, callback_param_stream);
 
-    bool local_stream = HubClient::getParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, false);
-    if (local_stream)
-    {
+    bool local_stream = HubClient::getParameter<bool>("local_stream",
+                                                      PARAMETER_TYPE::APPLICATION,
+                                                      false);
+    if (local_stream) {
         StreamingParameters stream_param;
         stream_param.codec = sl::STREAMING_CODEC::H264;
         p_zed->enableStreaming(stream_param);
     }
 
-    HubClient::reportParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, local_stream);
+    HubClient::reportParameter<bool>("local_stream",
+                                     PARAMETER_TYPE::APPLICATION, local_stream);
 
-    while (true)
-    {
+    while (true) {
         sdk_guard.lock();
         auto err = p_zed->grab();
         sdk_guard.unlock();
 
-        if (err == ERROR_CODE::SUCCESS)
-        {
+        if (err == ERROR_CODE::SUCCESS) {
             HubClient::update();
-        }
-        else
-        {
+        } else {
             int size_devices = sl::Camera::getDeviceList().size();
             HubClient::sendLog("Camera grab error: " + std::string(sl::toString(err)) + ". ( Number of camera detected : " + to_string(size_devices) + " ) ", LOG_LEVEL::ERROR);
             break;
@@ -294,8 +290,7 @@ int main(int argc, char **argv)
         p_zed->close();
 
     status_iot = HubClient::disconnect();
-    if (status_iot != STATUS_CODE::SUCCESS)
-    {
+    if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }

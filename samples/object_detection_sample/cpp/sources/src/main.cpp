@@ -18,13 +18,8 @@
 // #
 // ########################################################################
 
-#include <stdio.h>
-#include <string.h>
-#include <chrono>
-
 #include <sl/Camera.hpp>
 #include <sl_iot/HubClient.hpp>
-#include <csignal>
 #include <opencv2/opencv.hpp>
 
 using namespace std;
@@ -59,7 +54,7 @@ cv::Mat slMat2cvMat(Mat& input) {
     return cv::Mat(input.getHeight(), input.getWidth(), cv_type, input.getPtr<sl::uchar1>(MEM::CPU));
 }
 
-// Parameteres callbacks
+// Parameter callbacks
 void onDisplayParametersUpdate(FunctionEvent &event) {
     event.status = 0;
     draw_bboxes = HubClient::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
@@ -234,7 +229,7 @@ int main(int argc, char **argv) {
             std::string event_label = "People Detection"; // or label of your choice
             json event2send; // Use to store all the data associated to the video event. 
             event2send["message"] = "Current event as reference " + event_reference;
-            event2send["nb_detected_personn"] = objects.object_list.size();
+            event2send["nb_detected_person"] = objects.object_list.size();
 
             if (is_new_event || !first_event_sent) {
                 HubClient::startVideoEvent(event_label, event2send, event_params);
