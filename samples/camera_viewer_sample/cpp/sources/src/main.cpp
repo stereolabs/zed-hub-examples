@@ -226,6 +226,14 @@ int main(int argc, char **argv) {
                                         PARAMETER_TYPE::DEVICE);
     HubClient::registerFunction(onInitParamUpdate, callback_param);
 
+    CallbackParameters callback_on_led_status_update;
+    callback_on_led_status_update.setParameterCallback("onLedStatusUpdate",
+                                                      "led_status",
+                                                      CALLBACK_TYPE::ON_PARAMETER_UPDATE,
+                                                      PARAMETER_TYPE::DEVICE);
+    HubClient::registerFunction(onLedStatusUpdate,
+                                callback_on_led_status_update);
+
     CallbackParameters callback_param_auto_exposure;
     callback_param_auto_exposure.setParameterCallback("onAutoExposureChange",
                                                       "camera_auto_exposure",
