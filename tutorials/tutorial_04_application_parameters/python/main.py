@@ -25,7 +25,7 @@ import json
 
 led_status_updated = False
 
-def on_led_status_update(topic, message):
+def on_led_status_update(event):
     global led_status_updated
     led_status_updated = True
     print("led status updated !")

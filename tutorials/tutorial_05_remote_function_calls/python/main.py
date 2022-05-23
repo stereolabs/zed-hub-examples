@@ -22,13 +22,15 @@ import pyzed.sl_iot as sliot
 import time
 import os
 import json
+import gc
 
 # from typing import Callable
 
-def addition_callback(topic, message):
-    params = json.loads(message)
-    num1 = params["parameters"]["num1"]
-    num2 = params["parameters"]["num2"]
+def addition_callback(event : sliot.FunctionEvent):
+    params = event.parameters
+    print(json.dumps(params))
+    num1 = params["num1"]
+    num2 = params["num2"]
 
     # Check if parameters are valid
     if isinstance(num1, int) and isinstance(num2, int):
@@ -51,21 +53,17 @@ def main():
         print("Initialization error ", status_iot)
         exit(1)
 
-    # Setup callback
-    # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
-    # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
-    mqtt.subscribe_callback("tuto05_add", addition_callback,
-                            sliot.CALLBACK_TYPE.ON_REMOTE_CALL, sliot.PARAMETER_TYPE.DEVICE)
-
     # Set your parameter callback
     callback_params = sliot.CallbackParameters()
     callback_params.set_remote_callback("tuto05_add", sliot.CALLBACK_TYPE.ON_REMOTE_CALL)
-    sliot.HubClient.register_function(addition_callback, callback_params)
+    my_callback = addition_callback
+    sliot.HubClient.register_function(my_callback, callback_params)
+    gc.collect()
 
     print("Waiting for remote function to be called.")
     # Main loop
     while True:
-        time.sleep(1)
+        pass
 
     # Close the communication with ZED Hub properly.
     status = sliot.HubClient.disconnect()
