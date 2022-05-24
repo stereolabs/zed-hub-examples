@@ -42,9 +42,9 @@ def on_video_event_update(message_received):
     global nbFramesNoDetBtw2Events
     print("Video event updated")
     recordVideoEvent = sliot.HubClient.get_parameter_bool(
-        "recordVideoEvent", sliot.PARAMETER_TYPE.DEVICE, recordVideoEvent)
+        "recordVideoEvent", sliot.PARAMETER_TYPE.APPLICATION, recordVideoEvent)
     nbFramesNoDetBtw2Events = sliot.HubClient.get_parameter_int(
-        "nbFramesNoDetBtw2Events", sliot.PARAMETER_TYPE.DEVICE, nbFramesNoDetBtw2Events)
+        "nbFramesNoDetBtw2Events", sliot.PARAMETER_TYPE.APPLICATION, nbFramesNoDetBtw2Events)
     sliot.HubClient.send_log(
         "New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified", sliot.LOG_LEVEL.INFO)
 
@@ -54,9 +54,9 @@ def on_telemetry_update(message_received):
     global telemetryFreq
     print("telemetry updated")
     recordTelemetry = sliot.HubClient.get_parameter_bool(
-        "recordTelemetry", sliot.PARAMETER_TYPE.DEVICE, recordTelemetry)
+        "recordTelemetry", sliot.PARAMETER_TYPE.APPLICATION, recordTelemetry)
     telemetryFreq = sliot.HubClient.get_parameter_float(
-        "telemetryFreq", sliot.PARAMETER_TYPE.DEVICE, telemetryFreq)
+        "telemetryFreq", sliot.PARAMETER_TYPE.APPLICATION, telemetryFreq)
     sliot.HubClient.send_log(
         "New parameters : recordTelemetry or telemetryFreq modified", sliot.LOG_LEVEL.INFO)
 
@@ -84,8 +84,8 @@ def on_led_status_update(event : sliot.FunctionEvent):
     global zed
     global sdk_guard    
     curr_led_status = zed.get_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS)
-    led_status = sliot.HubClient.get_parameter_bool("led_status", sliot.PARAMETER_TYPE.DEVICE, bool(curr_led_status))
-    sliot.HubClient.report_parameter("led_status", sliot.PARAMETER_TYPE.DEVICE, led_status)
+    led_status = sliot.HubClient.get_parameter_bool("led_status", sliot.PARAMETER_TYPE.APPLICATION, bool(curr_led_status))
+    sliot.HubClient.report_parameter("led_status", sliot.PARAMETER_TYPE.APPLICATION, led_status)
     zed.set_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS, led_status)
 
 #
@@ -97,11 +97,11 @@ def on_gamma_update(message_received):
     global zed
     sdk_guard.acquire()
     curr_gamma = zed.get_camera_settings(sl.VIDEO_SETTINGS.GAMMA)
-    gamma = sliot.HubClient.get_parameter_int("camera_gamma", sliot.PARAMETER_TYPE.DEVICE, int(curr_gamma))
+    gamma = sliot.HubClient.get_parameter_int("camera_gamma", sliot.PARAMETER_TYPE.APPLICATION, int(curr_gamma))
     zed.set_camera_settings(sl.VIDEO_SETTINGS.GAMMA, gamma)
     sdk_guard.release();
     sliot.HubClient.purge_video_stream()
-    sliot.HubClient.report_parameter("camera_gamma", sliot.PARAMETER_TYPE.DEVICE, gamma);
+    sliot.HubClient.report_parameter("camera_gamma", sliot.PARAMETER_TYPE.APPLICATION, gamma);
 
 #
 # \brief Callback generated when GAMMA video settings has been changed on the cloud interface
@@ -112,11 +112,11 @@ def on_gain_update(message_received):
     global zed
     sdk_guard.acquire();
     curr_gain = zed.get_camera_settings(sl.VIDEO_SETTINGS.GAIN)
-    gain = sliot.HubClient.get_parameter_int("camera_gain", sliot.PARAMETER_TYPE.DEVICE, int(curr_gain))
+    gain = sliot.HubClient.get_parameter_int("camera_gain", sliot.PARAMETER_TYPE.APPLICATION, int(curr_gain))
     zed.set_camera_settings(sl.VIDEO_SETTINGS.GAIN, gain)
     sdk_guard.release();
     sliot.HubClient.purge_video_stream()
-    sliot.HubClient.report_parameter("camera_gain", sliot.PARAMETER_TYPE.DEVICE, gain)
+    sliot.HubClient.report_parameter("camera_gain", sliot.PARAMETER_TYPE.APPLICATION, gain)
 
 
 #
@@ -129,11 +129,11 @@ def on_autoexposure_update(message_received):
     global zed
     sdk_guard.acquire()
     curr_auto_exposure = zed.get_camera_settings(sl.VIDEO_SETTINGS.AEC_AGC)
-    auto_exposure = sliot.HubClient.get_parameter_bool("camera_auto_exposure", sliot.PARAMETER_TYPE.DEVICE, bool(curr_auto_exposure));
+    auto_exposure = sliot.HubClient.get_parameter_bool("camera_auto_exposure", sliot.PARAMETER_TYPE.APPLICATION, bool(curr_auto_exposure));
     zed.set_camera_settings(sl.VIDEO_SETTINGS.AEC_AGC, auto_exposure)
     sdk_guard.release()
     sliot.HubClient.purge_video_stream()
-    sliot.HubClient.report_parameter("camera_auto_exposure", sliot.PARAMETER_TYPE.DEVICE, auto_exposure);
+    sliot.HubClient.report_parameter("camera_auto_exposure", sliot.PARAMETER_TYPE.APPLICATION, auto_exposure);
 
 
 #
@@ -145,11 +145,11 @@ def on_exposure_update(message_received):
     global zed
     sdk_guard.acquire()
     curr_exposure = zed.get_camera_settings(sl.VIDEO_SETTINGS.EXPOSURE)
-    exposure = sliot.HubClient.get_parameter_int("camera_exposure", sliot.PARAMETER_TYPE.DEVICE, int(curr_exposure))
+    exposure = sliot.HubClient.get_parameter_int("camera_exposure", sliot.PARAMETER_TYPE.APPLICATION, int(curr_exposure))
     zed.set_camera_settings(sl.VIDEO_SETTINGS.EXPOSURE, exposure)
     sdk_guard.release()
     sliot.HubClient.purge_video_stream()
-    sliot.HubClient.report_parameter("camera_exposure", sliot.PARAMETER_TYPE.DEVICE, exposure)
+    sliot.HubClient.report_parameter("camera_exposure", sliot.PARAMETER_TYPE.APPLICATION, exposure)
 
 
 #
@@ -180,7 +180,7 @@ def on_local_stream_update(message_received):
 
 def update_init_params_from_cloud(init_params: sl.InitParameters):
     reso_str = sliot.HubClient.get_parameter_string(
-        "camera_resolution", sliot.PARAMETER_TYPE.DEVICE, str(init_params.camera_resolution))
+        "camera_resolution", sliot.PARAMETER_TYPE.APPLICATION, str(init_params.camera_resolution))
     if reso_str == "HD2K":
         init_params.camera_resolution = sl.RESOLUTION.HD2K
     elif reso_str == "HD720":
@@ -191,17 +191,17 @@ def update_init_params_from_cloud(init_params: sl.InitParameters):
         init_params.camera_resolution = sl.RESOLUTION.VGA
 
     sliot.HubClient.report_parameter(
-        "camera_resolution", sliot.PARAMETER_TYPE.DEVICE, reso_str)
+        "camera_resolution", sliot.PARAMETER_TYPE.APPLICATION, reso_str)
 
     init_params.camera_image_flip = sl.FLIP_MODE(sliot.HubClient.get_parameter_int(
-        "camera_image_flip", sliot.PARAMETER_TYPE.DEVICE, int(init_params.camera_image_flip.value)))
+        "camera_image_flip", sliot.PARAMETER_TYPE.APPLICATION, int(init_params.camera_image_flip.value)))
     sliot.HubClient.report_parameter(
-        "camera_image_flip", sliot.PARAMETER_TYPE.DEVICE, int(init_params.camera_image_flip.value))
+        "camera_image_flip", sliot.PARAMETER_TYPE.APPLICATION, int(init_params.camera_image_flip.value))
 
     init_params.camera_fps = sliot.HubClient.get_parameter_int(
-        "camera_fps", sliot.PARAMETER_TYPE.DEVICE, init_params.camera_fps)
+        "camera_fps", sliot.PARAMETER_TYPE.APPLICATION, init_params.camera_fps)
     sliot.HubClient.report_parameter(
-        "camera_fps", sliot.PARAMETER_TYPE.DEVICE, (int)(init_params.camera_fps))
+        "camera_fps", sliot.PARAMETER_TYPE.APPLICATION, (int)(init_params.camera_fps))
 
 
 def main():
@@ -253,40 +253,40 @@ def main():
 
     # general parameters
     callback_param_led = sliot.CallbackParameters()
-    callback_param_led.set_parameter_callback("onLedStatusChange", "led_status", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    callback_param_led.set_parameter_callback("onLedStatusChange", "led_status", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.register_function(on_led_status_update, callback_param_led)
 
     callback_param_flip = sliot.CallbackParameters()
-    callback_param_flip.set_parameter_callback("on_init_param_change", "camera_image_flip", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    callback_param_flip.set_parameter_callback("on_init_param_change", "camera_image_flip", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.register_function(on_init_param_change, callback_param_flip)
 
     callback_param_fps = sliot.CallbackParameters()
-    callback_param_fps.set_parameter_callback("on_init_param_change", "camera_fps", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    callback_param_fps.set_parameter_callback("on_init_param_change", "camera_fps", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.register_function(on_init_param_change, callback_param_fps)
 
     callback_param_res = sliot.CallbackParameters()
-    callback_param_res.set_parameter_callback("on_init_param_change", "camera_resolution", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    callback_param_res.set_parameter_callback("on_init_param_change", "camera_resolution", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.register_function(on_init_param_change, callback_param_res)
 
     # video parameters
     callback_param_autoexp = sliot.CallbackParameters()
-    callback_param_autoexp.set_parameter_callback("on_autoexposure_update", "camera_auto_exposure", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    callback_param_autoexp.set_parameter_callback("on_autoexposure_update", "camera_auto_exposure", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.register_function(on_autoexposure_update, callback_param_autoexp)
 
     callback_param_exp = sliot.CallbackParameters()
-    callback_param_exp.set_parameter_callback("on_exposure_update", "camera_exposure", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    callback_param_exp.set_parameter_callback("on_exposure_update", "camera_exposure", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.register_function(on_exposure_update, callback_param_exp)
 
     callback_param_gain = sliot.CallbackParameters()
-    callback_param_gain.set_parameter_callback("on_gain_update", "camera_gain", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    callback_param_gain.set_parameter_callback("on_gain_update", "camera_gain", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.register_function(on_gain_update, callback_param_gain)
 
     callback_param_gamma = sliot.CallbackParameters()
-    callback_param_gamma.set_parameter_callback("on_gamma_update", "camera_gamma", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    callback_param_gamma.set_parameter_callback("on_gamma_update", "camera_gamma", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.register_function(on_gamma_update, callback_param_gamma)
 
     callback_param_stream = sliot.CallbackParameters()
-    callback_param_stream.set_parameter_callback("on_local_stream_update", "local_stream", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    callback_param_stream.set_parameter_callback("on_local_stream_update", "local_stream", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.register_function(on_local_stream_update, callback_param_stream)
 
     # local stream initial setting

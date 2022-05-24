@@ -37,7 +37,7 @@ def on_display_parameters_update(message_received):
     global draw_bboxes
     print("Display parameter updated")
     draw_bboxes = sliot.HubClient.get_parameter_bool(
-        "draw_bboxes", sliot.PARAMETER_TYPE.DEVICE)
+        "draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.send_log(
         "New parameter : draw_bboxes modified to " + str(draw_bboxes), sliot.LOG_LEVEL.INFO)
     return True
@@ -48,9 +48,9 @@ def on_video_event_update(message_received):
     global nbFramesNoDetBtw2Events
     print("Video event updated")
     recordVideoEvent = sliot.HubClient.get_parameter_bool(
-        "recordVideoEvent", sliot.PARAMETER_TYPE.DEVICE, recordVideoEvent)
+        "recordVideoEvent", sliot.PARAMETER_TYPE.APPLICATION, recordVideoEvent)
     nbFramesNoDetBtw2Events = sliot.HubClient.get_parameter_int(
-        "nbFramesNoDetBtw2Events", sliot.PARAMETER_TYPE.DEVICE, nbFramesNoDetBtw2Events)
+        "nbFramesNoDetBtw2Events", sliot.PARAMETER_TYPE.APPLICATION, nbFramesNoDetBtw2Events)
     sliot.HubClient.send_log(
         "New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified", sliot.LOG_LEVEL.INFO)
 
@@ -60,9 +60,9 @@ def on_telemetry_update(message_received):
     global telemetryFreq
     print("Telemetry updated")
     recordTelemetry = sliot.HubClient.get_parameter_bool(
-        "recordTelemetry", sliot.PARAMETER_TYPE.DEVICE, recordTelemetry)
+        "recordTelemetry", sliot.PARAMETER_TYPE.APPLICATION, recordTelemetry)
     telemetryFreq = sliot.HubClient.get_parameter_float(
-        "telemetryFreq", sliot.PARAMETER_TYPE.DEVICE, telemetryFreq)
+        "telemetryFreq", sliot.PARAMETER_TYPE.APPLICATION, telemetryFreq)
     sliot.HubClient.send_log(
         "New parameters : recordTelemetry or telemetryFreq modified", sliot.LOG_LEVEL.INFO)
 
