@@ -20,7 +20,6 @@
 
 import pyzed.sl as sl
 import pyzed.sl_iot as sliot
-import paho.mqtt.client as mqttClient
 import json
 import os
 from threading import Lock

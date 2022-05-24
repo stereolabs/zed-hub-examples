@@ -22,7 +22,6 @@ import pyzed.sl as sl
 import pyzed.sl_iot as sliot
 import cv2
 import numpy as np
-import paho.mqtt.client as mqttClient
 import json
 import os
 
