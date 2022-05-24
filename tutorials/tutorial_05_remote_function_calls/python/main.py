@@ -28,7 +28,6 @@ import gc
 
 def addition_callback(event : sliot.FunctionEvent):
     params = event.parameters
-    print(json.dumps(params))
     num1 = params["num1"]
     num2 = params["num2"]
 
@@ -62,11 +61,11 @@ def main():
     callback_params.set_remote_callback("tuto05_add", sliot.CALLBACK_TYPE.ON_REMOTE_CALL)
     my_callback = addition_callback
     sliot.HubClient.register_function(my_callback, callback_params)
-    gc.collect()
 
     print("Waiting for remote function to be called.")
     # Main loop
     while True:
+        time.sleep(1)
         pass
 
     # Close the communication with ZED Hub properly.
