@@ -39,10 +39,14 @@ def addition_callback(event : sliot.FunctionEvent):
         log = "Addition called : " + \
             str(num1) + " + " + str(num2) + " = " + str(result)
         sliot.HubClient.send_log(log, sliot.LOG_LEVEL.INFO)
+        event.status = 0
+        event.result = result
         return result
 
     else:
         print("There was an issue with the parameters type.")
+        event.status = 1
+        event.result = "Error"
     return None
 
 
