@@ -140,9 +140,9 @@ def main():
         zed.close()
 
     # Close the communication with ZED Hub properly.
-    status = sliot.HubClient.disconnect()
-    if status != sliot.STATUS_CODE.SUCCESS:
-        print("Terminating error ", status)
+    status_iot = sliot.HubClient.disconnect()
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Terminating error ", status_iot)
         exit(1)
 
     return

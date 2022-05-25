@@ -4,7 +4,6 @@
 
 #include <sl/Camera.hpp>
 #include <sl_iot/HubClient.hpp>
-#include <csignal>
 
 using namespace std;
 using namespace sl;

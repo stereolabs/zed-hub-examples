@@ -20,18 +20,18 @@
 
 import pyzed.sl as sl
 import pyzed.sl_iot as sliot
-import os
-import json
 
 led_status_updated = False
+
 
 def on_led_status_update(event):
     global led_status_updated
     led_status_updated = True
     print("led status updated !")
 
+
 def main():
-    # initialize the communication to ZED Hub, with a zed camera.
+    # Initialize the communication to ZED Hub, with a zed camera.
     global led_status_updated
     led_status_updated = True
     zed = sl.Camera() 

@@ -18,13 +18,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
-#include <stdio.h>
-#include <string.h>
-#include <chrono>
-
 #include <sl_iot/HubClient.hpp>
-#include <csignal>
-#include <ctime>
 
 using namespace std;
 using namespace sl;
@@ -44,21 +38,20 @@ void onDataReceived(const std::string& topic, const std::string& message, TARGET
 int main(int argc, char **argv) {
 
     STATUS_CODE status_iot;
+    // Initialize the communication to ZED Hub, without a zed camera.
     status_iot = HubClient::connect("sub_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    // Topic to listen
+    // Topic to listen to
     std::string topic_name = "/my_custom_data";
     HubClient::subscribeToTopic(topic_name, onDataReceived);
 
     // Main loop
-    while (true) {
-
+    while (true)
         sleep_ms(1000);
-    }
 
     status_iot = HubClient::disconnect();
     if (status_iot != STATUS_CODE::SUCCESS) {
