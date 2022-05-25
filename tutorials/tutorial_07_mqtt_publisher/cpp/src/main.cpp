@@ -41,6 +41,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
+    // The name of the topic we will publish our message in
     std::string topic_name = "/my_custom_data";
 
     // Main loop
