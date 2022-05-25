@@ -24,28 +24,24 @@ import time
 
 def main():
     # Initialize the communication to ZED Hub, without a zed camera.
-    status_iot = sliot.HubClient.connect("basic_app")
+    status_iot = sliot.HubClient.connect("pub_app")
     if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status_iot)
         exit(1)
 
-    # Set log level
-    sliot.HubClient.set_log_level_threshold(
-        sliot.LOG_LEVEL.INFO, sliot.LOG_LEVEL.INFO)
-    
-    # Send a log
-    sliot.HubClient.send_log("Initialization succeeded", sliot.LOG_LEVEL.INFO)
+    # The name of the topic we will publish our message in
+    topic_name = "/my_custom_data"
 
-    # is your application connected to the cloud ?
-    if sliot.HubClient.is_connected() == sliot.STATUS_CODE.SUCCESS:
-        sliot.HubClient.send_log("Application connected", sliot.LOG_LEVEL.INFO)
-
-    # Main loop : send a log every 15 secs
-    i = 0
+    # Main loop
     while True:
-        sliot.HubClient.send_log("Log " + str(i) + " sent.", sliot.LOG_LEVEL.INFO)
-        time.sleep(15)
-        i += 1
+        my_message_js = {}
+        my_message_js["message"] = "Hello World"
+        my_message_js["my_custom data"] = 54
+        my_message_js["timestamp"] = int(time.time())
+
+        sliot.HubClient.publish_on_topic(topic_name, my_message_js)
+        sliot.HubClient.send_log("Message published", sliot.LOG_LEVEL.INFO)
+        time.sleep(10)
 
     # Close the communication with ZED Hub properly.
     status_iot = sliot.HubClient.disconnect()
@@ -58,3 +54,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+ 

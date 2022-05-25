@@ -47,10 +47,10 @@ def main():
         sliot.HubClient.send_log("Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
-    # Enable the positionnal tracking and setup the loop
-    positionnal_tracking_params = sl.PositionalTrackingParameters()
-    positionnal_tracking_params.enable_area_memory = True
-    status_zed = zed.enable_positional_tracking(positionnal_tracking_params)
+    # Enable the positional tracking and setup the loop
+    positional_tracking_params = sl.PositionalTrackingParameters()
+    positional_tracking_params.enable_area_memory = True
+    status_zed = zed.enable_positional_tracking(positional_tracking_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log("Enabling positional tracking failed : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
         exit(1)    
@@ -94,7 +94,7 @@ def main():
 
     zed.disable_positional_tracking()
 
-    # Cloe the camera
+    # Close the camera
     if zed.is_opened():
         zed.close()
 
