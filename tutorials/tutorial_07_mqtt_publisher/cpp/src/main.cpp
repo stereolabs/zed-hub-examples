@@ -1,3 +1,23 @@
+///////////////////////////////////////////////////////////////////////////
+//
+// Copyright (c) 2022, STEREOLABS.
+//
+// All rights reserved.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+///////////////////////////////////////////////////////////////////////////
+
 #include <stdio.h>
 #include <string.h>
 #include <chrono>
@@ -15,13 +35,12 @@ using json = sl_iot::json;
 int main(int argc, char **argv) {
 
     STATUS_CODE status_iot;
-    status_iot = HubClient::connect("mqtt_pub_app");
+    status_iot = HubClient::connect("pub_app");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    TARGET topic_prefix = TARGET::LOCAL_NETWORK;
     std::string topic_name = "/my_custom_data";
 
     // Main loop
@@ -34,8 +53,8 @@ int main(int argc, char **argv) {
         my_message_js["my_custom data"] = 54;
         my_message_js["timestamp"] = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
 
-        HubClient::publishOnMqttTopic(topic_name, my_message_js, topic_prefix);
-        HubClient::sendLog("MQTT message published", LOG_LEVEL::INFO);
+        HubClient::publishOnTopic(topic_name, my_message_js);
+        HubClient::sendLog("Message published", LOG_LEVEL::INFO);
 
         sleep_ms(10000); // 10 seconds
     }
