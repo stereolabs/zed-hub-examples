@@ -43,7 +43,7 @@ $ cmake ..
 $ make -j$(nproc)
 ```
 
-This application use application parameters. Move the `parameters.json` file to the path you specified in the `IoTCloud::loadApplicationParameters` function.
+This application use application parameters. Move the `parameters.json` file to the path you specified in the `HubClient::loadApplicationParameters` function.
 ```
 $ cp ../parameters.json .
 ```
@@ -149,15 +149,15 @@ Callback for `draw_bboxes` parameter
 ```c++
 void onDisplayParametersUpdate(FunctionEvent &event) {
     event.status = 0;
-    draw_bboxes = IoTCloud::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
-    IoTCloud::log("New parameter : draw_bboxes modified",LOG_LEVEL::INFO);
+    draw_bboxes = HubClient::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
+    HubClient::sendLog("New parameter : draw_bboxes modified",LOG_LEVEL::INFO);
 
 }
 ```
 
 
 ### Initialisation
-As usual, the app is init with `IoTCloud::init` and the ZED is started with  the ZED SDK `open` function.
+As usual, the app is init with `HubClient::connect` and `HubClient::registerCamera` and the ZED is started with  the ZED SDK `open` function.
 The Object detection is enabled with `enableObjectDetection`. Note that the tracking is required to use it(`enablePositionalTracking` must be called).
 
 ```c++
@@ -180,7 +180,7 @@ The  parameters are associated to the callbacks that have been defined above. He
 ```c++
     CallbackParameters callback_display_param;
     callback_display_param.setParameterCallback("onDisplayParametersUpdate", "draw_bboxes", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
-    IoTCloud::registerFunction(onDisplayParametersUpdate, callback_display_param);
+    HubClient::registerFunction(onDisplayParametersUpdate, callback_display_param);
 ```
 
 
@@ -198,7 +198,7 @@ if (recordVideoEvent && objects.object_list.size() >= 1){
     bool is_new_event = true;
     if (counter_no_detection >= nbFramesNoDetBtw2Events){
         event_reference = "detected_person_" + std::to_string(current_ts.getMilliseconds()); 
-        IoTCloud::log("New Video Event defined",LOG_LEVEL::INFO);
+        HubClient::sendLog("New Video Event defined",LOG_LEVEL::INFO);
 
     }
     else{
@@ -213,13 +213,13 @@ if (recordVideoEvent && objects.object_list.size() >= 1){
     event2send["message"] = "Current event as reference " + event_reference;
     event2send["nb_detected_personn"] = objects.object_list.size();
     if (is_new_event || (event_reference == "first_event" && !first_event_sent)) {
-        IoTCloud::startVideoEvent(event_label, event2send, event_params);
+        HubClient::startVideoEvent(event_label, event2send, event_params);
         first_event_sent = true;
     }
     // update every 10 s
     else if ((uint64) (current_ts.getMilliseconds() >= (uint64) (prev_timestamp.getMilliseconds() + (uint64)10 * 1000ULL)))
     {
-        IoTCloud::updateVideoEvent(event_label, event2send, event_params);
+        HubClient::updateVideoEvent(event_label, event2send, event_params);
     }
 
     counter_no_detection = 0; //reset counter as someone as been detected
@@ -231,7 +231,8 @@ else {
 ```
 
 
-- A **custom stream** is sent using the RGB image and OpenCV. See `tutorial_06_custom_stream`
+- A **custom stream** is sent using the RGB image and OpenCV. To send a custom stream, just add the `sl::Mat` as argument of `update()`.
+
 ```c++
 if(draw_bboxes){
     p_zed->retrieveImage(imgLeftCustom, sl::VIEW::LEFT, sl::MEM::CPU, imgLeftCustom.getResolution());
@@ -251,7 +252,7 @@ if(draw_bboxes){
         }
     }
 
-    IoTCloud::setCustomVideoMat(imgLeftCustom);
+    HubClient::update(imgLeftCustom);
 }
 ```
 
@@ -275,7 +276,7 @@ if (recordTelemetry && (uint64) (curr_timestamp.getMilliseconds() >= (uint64) (p
     sl_iot::json position_telemetry;
     position_telemetry["number_of_detection"] = objects.object_list.size();
     position_telemetry["mean_distance_from_cam"] = mean_distance;
-    IoTCloud::sendTelemetry("object_detection", position_telemetry);
+    HubClient::sendTelemetry("object_detection", position_telemetry);
     prev_timestamp = curr_timestamp;
 }
 ```

@@ -2,7 +2,7 @@
 
 This tutorial shows how to deploy an application that starts a ZED camera and sends the live stream to the ZED Hub interface. You will also be able to store the video on your device.  The recorded video will be available on the ZED Hub interface and downloadable. 
 
-[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_02_live_stream_and_recording)
+[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_02_live_stream_and_recording)
 
 ## Requirements
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
@@ -86,7 +86,9 @@ What exactly happens:
     p_zed.reset(new sl::Camera());
 
     //Init sl_iot
-    STATUS_CODE status_iot = IoTCloud::init("streaming_app", p_zed);
+    STATUS_CODE status_iot = HubClient::connect("streaming_app");
+    STATUS_CODE status_iot_registreation = HubClient::registerCamera(p_zed);
+    
 ```
 
 
@@ -102,7 +104,7 @@ What exactly happens:
 ```
 
 
-- In a While loop, grab a new frame and call `IoTCloud::refresh()`. Note that the `refresh` is responsible for both **live stream** and **recording**. The sent image corresponds of course to the grabbed image, so to current frame.
+- In a While loop, grab a new frame and call `HubClient::update()`. Note that the `update` is responsible for both **live stream** and **recording**. The sent image corresponds of course to the grabbed image, so to current frame.
 
 
 ```cpp
@@ -114,11 +116,11 @@ What exactly happens:
         
         // Insert custom code here
 
-        // Always refresh IoT at the end of the grab loop
-        IoTCloud::refresh();
+        // Always update IoT at the end of the grab loop
+        HubClient::update();
     }
 ```
 
 ## Custom stream
 
-The ZED Hub supports custom streams, meaning you can send as live video the video of your choice. Take a look at **tutorial_06_custom_stream** to learn more about this feature.
+The ZED Hub supports custom streams, meaning you can send as live video the video of your choice. To do that, just add the `sl::Mat` you built as an argument of `update()`.

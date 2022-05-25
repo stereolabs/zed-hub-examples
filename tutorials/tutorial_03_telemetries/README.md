@@ -1,7 +1,7 @@
 # Tutorial 3 - Telemetries
 This tutorial shows you how to send a telemetry to the cloud. This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the concecutive positions of your camera.  
 
-[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_03_telemetries)
+[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_03_telemetries)
 
 ## Requirements
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
@@ -98,7 +98,7 @@ What exactly happens:
 
 ```
 
-- Store the camera position inside a json and call `IoTCloud::sendTelemetry` 
+- Store the camera position inside a json and call `HubClient::sendTelemetry` 
 A label is specified as follows `sendTelemetry(std::string label, json& value)`. It allows to improve the log consultation in the ZEDHub interface as it is possible to sort them by label.
 
 ```
@@ -110,15 +110,15 @@ A label is specified as follows `sendTelemetry(std::string label, json& value)`.
     position_telemetry["rx"] = rotation_vector.x;
     position_telemetry["ry"] = rotation_vector.y;
     position_telemetry["rz"] = rotation_vector.z;
-    IoTCloud::sendTelemetry("camera_position", position_telemetry);
+    HubClient::sendTelemetry("camera_position", position_telemetry);
     prev_timestamp = curr_timestamp;
 ```
 
-- Call IoTCloud::Refresh in order to send the current image to the cloud
+- Call HubClient::update in order to send the current image to the cloud
 (See tutorial_02_live_stream_and_recording  README for more information)
 
 ```  
-    // Always refresh IoT at the end of the grab loop
-    IoTCloud::refresh();
+    // Always update IoT at the end of the grab loop
+    HubClient::update();
     sleep_ms(1);
 ```

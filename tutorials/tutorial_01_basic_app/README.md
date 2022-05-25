@@ -2,7 +2,7 @@
 
 This sample shows how to make a very simple application that **connects** itself to the cloud and **sends logs**. 
 
-[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_01_basic_app)
+[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_01_basic_app)
 
 ## Requirements
 You will deploy this tutorial on one of the devices installed on **your ZED Hub workspace**. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
@@ -50,24 +50,25 @@ Then to run your app :
 
 ## The Source Code explained
 
-To init your application, use the `IoTCloud::init` function that starts communications between your app and the cloud. It must be called before using the IOTCloud API, so before sending logs (`IoTCloud::log`), telemetry(`IoTCloud::sendTelemetry`) custom stream (`IoTCloud::setCustomVideoMat`) and others ...
+To init your application, use the `HubClient::connect` function that starts communications between your app and the cloud. It must be called before using the HubClient API, so before sending logs (`HubClient::sendLog`), telemetry(`HubClient::sendTelemetry`) and others. Then, register your zed camera to the client.
 ```c++
-    STATUS_CODE status_iot = IoTCloud::init("basic_app");
+    STATUS_CODE status_iot = HubClient::connect("basic_app");
+    status_iot = HubClient::registerCamera(p_zed);
 ```
 You can set the log level limit to be displayed. Every log with LOG_LEVEL below the limit will not be print.  ``` setLogLevelThreshold(LOG_LEVEL local_terminal_log_level, LOG_LEVEL cloud_log_level)```
 ```c++
-    IoTCloud::setLogLevelThreshold(LOG_LEVEL::INFO,LOG_LEVEL::INFO);
+    HubClient::setLogLevelThreshold(LOG_LEVEL::INFO,LOG_LEVEL::INFO);
 ```
 
-You can send a simple log to the cloud with ```IoTCloud::logInfo```
+You can send a simple log to the cloud with ```HubClient::sendLogInfo```
 ```c++
-    IoTCloud::log("Application connected",LOG_LEVEL::INFO);
+    HubClient::sendLog("Application connected",LOG_LEVEL::INFO);
 ```
 
-You can check if your application is connected to the cloud with ```IoTCloud::isInitialized```
+You can check if your application is connected to the cloud with ```HubClient::isConnected```
 ```c++
-    if (IoTCloud::isInitialized())
-        IoTCloud::log("Application connected",LOG_LEVEL::INFO);
+    if (HubClient::isConnected())
+        HubClient::sendLog("Application connected",LOG_LEVEL::INFO);
 ```
 
 Not that there are 7 log Levels : 

@@ -3,7 +3,7 @@
 This tutorial shows how to use custom application parameters in your application. These parameters can be modified by everyone in the ZED Hub interface.
 This sample starts a ZED exactly as tutorial_02_live_stream_and_recording does, but it also define one parameter. The first one indicates whether the camera LED must be on or off. 
 
-[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_04_application_parameters)
+[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_04_application_parameters)
 
 ## Requirements
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
@@ -46,7 +46,7 @@ $ cmake ..
 $ make -j$(nproc)
 ```
 
-This application use application parameters. Move the `parameters.json` file to the path you specified in the `IoTCloud::loadApplicationParameters` function.
+This application use application parameters. Move the `parameters.json` file to the path you specified in the `HubClient::loadApplicationParameters` function.
 ```
 $ cp ../parameters.json .
 ```
@@ -82,7 +82,7 @@ We can do this in three steps:
 - load the application parameter file to the callback with `loadApplicationParameters`. Note that this is only needed for development. When you will deploy your app as a service, you'll need to put those parameters in your `app.json`. Please have a look to the sample **Camera Viewer sample** and **Object Detection sample** to understand how it works:
 
 ```c++
-    status_iot = IoTCloud::loadApplicationParameters("parameters.json");
+    status_iot = HubClient::loadApplicationParameters("parameters.json");
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "parameters.json file not found or malformated" << std::endl;
         exit(EXIT_FAILURE);
@@ -100,7 +100,7 @@ We can do this in three steps:
 - declare this association to the cloud : 
 
 ```c++
-    IoTCloud::registerFunction(onLedStatusUpdate, callback_param_led);
+    HubClient::registerFunction(onLedStatusUpdate, callback_param_led);
 ```
 
 So we finaly have: 
@@ -108,7 +108,7 @@ So we finaly have:
     //Set your parameter callback
     CallbackParameters callback_param_led;
     callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
-    IoTCloud::registerFunction(onLedStatusUpdate, callback_param_led);
+    HubClient::registerFunction(onLedStatusUpdate, callback_param_led);
 ```
 
 ### Add a callback function
@@ -123,7 +123,7 @@ void myCallbackName(FunctionEvent &event) {
 
 }
 ```
-It can contains everything, but keep in mind that it is called each time the associated parameter is modified. You can of course get the new parameter value inside the callback by using the `IoTCloud::getParameter` function.
+It can contains everything, but keep in mind that it is called each time the associated parameter is modified. You can of course get the new parameter value inside the callback by using the `HubClient::getParameter` function.
 
 In our case we only store the fact that the parameter has been modified inside the `led_status_updated` global variable.
 
@@ -146,27 +146,27 @@ Not that the callback name `onLedStatusUpdate` must correspond to the first para
 
 ### Use the updated parameter value
 
-Your parameter is now totally integrated in the application and can be used for any purpose. In our case we wait for a modification of its value to do something: When the parameter is modified in the user interface, the callback is triggered. The new value is therefore accessible by calling  `IoTCloud::getParameter`. The callback also set  `led_status_updated` to True.
+Your parameter is now totally integrated in the application and can be used for any purpose. In our case we wait for a modification of its value to do something: When the parameter is modified in the user interface, the callback is triggered. The new value is therefore accessible by calling  `HubClient::getParameter`. The callback also set  `led_status_updated` to True.
 
 In the main loop of the application:
 - The current led status is retrieved from the Camera Settings in order to use it as default value.
-- The new parameter value is retrieved thanks to `IoTCloud::getParameter`
+- The new parameter value is retrieved thanks to `HubClient::getParameter`
 Note that `led_status` is the parameter id defined in the **app.json** file. 
 `curr_led_status` is used as default value in the case where `getParameter` fails.
 ```c++
-    bool led_status = IoTCloud::getParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, curr_led_status);
+    bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, curr_led_status);
     
 ```
 
 - Then the LED status is physicaly modified by calling the SDK function  `setCameraSettings`.
-- A log is set to the cloud to notify the parameter value that has been used with the function `IoTCloud::reportParameter`.
+- A log is set to the cloud to notify the parameter value that has been used with the function `HubClient::reportParameter`.
 
 ```c++
 if (led_status_updated) {
     int curr_led_status = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS);
-    bool led_status = IoTCloud::getParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, curr_led_status);
+    bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, curr_led_status);
     p_zed->setCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, led_status);
-    IoTCloud::reportParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, led_status);
+    HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, led_status);
     led_status_updated = false;
 }
 ```

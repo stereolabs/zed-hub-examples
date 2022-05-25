@@ -1,9 +1,9 @@
-## Deploy a ZED Hub app a service
+# Deploy a ZED Hub app a service
 
 For production, you need to deploy your application on your device as a service, using Docker.
 Here is the full explanation on how to do it. Examples are available on [**Sample apps**](./samples/).
 
-### General structure
+## General structure
 A ZED Hub app is run in a Docker container. The [ZED Hub documentation](https://www.stereolabs.com/docs/cloud/applications/) explains in detail how an app is structured and deployed. 
 To deploy an app you need to upload a .zip file that contains at least:
 - a docker-compose.yml describing how the application should be run
@@ -11,9 +11,11 @@ To deploy an app you need to upload a .zip file that contains at least:
 - an app.json file that describes your application, specifies its name and release name and defines the parameters (see tutorial_04_application_parameters for more information about it)
 - the source code or the executable 
 
-#### Developing an app in C++
-We recommend you develop your app in C++, as the ZED Hub C++ API **sl_IOT** makes it easier to use the ZED Hub features.
-The provided tutorials are a good starting point for your own apps. Here is how they should be used:
+We provide tutorials and sample to develop your app in C++ and Python. The samples are especially made to describe how to deploy an app as a service.
+
+### Developing an app in C++
+
+With C++, your app should fit with this design :
 
 ```
 .
@@ -28,20 +30,47 @@ The provided tutorials are a good starting point for your own apps. Here is how 
     └── src
         └── main.cpp 
 ```
+The `Dockerfile` in source is dedicated to build your app. `edge_cli` will help you build an app trageting a jetson platform from your linux machine. If you just want to target your own machine, you can simply build your app with `cmake`.
 
 **Build stage**: 
 The source code needs to be compiled before deploying the app. The code is compiled inside a dedicated docker image. To run the associated container you just need to run 
 ```
-$ edge_cli build
+$ cd /your/app/folder
+$ edge_cli build .
 ```
- This command, installed with Edge Agent in your device setup, will ask on which kind of device you will deploy your app and will set the `Dockerfile` parameters accordingly. The `Dockerfile` describes the build stage. It generates binaries, stored in the `./app` folder. Then, an `app.zip` file is generated (still by the edge_cli build command). This `app.zip` file is your packaged app and is ready to be deployed. It contains : 
-- docker-compose.yml
-- app.json 
-- Dockerfile
-- the binaries generated during the **build stage**
-- an icon.png image (optional)
+ This command, installed with Edge Agent in your device setup, will ask on which kind of device you will deploy your app and will set the `Dockerfile` parameters accordingly. The `Dockerfile` describes the build stage. It generates binaries, stored in the `./app` folder. 
+ 
+### Developing an app in Python
+With Python, your app should fit with this design :
 
-**Deployment stage**:  
+```
+.
+├── app
+│   └── Dockerfile
+│   └── main.py
+│   └── ...other sources files...
+├── app.json
+├── docker-compose.yml
+└── README.md
+
+```
+Python dos not need any build stage.
+
+ ### Deploy stage
+ The deploy stage consists in create a .zip file containing
+ - app/Dockerfile
+ - app/<your_app> the binaries generated during the **build stage**, or the source in case your using Python.
+ - app.json
+ - docker-compose.yml
+ - an icon.png image (optional)
+ 
+ There is an automated command to do that :
+```
+$ cd /your/app/folder
+$ edge_cli deploy .
+```
+`app.zip` file is generated. It is ready to be deployed.
+
 Now you just need to deploy your app using the ZED Hub interface:
 - In your workspace, in the **Applications** section, click on **Create a new app** 
 - Get the .zip an Drag’n’Drop in the dedicated area

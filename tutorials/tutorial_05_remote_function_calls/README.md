@@ -3,7 +3,7 @@
 This tutorial shows how to make an application containing a **remote function** that computes an addition operation called by a **remote function call**.
 This tutorial does not require a ZED to be run.
 
-[**Github repository**](https://github.com/stereolabs/cmp-examples/tree/main/tutorials/tutorial_05_remote_function_calls)
+[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_05_remote_function_calls)
 
 #### What is a remote function call ?
 A **remote function call** is a call to a remote function **declared and registered by a ZED Hub app**. The app described in this tutorial declares and registers the `additionCallback` remote function. 
@@ -55,7 +55,7 @@ Then to run your app :
 ```
 
 ## What you should see after deployment
-The application in itself only defines and registers a **callback function** that can be called from anywhere if the app is running. Therefore there is not a lot to see in the ZED Hub interface. Make simply sure that your application has a **building** and finally a **running status**.  
+This application defines and registers a **callback function** that can be called from anywhere if the app is running. Therefore there is nothing in the ZED Hub interface apart from the logs.
 
 ### Call your remote function
 Before calling your remote function, you have to get the necessary information and credentials to use the REST API.
@@ -83,7 +83,12 @@ To call your remote function, simply use the script ```remote_function_call.sh``
 ```
 
 The REST request uses this format :\
-It uses the endpoint ```${region_url}/workspaces/${workspace_id}/devices/${device_id}/functions/${function_name}``` where ```function_name``` is the name of the function you registered in your application using the ```IoTCloud::registerFunction```. In this tutorial the function registered is `tuto05_add` .\
+It uses the endpoint ```${region_url}/workspaces/${workspace_id}/devices/${device_id}/functions/${function_name}``` where ```function_name``` is the name of the function you registered in your application.
+You will use
+- ```HubClient::registerFunction``` to register it in c++
+- Native MQTT to register it in python.
+
+In this tutorial the function registered is `tuto05_add` .
 The `parameters` key of the json contained in the request contains the parameters of the function. In our case `num1` and `num2`.
 
 ```
@@ -101,9 +106,9 @@ The `parameters` key of the json contained in the request contains the parameter
 You can get more information about remote function calls in the [documentation](https://www.stereolabs.com/docs/cloud/remote-functions/call/).
 
 
-## Code Overview
+## Code Overview - C++
 
-In the C++ code, the app is connected to the cloud by using `IoTCloud::init`, as always.
+In the code the app is connected to the cloud by using `HubClient::connect`, as always.
 
 ### Register your callback function
 Then your remote function parameters are set. Basically a name is given, `tuto05_add`, and the callback type is set.
@@ -119,7 +124,7 @@ Then the remote function is registered: the function `additionCallback` associat
     CallbackParameters callback_params;
     callback_params.setRemoteCallback("tuto05_add", CALLBACK_TYPE::ON_REMOTE_CALL, nullptr);
     //Register your callback function
-    IoTCloud::registerFunction(additionCallback, callback_params);
+    HubClient::registerFunction(additionCallback, callback_params);
 ```
 
 
@@ -145,7 +150,7 @@ void myRemoteFunction(FunctionEvent& event) {
 
 ```
 
-The `getEvenParameters` function retrieves the `parameters` json from the REST request that called the remote function.
+The `getEventParameters` function retrieves the `parameters` json from the REST request that called the remote function.
 In our case params contains this json (5 and 10 are given as exemple):
 ```
 {
@@ -164,7 +169,7 @@ Then the remote function can use these parameters to do anything. In our case th
         int result = num1 + num2;
 
 	    //Log your result
-        IoTCloud::log("Addition called : "+std::to_string(num1)+" + "+std::to_string(num2)+" = "+std::to_string(result),LOG_LEVEL::INFO);
+        HubClient::sendLog("Addition called : "+std::to_string(num1)+" + "+std::to_string(num2)+" = "+std::to_string(result),LOG_LEVEL::INFO);
 
         //Update the result and status of the event
         event.status = 0;
@@ -174,7 +179,7 @@ Then the remote function can use these parameters to do anything. In our case th
 
 In case of problem the status is set to 1.
 ```c++
-    IoTCloud::log("Addition remote function was used with wrong arguments.",LOG_LEVEL::ERROR);
+    HubClient::sendLog("Addition remote function was used with wrong arguments.",LOG_LEVEL::ERROR);
     event.status = 1;
     event.result = "Addition remote function was used with wrong arguments.";
     
@@ -195,16 +200,49 @@ void additionCallback(FunctionEvent& event) {
         int result = num1 + num2;
 
         //Log your result
-        IoTCloud::log("Addition called : "+std::to_string(num1)+" + "+std::to_string(num2)+" = "+std::to_string(result),LOG_LEVEL::INFO);
+        HubClient::sendLog("Addition called : "+std::to_string(num1)+" + "+std::to_string(num2)+" = "+std::to_string(result),LOG_LEVEL::INFO);
 
         //Update the result and status of the event
         event.status = 0;
         event.result = result;
     } 
     else {
-        IoTCloud::log("Addition remote function was used with wrong arguments.",LOG_LEVEL::ERROR);
+        HubClient::sendLog("Addition remote function was used with wrong arguments.",LOG_LEVEL::ERROR);
         event.status = 1;
         event.result = "Addition remote function was used with wrong arguments.";
     }
 }
 ```
+
+## Code Overview - Python
+Python's code is slightly different. instead of using sliot ```registerFunction```, we just use MQTT topics.
+- In ```subscribe_callback``` method we subscribe to the right topic and store the name of the remote function alongside with the name of the callback we'll want to call.
+```
+def subscribe_callback(self, remote_name: str, callback_name: str):
+    self.client.subscribe(self.function_topic_in)
+    self.subscriptions[remote_name] = callback_name
+    print("Subcribed to topic ")
+```
+- In ```on_message``` method we filter all the event to the one fitting the right name.
+```
+if message.topic == self.function_topic_in:
+    message_received = json.loads(str(message.payload.decode("utf-8")))
+    if("name" in message_received):
+        if message_received["name"] in self.subscriptions:
+        ...
+```
+When the right event happens, we run the corresponding callback, with the arguments we need.
+- In the end, we need to respond to MQTT :
+```
+    response = {
+        "name": message_received["name"],
+        "call_id": message_received["id"],
+        "status": 0,
+        "result": {
+            "success": b
+        }
+    }
+    self.client.publish(self.function_topic_out, json.dumps(response))
+```
+
+
