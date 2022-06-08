@@ -122,7 +122,7 @@ Then the remote function is registered: the function `additionCallback` associat
 
 ```c++
     CallbackParameters callback_params;
-    callback_params.setRemoteCallback("tuto05_add", CALLBACK_TYPE::ON_REMOTE_CALL, nullptr);
+    callback_params.setRemoteCallback("tuto05_add", CALLBACK_TYPE::ON_REMOTE_CALL);
     //Register your callback function
     HubClient::registerFunction(additionCallback, callback_params);
 ```

@@ -63,9 +63,9 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    //Set your callback parameters. Here, the payload is set to nullptr but you can put a pointer to any thing to get it from your FunctionEvent in the callback.
+    //Set your callback parameters
     CallbackParameters callback_params;
-    callback_params.setRemoteCallback("tuto05_add", CALLBACK_TYPE::ON_REMOTE_CALL, nullptr);
+    callback_params.setRemoteCallback("tuto05_add", CALLBACK_TYPE::ON_REMOTE_CALL);
     //Register your callback function
     HubClient::registerFunction(additionCallback, callback_params);
     std::cout << "Waiting for remote function to be called." << std::endl;
