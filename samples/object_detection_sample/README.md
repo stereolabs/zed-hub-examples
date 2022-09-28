@@ -13,7 +13,7 @@ The app also have several **parameters** that can be modified in the ZED Hub int
 
 
 ## Requirements
-This sample is a mix of the **7 basic tutorials** provided in the `tutorials` folder. We recommend to **read and test them** before running this sample. These tutorials provide a lot of information on the ZED Hub features and will make it easier to understand the **Object Detection Sample**.  
+This sample is a mix of the **basic tutorials** provided in the `tutorials` folder. We recommend to **read and test them** before running this sample. These tutorials provide a lot of information on the ZED Hub features and will make it easier to understand the **Object Detection Sample**.  
 
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
@@ -190,7 +190,7 @@ Each time a frame is successfuly **grabbed**, the detected objects are retrieved
 
 Then you will find the features described in the tutorials:
 
-- **Video events** are defined exactly in the same way than in `tutorial_07_video_event`
+- **Video events** are defined exactly in the same way than in `tutorial_06_video_event`
 
 ```c++
 sl::Timestamp current_ts = objects.timestamp;

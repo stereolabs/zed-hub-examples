@@ -1,4 +1,4 @@
-# Tutorial 9 - MQTT Subscriber
+# Tutorial 8 - MQTT Subscriber
 
 > **NOTE**: This tutorial should be run with the tutorial 8 : **MQTT Publisher**
 

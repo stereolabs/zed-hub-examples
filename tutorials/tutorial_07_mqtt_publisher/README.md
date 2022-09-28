@@ -1,4 +1,4 @@
-# Tutorial 8 - MQTT Publisher
+# Tutorial 7 - MQTT Publisher
 
 This tutorial shows you how to communicate between apps on the local network.
 
