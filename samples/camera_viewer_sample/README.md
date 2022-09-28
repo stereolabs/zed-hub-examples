@@ -104,7 +104,7 @@ If you click in the **Devices** panel  on the device where the app is deployed, 
 
 ### Recordings
 
-In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**. It means that everything will be recorded. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **erased**. (see tutorial_07_video_event to understand the **On Event** recording mode).
+In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**. It means that everything will be recorded. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **erased**. (see tutorial_06_video_event to understand the **On Event** recording mode).
 
 It is the only thing to do to start recording. The recordings are listed by hour and day in the **Video** panel of your device. 
 
