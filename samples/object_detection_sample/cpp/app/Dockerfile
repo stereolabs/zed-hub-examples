@@ -14,5 +14,5 @@ apt-get install -y --no-install-recommends libopencv-dev && \
      rm -rf /var/lib/apt/lists/* && apt autoremove && apt clean
 
 #Copy your binary
-COPY app_executable /
-CMD ["/app_executable"]
+COPY Object_Detection_Sample /
+CMD ["/Object_Detection_Sample"]

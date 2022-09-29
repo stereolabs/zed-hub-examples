@@ -1,27 +1,27 @@
 # Object Detection
 
-This sample is a complete example that shows you how to perform Object detection in a ZED Hub App. It also shows how to use it to generate:
-- **Logs** that informs you about the app's status
-- **Telemetry** that stores data linked to the detections
-- **Video Event** that shows you the video on which someone is detected
-- **Custom Stream** that shows you the live video, with bbox around the detected people
+This sample is a complete example that shows you how to perform Object detection in a ZED Hub App. It also shows how to generate:
+- **Logs** which inform you about the app's status
+- **Telemetries** which store data linked to the detections
+- **Video Events** which capture videos when people are detected
+- A **Custom Stream** which shows you the live video, with bounding boxes around detected people
 
-The app also have several **parameters** that can be modified in the ZED Hub interface and will have an impact on the application.
+The app defines **parameters** that can be modified in the ZED Hub interface and to change the app's behaviour while its running.
 
 ![](./images/od_live_view.png " ")
 
 
 
 ## Requirements
-This sample is a mix of the **7 basic tutorials** provided in the `tutorials` folder. We recommend to **read and test them** before running this sample. These tutorials provide a lot of information on the ZED Hub features and will make it easier to understand the **Object Detection Sample**.  
+This sample is a mix of the **basic tutorials** provided in the `tutorials` folder. We recommend to **read and test them** before running this sample. These tutorials provide a lot of information on the ZED Hub features and will make it easier to understand the **Object Detection Sample**.  
 
-You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. ZED Hub supports Jetson Nano, TX2, Xavier and Orin, or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
 - [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
-- A ZED must be plugged to this device.
-- **Enable recordings** and **disable privacy mode** in the Settings panel of your device
+- A ZED camera must be plugged to this device.
+- **Enable recordings** and **disable privacy mode** in the Settings panel of your device.
 
 
 
@@ -43,7 +43,7 @@ $ cmake ..
 $ make -j$(nproc)
 ```
 
-This application use application parameters. Move the `parameters.json` file to the path you specified in the `HubClient::loadApplicationParameters` function.
+This application defines application parameters in order to modify its behavior while it is running. Move the `parameters.json` file to the path you specified in the `HubClient::loadApplicationParameters` function.
 ```
 $ cp ../parameters.json .
 ```
@@ -53,21 +53,21 @@ Then to run your app :
 ./app_executable
 ```
 
-To dynamically change the parameters and activate callbacks, edit the `parameters.json` file.
+To dynamically change the parameters and activate their callbacks, edit the `parameters.json` file.
 
 ### How to build your application (for service deployment)
 To build your app just run:
 
 ```
-$ cd /PATH/TO/camera_viewer_sample
+$ cd /PATH/TO/object_detection_sample
 $ edge_cli build
 ```
 
 This command is available by installing Edge Agent on your device.
 
-- The command will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `edge_cli build`.
-- The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the ZEDHub interface.
-- Finally you will be asked the **IOT version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker imaged used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
+- The command will ask for the **device type** (Jetson or x86) on which you want to deploy this app.
+- The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the ZED Hub interface.
+- Finally you will be asked the **sl_iot version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker image used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
 
 ### How to deploy your application
 
@@ -77,26 +77,17 @@ Packages your app by generating a app.zip file using :
 $ edge_cli build
 ```
 
-Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the ZED Hub interface:
+You can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the ZED Hub interface:
 
 - In your workspace, in the **Applications** section, click on **Create a new app** 
-- Get the .zip an Drag’n’Drop in the dedicated area
-- Select the devices on which you want to deploy  the app and press **Deploy** 
+- Select the ZIP file containing the application in your filesystem
+- Select the devices on which you want to deploy the app and press **Deploy** 
 
 
 ## What you should see after deployment
-Make sure that the recordings are enabled and that the privacy mode is disabled (Settings panel of your device, in the ZED Hub interface).
-As this app shows you most of the ZED Hub features, you will have:
-- a **Custom Stream** that shows you the live video, with bbox around the detected people
-- **Logs** that informs you about the app's status
-- **Telemetries** that store data linked to the detections
-- **Video Events** that shows you the video on wich someone is detected
+### Live video
 
-The app also have several **parameters** that can be modified in the ZED Hub interface and will have an impact on the application.
-
-### Custom stream
-
-A video with bounding boxes around people should be available in the **Video** panel
+A video with bounding boxes around detected persons should be available in the **Video** panel
 ![](./images/od_live_view.png " ")
 
 
@@ -109,13 +100,10 @@ The logs should inform you about the app status.
 The telemetries containing data about detection should be available and generated every 10 seconds by default.
 ![](./images/od_telemetry.png " ")
 
-
-
 ### Video Event
 
 A video is considered as event if **at least on person is detected** in the image. Therefore if your app is running and that someone is seen by your ZED, you should see an Event in the Video Event panel corresponding to this situation.
 ![](./images/od_event.png " ")
-
 
 You can click on it. You have access to the video and the stored data of the event. You have access to a longer video than the exact event duration ( you can watch a few seconds before and after the event). The blue line indicates which part of the video is associated with the event.
 
@@ -190,7 +178,7 @@ Each time a frame is successfuly **grabbed**, the detected objects are retrieved
 
 Then you will find the features described in the tutorials:
 
-- **Video events** are defined exactly in the same way than in `tutorial_07_video_event`
+- **Video events** are defined exactly in the same way than in `tutorial_06_video_event`
 
 ```c++
 sl::Timestamp current_ts = objects.timestamp;

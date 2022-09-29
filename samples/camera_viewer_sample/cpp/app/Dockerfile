@@ -12,5 +12,5 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata libpng-dev && \
      rm -rf /var/lib/apt/lists/* &&  apt-get autoremove &&  apt-get clean
 
 #Copy your binary
-COPY app_executable /
-CMD ["/app_executable"]
+COPY Camera_Viewer_Sample /
+CMD ["/Camera_Viewer_Sample"]

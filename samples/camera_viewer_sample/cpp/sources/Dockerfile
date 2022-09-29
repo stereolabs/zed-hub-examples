@@ -16,6 +16,6 @@ WORKDIR /home
 RUN mkdir build
 WORKDIR /home/build
 RUN cmake -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -DCMAKE_CXX_FLAGS="-Wl,--allow-shlib-undefined" .. && \
-make -j3 && mv app_executable /
+make -j3 && mv Camera_Viewer_Sample /
 WORKDIR /
 RUN cd ..

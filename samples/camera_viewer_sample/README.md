@@ -1,9 +1,9 @@
 # Camera Viewer
 
-This sample is a basic example that shows you how to display your ZED live view in the ZED Hub Video Panel. It also allows you to continuously record the video. This sample uses and explains the following features :
-- **Logs** that informs you about the app's status
-- **Live Stream** that shows you the live video from your ZED in the **Video** Panel
-- **Recordings** that are listed hour by hour in the **Video** Panel
+This sample is a basic example which displays a ZED live view in the ZED Hub Video Panel. It also allows you to continuously record the video. This sample showcases the following ZED Hub features :
+- **Logs** which informs you about the app's status
+- **Live Stream** which displays the live video from your ZED camera in the **Video** Panel
+- **Recordings** which are listed hour by hour in the **Video** Panel
 
 
 **Note** That this sample correponds exactly to the Camera Viewer app that is provided by default when you setup a new device.
@@ -11,15 +11,15 @@ This sample is a basic example that shows you how to display your ZED live view 
 
 
 ## Requirements
-This sample uses a part of the **7 basic tutorials** provided in the `tutorials` folder. We recommend to **read and test the first 3 tutorials** before running this sample. These tutorials provide a lot of information on the ZED Hub features and will make it easier to understand the **Camera Viewer Sample**.  
+This sample uses a part of the **basic tutorials** provided in the `tutorials` folder. We recommend to **read and test the first 3 tutorials** before running this sample. These tutorials provide a lot of information on the ZED Hub features and will make it easier to understand the **Camera Viewer Sample**.
 
-You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. ZED Hub supports Jetson Nano, TX2, Xavier and Orin, or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
 - [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
-- A ZED must be plugged to this device.
-- **Enable recordings** and **disable privacy mode** in the Settings panel of your device
+- A ZED camera must be plugged to this device.
+- **Enable recordings** and **disable privacy mode** in the Settings panel of your device.
 
 
 
@@ -41,7 +41,8 @@ $ cmake ..
 $ make -j$(nproc)
 ```
 
-This application use application parameters. Move the `parameters.json` file to the path you specified in the `HubClient::loadApplicationParameters` function.
+
+This application defines application parameters in order to modify its behavior while it is running. Move the `parameters.json` file to the path you specified in the `HubClient::loadApplicationParameters` function.
 ```
 $ cp ../parameters.json .
 ```
@@ -51,7 +52,7 @@ Then to run your app :
 ./app_executable
 ```
 
-To dynamically change the parameters and activate callbacks, edit the `parameters.json` file.
+To dynamically change the parameters and activate their callbacks, edit the `parameters.json` file.
 
 ### How to build your application (for service deployment)
 To build your app just run:
@@ -63,9 +64,9 @@ $ edge_cli build
 
 This command is available by installing Edge Agent on your device.
 
-- The command will ask for the **device type** (jetson or classic x86 computer) on which you want to deploy this app. **Note** that it may be different than the computer on which you run `edge_cli build`.
+- The command will ask for the **device type** (Jetson or x86) on which you want to deploy this app.
 - The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the ZED Hub interface.
-- Finally you will be asked the **IOT version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker image used to build your app docker image. You can choose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
+- Finally you will be asked the **sl_iot version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker image used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
 
 ### How to deploy your application
 
@@ -75,11 +76,11 @@ Package your app by generating a app.zip file using :
 $ edge_cli build
 ```
 
-Now you just need to [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the ZED Hub interface:
+You can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the ZED Hub interface:
 
 - In your workspace, in the **Applications** section, click on **Create a new app** 
-- Get the .zip an Drag’n’Drop in the dedicated area
-- Select the devices on which you want to deploy  the app and press **Deploy** 
+- Select the ZIP file containing the application in your filesystem
+- Select the devices on which you want to deploy the app and press **Deploy** 
 
 
 ## What you should see after deployment
@@ -96,7 +97,7 @@ Wait at least until your app is **running**.
 
 ![](./images/running.png " ")
 
-If you click in the **Devices** panel  on the device where the app is deployed, you should see the live video (with a delay of a few seconds).
+In the **Devices** panel, select the device which is running your app. You should see the live video displayed (with a delay of a few seconds).
 
 ![](./images/live_view.png " ")
 
@@ -104,17 +105,13 @@ If you click in the **Devices** panel  on the device where the app is deployed, 
 
 ### Recordings
 
-In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**. It means that everything will be recorded. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **erased**. (see tutorial_07_video_event to understand the **On Event** recording mode).
+In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**, which will make the camera record as long as the application is running. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **erased**. (see tutorial_06_video_event to understand the **On Event** recording mode).
 
-It is the only thing to do to start recording. The recordings are listed by hour and day in the **Video** panel of your device. 
+That's it, recording is active! The recordings are listed by hour and day in the **Video** panel of your device. 
 
 
 ###  App logs
-Wait until your app is **running**.
-If you click  on the device where the app is deployed and go in the **Logs** section, you should see the logs associated to this application. If everything went well, you should see this: 
-
-![](./images/logs.png " ")
-
+Once the application is running, go to the **Logs** section on your device. You should be able to see logs associated to this application.
 
 
 ### Terminal logs
