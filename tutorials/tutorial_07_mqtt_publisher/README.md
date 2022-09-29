@@ -1,6 +1,6 @@
 # Tutorial 7 - MQTT Publisher
 
-This tutorial shows you how to communicate between apps on the local network.
+This tutorial shows you how to communicate between apps through ZED Hub.
 
 [**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_07_mqtt_publisher)
 

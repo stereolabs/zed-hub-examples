@@ -1,8 +1,8 @@
 # Tutorial 8 - MQTT Subscriber
 
-> **NOTE**: This tutorial should be run with the tutorial 8 : **MQTT Publisher**
+> **NOTE**: This tutorial should be run with the tutorial 7 : **MQTT Publisher**
 
-This tutorial shows you how to communicate between apps on the local network. It subscribes to a MQTT topics and send a log to notify that the messages have been received.
+This tutorial shows you how to communicate between apps through ZED Hub. It subscribes to a MQTT topics and send a log to notify that the messages have been received.
 
 [**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_08_mqtt_subscriber)
 
@@ -52,7 +52,7 @@ Then to run your app :
 
 ## What you should see after deployment
 
-The app subscribes to the MQTT topic where the tutorial 8 (MQTT publisher) publishes: `/v1/local_network/my_custom_data`. A log is published each time a message is received. 
+The app subscribes to the MQTT topic where the MQTT Publisher Tutorial publishes: `/v1/local_network/my_custom_data`. A log is published each time a message is received. 
 
 ![](./images/logs.png " ")
 
