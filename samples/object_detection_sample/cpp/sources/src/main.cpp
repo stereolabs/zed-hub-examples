@@ -27,89 +27,110 @@ using namespace sl;
 using namespace sl_iot;
 using json = sl_iot::json;
 
-
 // Parameters, defined as global variables
 bool draw_bboxes = true;
-bool recordVideoEvent  = true;
-int nbFramesNoDetBtw2Events = 30; //number of frame
-bool recordTelemetry  = true;
-float telemetryFreq  = 10.f; //in seconds
+bool recordVideoEvent = true;
+int nbFramesNoDetBtw2Events = 30; // number of frame
+bool recordTelemetry = true;
+float telemetryFreq = 10.f; // in seconds
 
-
-cv::Mat slMat2cvMat(Mat& input) {
+cv::Mat slMat2cvMat(Mat &input)
+{
     // Mapping between MAT_TYPE and CV_TYPE
     int cv_type = -1;
-    switch (input.getDataType()) {
-    case MAT_TYPE::F32_C1: cv_type = CV_32FC1; break;
-    case MAT_TYPE::F32_C2: cv_type = CV_32FC2; break;
-    case MAT_TYPE::F32_C3: cv_type = CV_32FC3; break;
-    case MAT_TYPE::F32_C4: cv_type = CV_32FC4; break;
-    case MAT_TYPE::U8_C1: cv_type = CV_8UC1; break;
-    case MAT_TYPE::U8_C2: cv_type = CV_8UC2; break;
-    case MAT_TYPE::U8_C3: cv_type = CV_8UC3; break;
-    case MAT_TYPE::U8_C4: cv_type = CV_8UC4; break;
-    default: break;
+    switch (input.getDataType())
+    {
+    case MAT_TYPE::F32_C1:
+        cv_type = CV_32FC1;
+        break;
+    case MAT_TYPE::F32_C2:
+        cv_type = CV_32FC2;
+        break;
+    case MAT_TYPE::F32_C3:
+        cv_type = CV_32FC3;
+        break;
+    case MAT_TYPE::F32_C4:
+        cv_type = CV_32FC4;
+        break;
+    case MAT_TYPE::U8_C1:
+        cv_type = CV_8UC1;
+        break;
+    case MAT_TYPE::U8_C2:
+        cv_type = CV_8UC2;
+        break;
+    case MAT_TYPE::U8_C3:
+        cv_type = CV_8UC3;
+        break;
+    case MAT_TYPE::U8_C4:
+        cv_type = CV_8UC4;
+        break;
+    default:
+        break;
     }
 
     return cv::Mat(input.getHeight(), input.getWidth(), cv_type, input.getPtr<sl::uchar1>(MEM::CPU));
 }
 
 // Parameter callbacks
-void onDisplayParametersUpdate(FunctionEvent &event) {
+void onDisplayParametersUpdate(FunctionEvent &event)
+{
     event.status = 0;
     draw_bboxes = HubClient::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
-    HubClient::sendLog("New parameter : draw_bboxes modified",LOG_LEVEL::INFO);
-
+    HubClient::sendLog("New parameter : draw_bboxes modified", LOG_LEVEL::INFO);
 }
 
-void onVideoEventUpdate(FunctionEvent &event) {
+void onVideoEventUpdate(FunctionEvent &event)
+{
     event.status = 0;
     recordVideoEvent = HubClient::getParameter<bool>("recordVideoEvent", PARAMETER_TYPE::APPLICATION, recordVideoEvent);
     nbFramesNoDetBtw2Events = HubClient::getParameter<int>("nbFramesNoDetBtw2Events", PARAMETER_TYPE::APPLICATION, nbFramesNoDetBtw2Events);
-    HubClient::sendLog("New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified",LOG_LEVEL::INFO);
-
+    HubClient::sendLog("New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified", LOG_LEVEL::INFO);
 }
 
-void onTelemetryUpdate(FunctionEvent &event) {
+void onTelemetryUpdate(FunctionEvent &event)
+{
     event.status = 0;
     recordTelemetry = HubClient::getParameter<bool>("recordTelemetry", PARAMETER_TYPE::APPLICATION, recordTelemetry);
     telemetryFreq = HubClient::getParameter<float>("telemetryFreq", PARAMETER_TYPE::APPLICATION, telemetryFreq);
-    HubClient::sendLog("New parameters : recordTelemetry or telemetryFreq modified",LOG_LEVEL::INFO);
+    HubClient::sendLog("New parameters : recordTelemetry or telemetryFreq modified", LOG_LEVEL::INFO);
 }
 
-
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     // Create camera object
-    std::shared_ptr<sl::Camera> p_zed;
-    p_zed.reset(new sl::Camera());
+    auto p_zed = std::make_shared<sl::Camera>();
 
     STATUS_CODE status_iot;
     status_iot = HubClient::connect("object_app");
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
     status_iot = HubClient::registerCamera(p_zed);
 
-    //Load application parameter file in development mode
-    char* application_token = ::getenv("SL_APPLICATION_TOKEN");
-    if (!application_token) {
+    // Load application parameter file in development mode
+    char *application_token = ::getenv("SL_APPLICATION_TOKEN");
+    if (!application_token)
+    {
         status_iot = HubClient::loadApplicationParameters("parameters.json");
-        if (status_iot != STATUS_CODE::SUCCESS) {
+        if (status_iot != STATUS_CODE::SUCCESS)
+        {
             std::cout << "parameters.json file not found or malformated" << std::endl;
             exit(EXIT_FAILURE);
         }
     }
-    
+
     HubClient::setLogLevelThreshold(LOG_LEVEL::DEBUG, LOG_LEVEL::INFO);
-    //Open the ZED camera
+    // Open the ZED camera
     sl::InitParameters initParameters;
     initParameters.camera_resolution = RESOLUTION::HD2K;
     initParameters.depth_mode = DEPTH_MODE::NEURAL;
 
     sl::ERROR_CODE status_zed = p_zed->open(initParameters);
-    if (status_zed != ERROR_CODE::SUCCESS) {
+    if (status_zed != ERROR_CODE::SUCCESS)
+    {
         HubClient::sendLog("Camera initialization error : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         exit(EXIT_FAILURE);
     }
@@ -117,20 +138,22 @@ int main(int argc, char **argv) {
     // Enable Position tracking (mandatory for object detection)
     sl::PositionalTrackingParameters trck_params;
     trck_params.set_as_static = false;
-    std::cout<<"[Device CORE app] Enable Positional Tracking "<<std::endl;
-    auto zed_error =  p_zed->enablePositionalTracking(trck_params);
-    if (zed_error != ERROR_CODE::SUCCESS) {
+    std::cout << "[Device CORE app] Enable Positional Tracking " << std::endl;
+    auto zed_error = p_zed->enablePositionalTracking(trck_params);
+    if (zed_error != ERROR_CODE::SUCCESS)
+    {
         std::cout << sl::toVerbose(zed_error) << "\nExit program." << std::endl;
         p_zed->close();
         return 1;
     }
 
     // Enable the Objects detection module
-    std::cout<<"[Device CORE app] Enable Object Detection Module"<<std::endl;
+    std::cout << "[Device CORE app] Enable Object Detection Module" << std::endl;
     sl::ObjectDetectionParameters obj_det_params;
     obj_det_params.image_sync = true;
     zed_error = p_zed->enableObjectDetection(obj_det_params);
-    if (zed_error != ERROR_CODE::SUCCESS) {
+    if (zed_error != ERROR_CODE::SUCCESS)
+    {
         std::cout << sl::toVerbose(zed_error) << "\nExit program." << std::endl;
         p_zed->close();
         return 1;
@@ -142,7 +165,6 @@ int main(int argc, char **argv) {
     objectTracker_parameters_rt.detection_confidence_threshold = 50;
     objectTracker_parameters_rt.object_class_filter.clear();
     objectTracker_parameters_rt.object_class_filter.push_back(sl::OBJECT_CLASS::PERSON);
-     
 
     // Runtime parameters
     sl::RuntimeParameters rt_param;
@@ -158,12 +180,11 @@ int main(int argc, char **argv) {
     callback_event_param.setParameterCallback("onVideoEventUpdate", "recordVideoEvent|nbFramesNoDetBtw2Events", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
     HubClient::registerFunction(onVideoEventUpdate, callback_event_param);
 
-
     CallbackParameters callback_telemetry_param;
     callback_telemetry_param.setParameterCallback("onTelemetryUpdate", "recordTelemetry|telemetryFreq", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
     HubClient::registerFunction(onTelemetryUpdate, callback_telemetry_param);
 
-    // get values defined by the Zed Hub interface. 
+    // get values defined by the Zed Hub interface.
     // Last argument is default value in case of failure
     draw_bboxes = HubClient::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
     recordVideoEvent = HubClient::getParameter<bool>("recordVideoEvent", PARAMETER_TYPE::APPLICATION, recordVideoEvent);
@@ -173,7 +194,6 @@ int main(int argc, char **argv) {
 
     /****************************/
 
-
     // Main loop
     int counter_no_detection = 0;
     sl::Objects objects;
@@ -182,17 +202,19 @@ int main(int argc, char **argv) {
     sl::Timestamp prev_timestamp = p_zed->getTimestamp(TIME_REFERENCE::CURRENT);
 
     // Images
-    sl::Mat imgLeftCustom(1280,720, sl::MAT_TYPE::U8_C4);
+    sl::Mat imgLeftCustom(1280, 720, sl::MAT_TYPE::U8_C4);
     cv::Mat leftImageCpuCV;
     leftImageCpuCV = slMat2cvMat(imgLeftCustom);
 
     sl::Resolution image_raw_res = p_zed->getCameraInformation().camera_resolution;
 
-    while (true) {
+    while (true)
+    {
         // Grab a new frame from the ZED
         status_zed = p_zed->grab(rt_param);
-        if (status_zed != ERROR_CODE::SUCCESS) break;
-        
+        if (status_zed != ERROR_CODE::SUCCESS)
+            break;
+
         p_zed->retrieveObjects(objects, objectTracker_parameters_rt);
 
         /*******     Define event   *********/
@@ -201,51 +223,57 @@ int main(int argc, char **argv) {
         If nobody is detected for 10 frames, a new event is defined next time someone is detected.
         Cf README.md to understand how to use the event_reference to define a new event.
         */
-       
+
         sl::Timestamp current_ts = objects.timestamp;
 
         int counter_reliable_objects = 0;
-        for (int i = 0; i < objects.object_list.size(); i++){
-            if (objects.object_list[i].tracking_state == sl::OBJECT_TRACKING_STATE::OK){
-                counter_reliable_objects ++;
+        for (int i = 0; i < objects.object_list.size(); i++)
+        {
+            if (objects.object_list[i].tracking_state == sl::OBJECT_TRACKING_STATE::OK)
+            {
+                counter_reliable_objects++;
             }
         }
 
-
-        if (recordVideoEvent && counter_reliable_objects >= 1){
+        if (recordVideoEvent && counter_reliable_objects >= 1)
+        {
             bool is_new_event = true;
-            if (!first_event_sent || counter_no_detection >= nbFramesNoDetBtw2Events){
-                event_reference = "detected_person_" + std::to_string(current_ts.getMilliseconds()); 
-                HubClient::sendLog("New Video Event defined",LOG_LEVEL::INFO);
+            if (!first_event_sent || counter_no_detection >= nbFramesNoDetBtw2Events)
+            {
+                event_reference = "detected_person_" + std::to_string(current_ts.getMilliseconds());
+                HubClient::sendLog("New Video Event defined", LOG_LEVEL::INFO);
             }
-            else{
-                // Do nothing, keep previous event reference --> The current frame will be defined as being part of the previous video event  
+            else
+            {
+                // Do nothing, keep previous event reference --> The current frame will be defined as being part of the previous video event
                 is_new_event = false;
             }
-            
+
             EventParameters event_params;
             event_params.timestamp = current_ts.getMilliseconds();
-            event_params.reference = event_reference;    
+            event_params.reference = event_reference;
             std::string event_label = "People Detection"; // or label of your choice
-            json event2send; // Use to store all the data associated to the video event. 
+            json event2send;                              // Use to store all the data associated to the video event.
             event2send["message"] = "Current event as reference " + event_reference;
             event2send["nb_detected_person"] = objects.object_list.size();
 
-            if (is_new_event || !first_event_sent) {
+            if (is_new_event || !first_event_sent)
+            {
                 HubClient::startVideoEvent(event_label, event2send, event_params);
                 first_event_sent = true;
             }
             // update every 10 s
-            else if ((uint64) (current_ts.getMilliseconds() >= (uint64) (prev_timestamp.getMilliseconds() + (uint64)10 * 1000ULL)))
+            else if ((uint64)(current_ts.getMilliseconds() >= (uint64)(prev_timestamp.getMilliseconds() + (uint64)10 * 1000ULL)))
             {
                 HubClient::updateVideoEvent(event_label, event2send, event_params);
             }
             // else do nothing
-            
-            counter_no_detection = 0; //reset counter as someone as been detected
+
+            counter_no_detection = 0; // reset counter as someone as been detected
         }
-        else {
-            counter_no_detection ++;
+        else
+        {
+            counter_no_detection++;
         }
 
         /*******************************/
@@ -253,15 +281,18 @@ int main(int argc, char **argv) {
         /*******     Define and send Telemetry   *********/
         // In this example we send every second the number of people detected and there mean distance to the camera
 
-        if (recordTelemetry && (uint64) (current_ts.getMilliseconds() >= (uint64) (prev_timestamp.getMilliseconds() + (uint64)telemetryFreq * 1000ULL))) {
+        if (recordTelemetry && (uint64)(current_ts.getMilliseconds() >= (uint64)(prev_timestamp.getMilliseconds() + (uint64)telemetryFreq * 1000ULL)))
+        {
             float mean_distance = 0;
-            // compute objects ( = people)  mean distance from camera. This value will be sent as telemetry  
-            for (int i= 0;i< objects.object_list.size();i++) {
+            // compute objects ( = people)  mean distance from camera. This value will be sent as telemetry
+            for (int i = 0; i < objects.object_list.size(); i++)
+            {
                 mean_distance += (objects.object_list[i].position).norm();
             }
 
-            if (objects.object_list.size() > 0 ){
-                mean_distance /= (float) objects.object_list.size();
+            if (objects.object_list.size() > 0)
+            {
+                mean_distance /= (float)objects.object_list.size();
             }
 
             // Send Telemetry
@@ -272,24 +303,24 @@ int main(int argc, char **argv) {
             prev_timestamp = current_ts;
         }
 
-
         /*******************************/
         /*******     Custom stream : Draw bboxes on custom stream   *********/
-        if(draw_bboxes){
+        if (draw_bboxes)
+        {
             p_zed->retrieveImage(imgLeftCustom, sl::VIEW::LEFT, sl::MEM::CPU, imgLeftCustom.getResolution());
 
+            float ratio_x = (float)leftImageCpuCV.cols / (float)image_raw_res.width;
+            float ratio_y = (float)leftImageCpuCV.rows / (float)image_raw_res.height;
 
-            float ratio_x = (float)leftImageCpuCV.cols/(float)image_raw_res.width;
-            float ratio_y = (float)leftImageCpuCV.rows/(float)image_raw_res.height;
-
-
-            for (int i= 0;i< objects.object_list.size();i++) {
-                if (objects.object_list[i].tracking_state == sl::OBJECT_TRACKING_STATE::OK) {
+            for (int i = 0; i < objects.object_list.size(); i++)
+            {
+                if (objects.object_list[i].tracking_state == sl::OBJECT_TRACKING_STATE::OK)
+                {
                     sl::uint2 tl = objects.object_list[i].bounding_box_2d[0];
                     sl::uint2 br = objects.object_list[i].bounding_box_2d[2];
-                    cv::Rect ROI = cv::Rect(cv::Point2i(tl.x*ratio_x, tl.y*ratio_y), cv::Point2i(br.x*ratio_x, br.y*ratio_y));
+                    cv::Rect ROI = cv::Rect(cv::Point2i(tl.x * ratio_x, tl.y * ratio_y), cv::Point2i(br.x * ratio_x, br.y * ratio_y));
                     cv::Scalar color = cv::Scalar(50, 200, 50, 255);
-                    cv::rectangle(leftImageCpuCV, ROI, color,2);
+                    cv::rectangle(leftImageCpuCV, ROI, color, 2);
                 }
             }
 
@@ -297,27 +328,29 @@ int main(int argc, char **argv) {
         }
 
         else
-        /*******************************/
+            /*******************************/
 
-        // Always update IoT at the end of the grab loop
+            // Always update IoT at the end of the grab loop
             HubClient::update();
     }
 
     // Handling camera error
-    if(status_zed != ERROR_CODE::SUCCESS){
-        HubClient::sendLog("Grab failed, restarting camera. "+std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+    if (status_zed != ERROR_CODE::SUCCESS)
+    {
+        HubClient::sendLog("Grab failed, restarting camera. " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
-    //Close the camera
-    else if(p_zed->isOpened())
+    // Close the camera
+    else if (p_zed->isOpened())
         p_zed->close();
 
     status_iot = HubClient::disconnect();
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
-    
+
     return 0;
 }
