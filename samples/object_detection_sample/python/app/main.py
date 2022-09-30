@@ -114,7 +114,7 @@ def main():
     status_zed = zed.enable_positional_tracking(track_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log(
-            "Positionnal tracking initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+            "Positional tracking initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
     # Enable the Objects detection module
@@ -156,7 +156,7 @@ def main():
     sliot.HubClient.register_function(on_telemetry_update, callback_telemetry_param);
 
     # get values defined by the ZED Hub interface.
-    # Last argument is default value in case of failuredraw_bboxes = sliot.HubClient.get_parameter_bool("draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION, draw_bboxes)
+    # Last argument is default value in case of failure draw_bboxes = sliot.HubClient.get_parameter_bool("draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION, draw_bboxes)
 
     recordVideoEvent = sliot.HubClient.get_parameter_bool(
         "recordVideoEvent", sliot.PARAMETER_TYPE.APPLICATION, recordVideoEvent)
