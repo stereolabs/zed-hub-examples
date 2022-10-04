@@ -1,0 +1,15 @@
+version: '2.3'
+services: 
+  multiplatform_sample:
+    build :
+        context : ./app
+        dockerfile: Dockerfile   
+        args:
+          BUILD_IMAGE: 192.168.1.92:5000/iot:0.59.2-devel-ubuntu20-cu11.7 
+          RUNTIME_IMAGE: 192.168.1.92:5000/iot:0.59.2-runtime-ubuntu20-cu11.7 
+    runtime: nvidia
+    environment:
+     - NVIDIA_DRIVER_CAPABILITIES=all
+     - MESA_GL_VERSION_OVERRIDE=3.3
+    privileged: true
+    network_mode: "host"

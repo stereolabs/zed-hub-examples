@@ -1,0 +1,14 @@
+version: '2.3'
+services: 
+  multiplatform_sample:
+    build :
+        context : ./app
+        dockerfile: Dockerfile   
+        args:
+          BUILD_IMAGE: 192.168.1.92:5000/iot:0.59.2-devel-jetson-l4t32.7
+          RUNTIME_IMAGE: 192.168.1.92:5000/iot:0.59.2-runtime-jetson-l4t32.7
+    runtime: nvidia
+    environment:
+     - MESA_GL_VERSION_OVERRIDE=3.3
+    privileged: true
+    network_mode: "host"
