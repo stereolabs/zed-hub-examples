@@ -25,7 +25,7 @@ You can start it using this command, and stop it with CTRL+C (note that it's alr
 $ edge_cli start
 ```
 
-If you want to run it in backround use :
+If you want to run it in background use :
 ```
 $ edge_cli start -b
 ```
@@ -73,7 +73,7 @@ You can click on it. You have access to the video and the stored data of the eve
 
 ## Code overview - C++
 
-### Initialisation
+### Initialization
 As usual, the app is init with `HubClient::connect` and `HubClient::registerCamera` and the ZED is started with  the ZED SDK `open` function.
 The Object detection is enabled with `enableObjectDetection`.Note that the tracking is required to use it (`enablePositionalTracking` must be called).
 
@@ -98,7 +98,7 @@ The detection is limited to PERSON (meaning for instance that the Vehicles are i
 
 ### Main loop
 
-Each time a frame is successfuly **grabbed**, the detected object are retrieved with the `retrieveObjects` function and stored in `objects`.
+Each time a frame is successfully **grabbed**, the detected object are retrieved with the `retrieveObjects` function and stored in `objects`.
 
 Remember that the frame is part of an event as soon as **at least one person is detected**. However a **second rule** is necessary to **distinguish one event from an other**. Once again, this rule depends on how you define it. In this tutorial we decided to define a new event as soon as **no one has been seen for 10 frames**. 
 
@@ -112,7 +112,7 @@ A frame is defined as part of a videoEvent if the `HubClient::startVideoEvent` i
     std::string event_label = "People Detection"; // or label of your choice
     json event2send; // Use to store all the data associated to the video event. 
     event2send["message"] = "Current event as reference " + event_reference;
-    event2send["nb_detected_personn"] = objects.object_list.size();
+    event2send["nb_detected_person"] = objects.object_list.size();
 
     if (new_event)
         HubClient::startVideoEvent(event_label, event2send, event_params);

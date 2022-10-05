@@ -156,8 +156,10 @@ def main():
     sliot.HubClient.register_function(on_telemetry_update, callback_telemetry_param);
 
     # get values defined by the ZED Hub interface.
-    # Last argument is default value in case of failure draw_bboxes = sliot.HubClient.get_parameter_bool("draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION, draw_bboxes)
-
+    # Last argument is default value in case of failure
+    
+    raw_bboxes = sliot.HubClient.get_parameter_bool(
+        "draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION, draw_bboxes)
     recordVideoEvent = sliot.HubClient.get_parameter_bool(
         "recordVideoEvent", sliot.PARAMETER_TYPE.APPLICATION, recordVideoEvent)
     nbFramesNoDetBtw2Events = sliot.HubClient.get_parameter_int(
@@ -186,7 +188,7 @@ def main():
             zed.retrieve_objects(objects, object_detection_runtime_params)
             # /*******     Define event   *********/
             # /*
-            # Let's define a video event as a video on wich you can detect someone at least every 10 frames.
+            # Let's define a video event as a video on which you can detect someone at least every 10 frames.
             # If nobody is detected for 10 frames, a new event is defined next time someone is detected.
             # Cf README.md to understand how to use the event_reference to define a new event.
             # */
@@ -217,7 +219,7 @@ def main():
                 event2send = {}
                 event2send["message"] = "Current event as reference " + \
                     event_reference
-                event2send["nb_detected_personn"] = len(objects.object_list)
+                event2send["nb_detected_person"] = len(objects.object_list)
 
                 if is_new_event or not first_event_sent:
                     sliot.HubClient.start_video_event(
