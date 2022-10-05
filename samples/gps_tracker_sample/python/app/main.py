@@ -129,8 +129,7 @@ def main():
                 gps["rotation"]["y"] = None
                 gps["rotation"]["z"] = None
                 gps["epoch_timestamp"] = current_ts.get_milliseconds()
-
-                print(gps)
+                
                 sliot.HubClient.send_telemetry("GPS_data", gps)
                 prev_timestamp = current_ts
 
