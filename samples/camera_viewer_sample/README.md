@@ -6,7 +6,7 @@ This sample is a basic example which displays a ZED live view in the ZED Hub Vid
 - **Recordings** which are listed hour by hour in the **Video** Panel
 
 
-**Note** That this sample correponds exactly to the Camera Viewer app that is provided by default when you setup a new device.
+**Note** That this sample corresponds exactly to the Camera Viewer app that is provided by default when you setup a new device.
 ![](./images/live_view.png " ")
 
 
@@ -49,7 +49,7 @@ $ cp ../parameters.json .
 
 Then to run your app :
 ```
-./app_executable
+./Camera_Viewer_Sample
 ```
 
 To dynamically change the parameters and activate their callbacks, edit the `parameters.json` file.
@@ -161,7 +161,7 @@ void onLocalStreamUpdate(FunctionEvent &event) {
 
 ### Initialization and 'restart' loop
 
-This sample app starts Init the cloud and start the ZED in a first loop that you can concider as a 'restart loop': if the ZED fails, the loop is re-entered and the ZED restart.
+This sample app starts Init the cloud and start the ZED in a first loop that you can consider as a 'restart loop': if the ZED fails, the loop is re-entered and the ZED restart.
 
 What exactly appends:
 

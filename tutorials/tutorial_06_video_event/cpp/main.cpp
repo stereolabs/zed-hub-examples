@@ -42,10 +42,10 @@ int main(int argc, char **argv) {
     }
 
     // Enable Position tracking (mandatory for object detection)
-    sl::PositionalTrackingParameters trck_params;
-    trck_params.set_as_static = false;
+    sl::PositionalTrackingParameters track_params;
+    track_params.set_as_static = false;
     std::cout<<"[Device CORE app] Enable Positional Tracking "<<std::endl;
-    auto zed_error =  p_zed->enablePositionalTracking(trck_params);
+    auto zed_error =  p_zed->enablePositionalTracking(track_params);
     if (zed_error != ERROR_CODE::SUCCESS) {
         std::cout << sl::toVerbose(zed_error) << "\nExit program." << std::endl;
         p_zed->close();
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
             std::string event_label = "People Detection"; // or label of your choice
             json event2send; // Use to store all the data associated to the video event. 
             event2send["message"] = "Current event as reference " + event_reference;
-            event2send["nb_detected_personn"] = objects.object_list.size();
+            event2send["nb_detected_person"] = objects.object_list.size();
 
             if (new_event || !first_event_sent) {
                 HubClient::startVideoEvent(event_label, event2send, event_params);
