@@ -1,6 +1,6 @@
 # Tutorial 2 - Live Stream and Continuous Recording
 
-This tutorial shows how to deploy an application that starts a ZED camera and sends the live stream to the ZED Hub interface. You will also be able to store the video on your device.  The recorded video will be available on the ZED Hub interface and downloadable. 
+This tutorial shows how to deploy an application that starts a ZED camera and sends the live stream to the ZED Hub interface. You will also be able to store the video on your device. The recorded video will be available on the ZED Hub interface and downloadable.
 
 [**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_02_live_stream_and_recording)
 
@@ -20,7 +20,7 @@ You can start it using this command, and stop it with CTRL+C (note that it's alr
 $ edge_cli start
 ```
 
-If you want to run it in backround use :
+If you want to run it in background use :
 ```
 $ edge_cli start -b
 ```
@@ -47,7 +47,7 @@ $ make -j$(nproc)
 
 Then to run your app :
 ```
-./app_executable
+./ZED_Hub_Tutorial_2
 ```
 
 ## What you should see after deployment
@@ -58,7 +58,7 @@ This app have two direct consequences in the ZED Hub interface:
 ### Live video
 In the **Settings** panel of your device, make sure that the **Privacy mode** is disabled, otherwise the video won't be visible.
 
-If you click in the **Devices** panel  on the device where the app is deployed, you should see the live video (with a delay of a few seconds).
+If you click in the **Devices** panel on the device where the app is deployed, you should see the live video (with a delay of a few seconds).
 
 ![](./images/live_and_recordings.png " ")
 
@@ -67,14 +67,14 @@ If you click in the **Devices** panel  on the device where the app is deployed, 
 
 In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**. It means that everything will be recorded. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **erased**.
 
-It is the only thing to do to start recording. The recordings are listed by hour and day in the **Video** panel of your device. 
+It is the only thing to do to start recording. The recordings are listed by hour and day in the **Video** panel of your device.
 
 ![](./images/recordings.png " ")
 
 
 ## The Source Code explained
 
-This sample app starts a ZED and retrieves every frame. Then, the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the consecutive position of your camera.  
+This sample app starts a ZED and retrieves every frame. Then, the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the consecutive position of your camera.
 
 What exactly happens:
 
@@ -87,8 +87,8 @@ What exactly happens:
 
     //Init sl_iot
     STATUS_CODE status_iot = HubClient::connect("streaming_app");
-    STATUS_CODE status_iot_registreation = HubClient::registerCamera(p_zed);
-    
+    STATUS_CODE status_iot_registration = HubClient::registerCamera(p_zed);
+
 ```
 
 
@@ -113,7 +113,7 @@ What exactly happens:
         // Grab a new frame from the ZED
         status_zed = p_zed->grab();
         if (status_zed != ERROR_CODE::SUCCESS) break;
-        
+
         // Insert custom code here
 
         // Always update IoT at the end of the grab loop

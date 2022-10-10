@@ -1,5 +1,6 @@
 # Tutorial 3 - Telemetries
-This tutorial shows you how to send a telemetry to the cloud. This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the concecutive positions of your camera.  
+
+This tutorial shows you how to send a telemetry to the cloud. This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the consecutive positions of your camera.
 
 [**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_03_telemetries)
 
@@ -19,7 +20,7 @@ You can start it using this command, and stop it with CTRL+C (note that it's alr
 $ edge_cli start
 ```
 
-If you want to run it in backround use :
+If you want to run it in background use :
 ```
 $ edge_cli start -b
 ```
@@ -46,7 +47,7 @@ $ make -j$(nproc)
 
 Then to run your app :
 ```
-./app_executable
+./ZED_Hub_Tutorial_3
 ```
 
 ## What you should see after deployment
@@ -59,7 +60,7 @@ If you click on the device where the app is deployed in the **Devices** panel, y
 
 ![](./images/live_and_recordings.png " ")
 
-###  Telemetry
+### Telemetry
 If you click on the **Telemetry** panel, you should see the telemetry of your camera position as follow:
 
 ![](./images/telemetry.png " ")
@@ -67,13 +68,13 @@ If you click on the **Telemetry** panel, you should see the telemetry of your ca
 
 ## Code Overview
 
-This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the concecutive position of your camera.  
+This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the consecutive position of your camera.
 
 What exactly happens:
 
 - Init IOT to enable communications with the cloud. (See tutorial_01_basic_app README for more information).
 
-- Open the ZED with `p_zed->open(initParameters)`. (See tutorial_02_live_stream_and_recording  README for more information).
+- Open the ZED with `p_zed->open(initParameters)`. (See tutorial_02_live_stream_and_recording README for more information).
 
 - Enable Positional Tracking with `p_zed->enablePositionalTracking(positional_tracking_param)`. (See [ZED SDK API documentation](https://www.stereolabs.com/docs/api/classsl_1_1Camera.html#a7989ae783fae435abfdf48feaf147f44) for more information).
 
@@ -98,8 +99,8 @@ What exactly happens:
 
 ```
 
-- Store the camera position inside a json and call `HubClient::sendTelemetry` 
-A label is specified as follows `sendTelemetry(std::string label, json& value)`. It allows to improve the log consultation in the ZEDHub interface as it is possible to sort them by label.
+- Store the camera position inside a json and call `HubClient::sendTelemetry`
+  A label is specified as follows `sendTelemetry(std::string label, json& value)`. It allows to improve the log consultation in the ZEDHub interface as it is possible to sort them by label.
 
 ```
     // Send Telemetry
@@ -115,9 +116,9 @@ A label is specified as follows `sendTelemetry(std::string label, json& value)`.
 ```
 
 - Call HubClient::update in order to send the current image to the cloud
-(See tutorial_02_live_stream_and_recording  README for more information)
+  (See tutorial_02_live_stream_and_recording README for more information)
 
-```  
+```
     // Always update IoT at the end of the grab loop
     HubClient::update();
     sleep_ms(1);

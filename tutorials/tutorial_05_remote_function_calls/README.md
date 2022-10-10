@@ -6,7 +6,7 @@ This tutorial does not require a ZED to be run.
 [**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_05_remote_function_calls)
 
 #### What is a remote function call ?
-A **remote function call** is a call to a remote function **declared and registered by a ZED Hub app**. The app described in this tutorial declares and registers the `additionCallback` remote function. 
+A **remote function call** is a call to a remote function **declared and registered by a ZED Hub app**. The app described in this tutorial declares and registers the `additionCallback` remote function.
 The call to this function can be done from **any computer** connected to the internet, by using a **REST request**. The way to perform this request is explained later in this tutorial.
 
 
@@ -24,7 +24,7 @@ You can start it using this command, and stop it with CTRL+C (note that it's alr
 $ edge_cli start
 ```
 
-If you want to run it in backround use :
+If you want to run it in background use :
 ```
 $ edge_cli start -b
 ```
@@ -51,7 +51,7 @@ $ make -j$(nproc)
 
 Then to run your app :
 ```
-./app_executable
+./ZED_Hub_Tutorial_5
 ```
 
 ## What you should see after deployment
@@ -60,9 +60,9 @@ This application defines and registers a **callback function** that can be calle
 ### Call your remote function
 Before calling your remote function, you have to get the necessary information and credentials to use the REST API.
 
-- Your **API token** that you can register from the **API panel** in ZED Hub. Get more information in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/)
+- Your **API token** that you can register from the **API panel** in ZED Hub. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/)
 
-- Your **region url** that you can get using the REST API in the ```/workspaces``` endpoint. Get more information in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
+- Your **region url** that you can get using the REST API in the `/workspaces` endpoint. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
 
 Example:
 ```
@@ -70,7 +70,7 @@ $ curl -s -H "Content-Type:application/json" -H "Authorization:Bearer ${your_tok
 
 ```
 
-- Your **workspace id** that you can get using the REST API in the ```/workspaces``` endpoint. Get more information in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
+- Your **workspace id** that you can get using the REST API in the ```/workspaces``` endpoint. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
 
 
 - Your **device id** that you can get using the REST API in the ```/workspaces/$workspace_id/devices``` endpoint. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/devices/)
@@ -151,11 +151,11 @@ void myRemoteFunction(FunctionEvent& event) {
 ```
 
 The `getEventParameters` function retrieves the `parameters` json from the REST request that called the remote function.
-In our case params contains this json (5 and 10 are given as exemple):
+In our case params contains this json (5 and 10 are given as example):
 ```
 {
-    "num1": 5, 
-    "num2": 10 
+    "num1": 5,
+    "num2": 10
 }
 ```
 
@@ -182,7 +182,7 @@ In case of problem the status is set to 1.
     HubClient::sendLog("Addition remote function was used with wrong arguments.",LOG_LEVEL::ERROR);
     event.status = 1;
     event.result = "Addition remote function was used with wrong arguments.";
-    
+
 }
 ```
 
@@ -205,7 +205,7 @@ void additionCallback(FunctionEvent& event) {
         //Update the result and status of the event
         event.status = 0;
         event.result = result;
-    } 
+    }
     else {
         HubClient::sendLog("Addition remote function was used with wrong arguments.",LOG_LEVEL::ERROR);
         event.status = 1;
@@ -221,7 +221,7 @@ Python's code is slightly different. instead of using sliot ```registerFunction`
 def subscribe_callback(self, remote_name: str, callback_name: str):
     self.client.subscribe(self.function_topic_in)
     self.subscriptions[remote_name] = callback_name
-    print("Subcribed to topic ")
+    print("Subscribed to topic ")
 ```
 - In ```on_message``` method we filter all the event to the one fitting the right name.
 ```
