@@ -32,16 +32,14 @@ void secondary_stream_loop(Camera& zed, const std::string& stream_name, bool& ru
     Mat zed_image(1280, 720, MAT_TYPE::U8_C4);
 
     while (run) {
-        // grab current images and compute depth
+        // grab current image
         if (zed.grab() == ERROR_CODE::SUCCESS)
         {
             zed.retrieveImage(zed_image, VIEW::LEFT, MEM::CPU, zed_image.getResolution());
             auto status_code = HubClient::addSecondaryStream(stream_name, zed_image);
         }
         else
-        {
             run = false;
-        }
     }
 }
 
@@ -92,9 +90,6 @@ int main(int argc, char **argv)
         }
     }
 
-    if (zeds.size() <= 0)
-        exit(EXIT_FAILURE);
-
     // Register the first camera as the main one
     std::shared_ptr<Camera> p_zed;
     p_zed.reset(&zeds[0]);
@@ -129,8 +124,10 @@ int main(int argc, char **argv)
     
     // Wait for every thread to be stopped
     for (int z = 1; z < nb_detected_zed; z++)
-        if (zeds[z].isOpened()) 
+        if (zeds[z].isOpened()) {
             thread_pool[z].join();
-
+            zeds[z].close();
+        }
+        
     return 0;
 }
