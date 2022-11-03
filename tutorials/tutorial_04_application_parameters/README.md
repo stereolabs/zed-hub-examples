@@ -21,7 +21,7 @@ You can start it using this command, and stop it with CTRL+C (note that it's alr
 $ edge_cli start
 ```
 
-If you want to run it in backround use (note that it's already running by default after Edge Agent installation) :
+If you want to run it in background use (note that it's already running by default after Edge Agent installation) :
 ```
 $ edge_cli start -b
 ```
@@ -103,7 +103,7 @@ We can do this in three steps:
     HubClient::registerFunction(onLedStatusUpdate, callback_param_led);
 ```
 
-So we finaly have: 
+So we finally have: 
 ```c++
     //Set your parameter callback
     CallbackParameters callback_param_led;
@@ -158,7 +158,7 @@ Note that `led_status` is the parameter id defined in the **app.json** file.
     
 ```
 
-- Then the LED status is physicaly modified by calling the SDK function  `setCameraSettings`.
+- Then the LED status is physically modified by calling the SDK function  `setCameraSettings`.
 - A log is set to the cloud to notify the parameter value that has been used with the function `HubClient::reportParameter`.
 
 ```c++
@@ -172,7 +172,7 @@ if (led_status_updated) {
 ```
 
 
-Finaly with these four steps we easily added a parameter to the initial application tutorial_02_live_stream_and_recording and we used its values.
+Finally with these four steps we easily added a parameter to the initial application tutorial_02_live_stream_and_recording and we used its values.
 
 
 ## Next steps

@@ -1,5 +1,5 @@
 # Tutorial 3 - Telemetries
-This tutorial shows you how to send a telemetry to the cloud. This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the concecutive positions of your camera.  
+This tutorial shows you how to send a telemetry to the cloud. This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the consecutive positions of your camera.  
 
 [**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_03_telemetries)
 
@@ -19,7 +19,7 @@ You can start it using this command, and stop it with CTRL+C (note that it's alr
 $ edge_cli start
 ```
 
-If you want to run it in backround use :
+If you want to run it in background use :
 ```
 $ edge_cli start -b
 ```
@@ -67,7 +67,7 @@ If you click on the **Telemetry** panel, you should see the telemetry of your ca
 
 ## Code Overview
 
-This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the concecutive position of your camera.  
+This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the consecutive position of your camera.  
 
 What exactly happens:
 

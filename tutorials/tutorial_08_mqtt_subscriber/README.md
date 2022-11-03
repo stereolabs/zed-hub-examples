@@ -20,7 +20,7 @@ You can start it using this command, and stop it with CTRL+C (note that it's alr
 $ edge_cli start
 ```
 
-If you want to run it in backround use :
+If you want to run it in background use :
 ```
 $ edge_cli start -b
 ```
@@ -58,7 +58,7 @@ The app subscribes to the MQTT topic where the MQTT Publisher Tutorial publishes
 
 
 ## Code overview
-The app must be **init** to be connected to the local Brocker.
+The app must be **init** to be connected to the local Broker.
 The app subscribes to the topic `/v1/local_network/my_custom_data` composed of the topic prefix `/v1/local_network` and the topic name `my_custom_data`.
 When a message is received the callback `onDataReceived` is triggered.
 

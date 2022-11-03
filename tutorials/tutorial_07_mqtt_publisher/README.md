@@ -18,7 +18,7 @@ You can start it using this command, and stop it with CTRL+C (note that it's alr
 $ edge_cli start
 ```
 
-If you want to run it in backround use :
+If you want to run it in background use :
 ```
 $ edge_cli start -b
 ```
@@ -54,7 +54,7 @@ The app publishes a basic message on the MQTT topic `/v1/local_network/my_custom
 
 ## Code overview
 
-First the app must be **Init**. It allows to connect the app to the local brocker.
+First the app must be **Init**. It allows to connect the app to the local broker.
 
 ```c++
     //Init sl_iot

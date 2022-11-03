@@ -24,7 +24,7 @@ You can start it using this command, and stop it with CTRL+C (note that it's alr
 $ edge_cli start
 ```
 
-If you want to run it in backround use :
+If you want to run it in background use :
 ```
 $ edge_cli start -b
 ```
@@ -60,9 +60,9 @@ This application defines and registers a **callback function** that can be calle
 ### Call your remote function
 Before calling your remote function, you have to get the necessary information and credentials to use the REST API.
 
-- Your **API token** that you can register from the **API panel** in ZED Hub. Get more information in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/)
+- Your **API token** that you can register from the **API panel** in ZED Hub. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/)
 
-- Your **region url** that you can get using the REST API in the ```/workspaces``` endpoint. Get more information in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
+- Your **region url** that you can get using the REST API in the ```/workspaces``` endpoint. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
 
 Example:
 ```
@@ -70,7 +70,7 @@ $ curl -s -H "Content-Type:application/json" -H "Authorization:Bearer ${your_tok
 
 ```
 
-- Your **workspace id** that you can get using the REST API in the ```/workspaces``` endpoint. Get more information in the [REST API documenation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
+- Your **workspace id** that you can get using the REST API in the ```/workspaces``` endpoint. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
 
 
 - Your **device id** that you can get using the REST API in the ```/workspaces/$workspace_id/devices``` endpoint. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/devices/)
@@ -151,7 +151,7 @@ void myRemoteFunction(FunctionEvent& event) {
 ```
 
 The `getEventParameters` function retrieves the `parameters` json from the REST request that called the remote function.
-In our case params contains this json (5 and 10 are given as exemple):
+In our case params contains this json (5 and 10 are given as example):
 ```
 {
     "num1": 5, 
@@ -213,36 +213,3 @@ void additionCallback(FunctionEvent& event) {
     }
 }
 ```
-
-## Code Overview - Python
-Python's code is slightly different. instead of using sliot ```registerFunction```, we just use MQTT topics.
-- In ```subscribe_callback``` method we subscribe to the right topic and store the name of the remote function alongside with the name of the callback we'll want to call.
-```
-def subscribe_callback(self, remote_name: str, callback_name: str):
-    self.client.subscribe(self.function_topic_in)
-    self.subscriptions[remote_name] = callback_name
-    print("Subcribed to topic ")
-```
-- In ```on_message``` method we filter all the event to the one fitting the right name.
-```
-if message.topic == self.function_topic_in:
-    message_received = json.loads(str(message.payload.decode("utf-8")))
-    if("name" in message_received):
-        if message_received["name"] in self.subscriptions:
-        ...
-```
-When the right event happens, we run the corresponding callback, with the arguments we need.
-- In the end, we need to respond to MQTT :
-```
-    response = {
-        "name": message_received["name"],
-        "call_id": message_received["id"],
-        "status": 0,
-        "result": {
-            "success": b
-        }
-    }
-    self.client.publish(self.function_topic_out, json.dumps(response))
-```
-
-
