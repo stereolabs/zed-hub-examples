@@ -67,7 +67,7 @@ You can send a simple log to the cloud with ```HubClient::sendLogInfo```
 
 You can check if your application is connected to the cloud with ```HubClient::isConnected```
 ```c++
-    if (HubClient::isConnected())
+    if (HubClient::isInitialized())
         HubClient::sendLog("Application connected",LOG_LEVEL::INFO);
 ```
 

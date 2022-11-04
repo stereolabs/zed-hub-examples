@@ -41,10 +41,10 @@ int main(int argc, char **argv) {
     string s = "";
     status_iot = HubClient::getDeviceName(s);
     if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "name error " << status_iot << std::endl;
+        std::cout << "Name error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
-    std::cout << "name : " << s << std::endl;
+    std::cout << "Device name : " << s << std::endl;
 
     //Set log level
     HubClient::setLogLevelThreshold(LOG_LEVEL::INFO,LOG_LEVEL::INFO);
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     HubClient::sendLog("Initialization succeeded",LOG_LEVEL::INFO);
 
     //Is your application connected to the cloud ?
-    if (HubClient::isConnected()==STATUS_CODE::SUCCESS)
+    if (HubClient::isInitialized()==STATUS_CODE::SUCCESS)
         HubClient::sendLog("Application connected",LOG_LEVEL::INFO);
 
     // Main loop : Sent a log to the cloud every 15s
