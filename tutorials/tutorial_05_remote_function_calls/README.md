@@ -62,7 +62,7 @@ Before calling your remote function, you have to get the necessary information a
 
 - Your **API token** that you can register from the **API panel** in ZED Hub. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/)
 
-- Your **region url** that you can get using the REST API in the `/workspaces` endpoint. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
+- Your **region url** that you can get using the REST API in the ```/workspaces``` endpoint. Get more information in the [REST API documentation](https://www.stereolabs.com/docs/cloud/rest-api/workspaces/)
 
 Example:
 ```
@@ -213,36 +213,3 @@ void additionCallback(FunctionEvent& event) {
     }
 }
 ```
-
-## Code Overview - Python
-Python's code is slightly different. instead of using sliot ```registerFunction```, we just use MQTT topics.
-- In ```subscribe_callback``` method we subscribe to the right topic and store the name of the remote function alongside with the name of the callback we'll want to call.
-```
-def subscribe_callback(self, remote_name: str, callback_name: str):
-    self.client.subscribe(self.function_topic_in)
-    self.subscriptions[remote_name] = callback_name
-    print("Subscribed to topic ")
-```
-- In ```on_message``` method we filter all the event to the one fitting the right name.
-```
-if message.topic == self.function_topic_in:
-    message_received = json.loads(str(message.payload.decode("utf-8")))
-    if("name" in message_received):
-        if message_received["name"] in self.subscriptions:
-        ...
-```
-When the right event happens, we run the corresponding callback, with the arguments we need.
-- In the end, we need to respond to MQTT :
-```
-    response = {
-        "name": message_received["name"],
-        "call_id": message_received["id"],
-        "status": 0,
-        "result": {
-            "success": b
-        }
-    }
-    self.client.publish(self.function_topic_out, json.dumps(response))
-```
-
-

@@ -81,14 +81,18 @@ What exactly happens:
 - Init IOT to enable communications with the cloud. Note that compared to tutorial 1 where no ZED was required, here the cloud is init with a ZED pointer p_zed.
 
 ```cpp
-    // Create camera object
+    // Initialize the communication to ZED Hub, with a zed camera.
     std::shared_ptr<sl::Camera> p_zed;
     p_zed.reset(new sl::Camera());
 
-    //Init sl_iot
-    STATUS_CODE status_iot = HubClient::connect("streaming_app");
-    STATUS_CODE status_iot_registration = HubClient::registerCamera(p_zed);
-
+    STATUS_CODE status_iot;
+    status_iot = HubClient::connect("streaming_app");
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Initialization error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    HubClient::registerCamera(p_zed);
+    
 ```
 
 
