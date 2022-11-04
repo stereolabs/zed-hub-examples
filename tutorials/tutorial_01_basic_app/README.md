@@ -45,7 +45,7 @@ $ make -j$(nproc)
 
 Then to run your app :
 ```
-./app_executable
+./ZED_Hub_Tutorial_1
 ```
 
 ## The Source Code explained

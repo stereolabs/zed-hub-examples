@@ -6,7 +6,7 @@ This tutorial does not require a ZED to be run.
 [**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_05_remote_function_calls)
 
 #### What is a remote function call ?
-A **remote function call** is a call to a remote function **declared and registered by a ZED Hub app**. The app described in this tutorial declares and registers the `additionCallback` remote function. 
+A **remote function call** is a call to a remote function **declared and registered by a ZED Hub app**. The app described in this tutorial declares and registers the `additionCallback` remote function.
 The call to this function can be done from **any computer** connected to the internet, by using a **REST request**. The way to perform this request is explained later in this tutorial.
 
 
@@ -51,7 +51,7 @@ $ make -j$(nproc)
 
 Then to run your app :
 ```
-./app_executable
+./ZED_Hub_Tutorial_5
 ```
 
 ## What you should see after deployment
@@ -154,8 +154,8 @@ The `getEventParameters` function retrieves the `parameters` json from the REST 
 In our case params contains this json (5 and 10 are given as example):
 ```
 {
-    "num1": 5, 
-    "num2": 10 
+    "num1": 5,
+    "num2": 10
 }
 ```
 
@@ -182,7 +182,7 @@ In case of problem the status is set to 1.
     HubClient::sendLog("Addition remote function was used with wrong arguments.",LOG_LEVEL::ERROR);
     event.status = 1;
     event.result = "Addition remote function was used with wrong arguments.";
-    
+
 }
 ```
 
@@ -205,7 +205,7 @@ void additionCallback(FunctionEvent& event) {
         //Update the result and status of the event
         event.status = 0;
         event.result = result;
-    } 
+    }
     else {
         HubClient::sendLog("Addition remote function was used with wrong arguments.",LOG_LEVEL::ERROR);
         event.status = 1;

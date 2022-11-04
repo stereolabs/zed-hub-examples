@@ -47,12 +47,12 @@ $ make -j$(nproc)
 
 Then to run your app :
 ```
-./app_executable
+./ZED_Hub_Tutorial_8
 ```
 
 ## What you should see after deployment
 
-The app subscribes to the MQTT topic where the MQTT Publisher Tutorial publishes: `/v1/local_network/my_custom_data`. A log is published each time a message is received. 
+The app subscribes to the MQTT topic where the MQTT Publisher Tutorial publishes: `/v1/local_network/my_custom_data`. A log is published each time a message is received.
 
 ![](./images/logs.png " ")
 
@@ -93,6 +93,6 @@ void onDataReceived(std::string topic, std::string message, TARGET target, void*
     std::cout << "Message received !" << std::endl;
     json my_raw_data = json::parse(message);
     std::cout << "My received message : " << my_raw_data << std::endl;
-    HubClient::sendLog("MQTT message received on topic " + topic,LOG_LEVEL::INFO); 
+    HubClient::sendLog("MQTT message received on topic " + topic,LOG_LEVEL::INFO);
 }
 ```

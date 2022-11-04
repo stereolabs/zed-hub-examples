@@ -45,12 +45,12 @@ $ make -j$(nproc)
 
 Then to run your app :
 ```
-./app_executable
+./ZED_Hub_Tutorial_7
 ```
 
 ## What you should see after deployment
 
-The app publishes a basic message on the MQTT topic `/v1/local_network/my_custom_data`. A log is published each time a message is sent. 
+The app publishes a basic message on the MQTT topic `/v1/local_network/my_custom_data`. A log is published each time a message is sent.
 
 ## Code overview
 
