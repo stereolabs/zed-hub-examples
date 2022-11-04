@@ -11,7 +11,7 @@ ZED Hub comes with samples demoing its main features. Each sample is written in 
 ## What are the available ZED Hub features explained in these tutorials:
 
 - Live stream : How to display your camera's live video feed in the ZED Hub interface
-- Telemetry : How to upload and store any kind of data in order to analyses and display it later 
+- Telemetry : How to upload and store any kind of data in order to analyze and display it later 
 - Application parameters: How to define parameters to your application, settable in the ZED Hub interface
 - Remote functions: How to define and call a remote function
 - Custom stream : How to replace your live camera stream by images of your choice
