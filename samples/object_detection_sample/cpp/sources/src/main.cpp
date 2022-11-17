@@ -138,7 +138,7 @@ int main(int argc, char **argv)
     // Enable Position tracking (mandatory for object detection)
     sl::PositionalTrackingParameters track_params;
     track_params.set_as_static = false;
-    std::cout << "[Device CORE app] Enable Positional Tracking " << std::endl;
+    std::cout << "Enable Positional Tracking " << std::endl;
     auto zed_error = p_zed->enablePositionalTracking(track_params);
     if (zed_error != ERROR_CODE::SUCCESS)
     {
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
     }
 
     // Enable the Objects detection module
-    std::cout << "[Device CORE app] Enable Object Detection Module" << std::endl;
+    std::cout << "Enable Object Detection Module" << std::endl;
     sl::ObjectDetectionParameters obj_det_params;
     obj_det_params.image_sync = true;
     zed_error = p_zed->enableObjectDetection(obj_det_params);

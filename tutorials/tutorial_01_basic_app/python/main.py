@@ -37,7 +37,7 @@ def main():
     sliot.HubClient.send_log("Initialization succeeded", sliot.LOG_LEVEL.INFO)
 
     # is your application connected to the cloud ?
-    if sliot.HubClient.is_connected() == sliot.STATUS_CODE.SUCCESS:
+    if sliot.HubClient.is_initialized() == sliot.STATUS_CODE.SUCCESS:
         sliot.HubClient.send_log("Application connected", sliot.LOG_LEVEL.INFO)
 
     # Main loop : send a log every 15 secs

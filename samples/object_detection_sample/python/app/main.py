@@ -120,7 +120,7 @@ def main():
     # Enable the Objects detection module
     object_detection_params = sl.ObjectDetectionParameters()
     object_detection_params.image_sync = True
-    object_detection_params.enable_tracking = True
+    object_detection_params.enable_tracking = False
     object_detection_params.detection_model = sl.DETECTION_MODEL.MULTI_CLASS_BOX
     status_zed = zed.enable_object_detection(object_detection_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
