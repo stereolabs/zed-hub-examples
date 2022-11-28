@@ -1,2 +1,0 @@
-opencv_python==4.5.5.62
-pyzediot==0.57
