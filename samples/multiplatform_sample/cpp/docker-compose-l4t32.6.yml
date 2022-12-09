@@ -5,8 +5,8 @@ services:
         context : ./app
         dockerfile: Dockerfile   
         args:
-          BUILD_IMAGE: stereolabs/iot:0.60.0-devel-jetson-l4t32.6
-          RUNTIME_IMAGE: stereolabs/iot:0.60.0-runtime-jetson-l4t32.6
+          BUILD_IMAGE: stereolabs/iot:0.63.0-devel-jetson-l4t32.6
+          RUNTIME_IMAGE: stereolabs/iot:0.63.0-runtime-jetson-l4t32.6
     runtime: nvidia
     environment:
      - MESA_GL_VERSION_OVERRIDE=3.3

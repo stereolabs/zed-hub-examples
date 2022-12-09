@@ -92,7 +92,7 @@ services:
         context : ./app
         dockerfile : Dockerfile
         args :
-            BASE_IMAGE: stereolabs/iot:0.22.0-runtime-jetson-jp4.4
+            BASE_IMAGE: stereolabs/iot:0.63.0-runtime-jetson-jp4.4
     runtime: nvidia
     privileged: true
     network_mode: "host"
@@ -100,7 +100,7 @@ services:
         - NVIDIA_DRIVER_CAPABILITIES=all
 ```
 
-In this example the container of the application will run the **tuto01_service** service. This service will use the Dockerfile named **Dockerfile** in the `./app` folder. This Dockerfile will be read with the parameter **BASE_IMAGE** set to `stereolabs/iot:0.22.0-runtime-jetson-jp4.4` by default.
+In this example the container of the application will run the **tuto01_service** service. This service will use the Dockerfile named **Dockerfile** in the `./app` folder. This Dockerfile will be read with the parameter **BASE_IMAGE** set to `stereolabs/iot:0.63.0-runtime-jetson-jp4.4` by default.
 
 
 ### Runtime Dockerfile
