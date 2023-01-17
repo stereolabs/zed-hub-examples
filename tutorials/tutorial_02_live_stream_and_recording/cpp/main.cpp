@@ -57,9 +57,13 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
+    // Register the camera once it has been open
     UpdateParameters updateParameters;
-
-    HubClient::registerCamera(p_zed, updateParameters);
+    status_iot = HubClient::registerCamera(p_zed, updateParameters);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     sl::Mat depth;
 
@@ -77,8 +81,8 @@ int main(int argc, char **argv)
         p_zed->retrieveImage(depth, VIEW::DEPTH);
 
         // Always update IoT at the end of the grab loop
-        // If you don't need an image, send update()
-        // It will send the default image and update the cloud.
+        // without giving a sl::Mat, it will retrieve the RGB image automatically.
+        // without giving a registered camera, it will try to update all registered cameras.
         HubClient::update(p_zed, depth);
     }
 
