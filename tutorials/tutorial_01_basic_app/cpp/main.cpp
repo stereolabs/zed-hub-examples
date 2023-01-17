@@ -29,44 +29,49 @@ using namespace sl;
 using namespace sl_iot;
 using json = sl_iot::json;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     // Initialize the communication to ZED Hub, without a zed camera.
     STATUS_CODE status_iot;
     status_iot = HubClient::connect("basic_app");
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
     string s = "";
     status_iot = HubClient::getDeviceName(s);
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Name error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
     std::cout << "Device name : " << s << std::endl;
 
-    //Set log level
-    HubClient::setLogLevelThreshold(LOG_LEVEL::INFO,LOG_LEVEL::INFO);
-     
-    //Send a log
-    HubClient::sendLog("Initialization succeeded",LOG_LEVEL::INFO);
+    // Set log level
+    HubClient::setLogLevelThreshold(LOG_LEVEL::INFO, LOG_LEVEL::INFO);
 
-    //Is your application connected to the cloud ?
-    if (HubClient::isInitialized()==STATUS_CODE::SUCCESS)
-        HubClient::sendLog("Application connected",LOG_LEVEL::INFO);
+    // Send a log
+    HubClient::sendLog("Initialization succeeded", LOG_LEVEL::INFO);
+
+    // Is your application connected to the cloud ?
+    if (HubClient::isInitialized() == STATUS_CODE::SUCCESS)
+        HubClient::sendLog("Application connected", LOG_LEVEL::INFO);
 
     // Main loop : Sent a log to the cloud every 15s
     int i = 0;
-    while (true) {
-        HubClient::sendLog("Log "+std::to_string(i)+" sent.",LOG_LEVEL::INFO);
+    while (true)
+    {
+        HubClient::sendLog("Log " + std::to_string(i) + " sent.", LOG_LEVEL::INFO);
         std::this_thread::sleep_for(15s);
         i++;
     }
 
     // Close the communication with ZED Hub properly.
     status_iot = HubClient::disconnect();
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
