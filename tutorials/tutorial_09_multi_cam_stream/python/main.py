@@ -1,7 +1,7 @@
  
 ########################################################################
 #
-# Copyright (c) 2022, STEREOLABS.
+# Copyright (c) 2023, STEREOLABS.
 #
 # All rights reserved.
 #
