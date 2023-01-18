@@ -31,21 +31,22 @@ def main():
         print("Initialization error ", status_iot)
         exit(1)
 
-    status_iot = sliot.HubClient.register_camera(zed)
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
-        exit(1)
-
     # Open the zed camera
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.HD2K
     init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE
 
     status_zed = zed.open(init_params)
-
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log(
             "Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        exit(1)
+
+    # register the camera once it's open
+    update_params = sliot.UpdateParameters()
+    status_iot = sliot.HubClient.register_camera(zed, update_params)
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_iot)
         exit(1)
 
     # Enable Position tracking (mandatory for object detection)
@@ -116,14 +117,13 @@ def main():
 
             if new_event or not first_event_sent:
                 sliot.HubClient.start_video_event(
-                    event_label, event_to_send)
+                    zed, event_label, event_to_send)
                 first_event_sent = True
                 print("Event started")
             else:
                 sliot.HubClient.update_video_event(
-                    event_label, event_to_send)
+                    zed, event_label, event_to_send)
                 print("Event updated")
-
 
             counter_no_detection = 0
             last_ts = current_ts
@@ -132,7 +132,7 @@ def main():
             counter_no_detection = counter_no_detection + 1
 
         # In the end of a grab(), always call a update() on the cloud.
-        sliot.HubClient.update()
+        sliot.HubClient.update(zed)
 
     print("Grab error ", status_zed)
     # Close the camera

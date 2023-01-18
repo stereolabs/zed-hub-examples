@@ -31,20 +31,21 @@ def main():
         print("Initialization error ", status_iot)
         exit(1)
 
-    status_iot = sliot.HubClient.register_camera(zed)
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
-        exit(1)
-
     # Open the zed camera
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.HD2K
     init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE
-    
     status_zed = zed.open(init_params)
 
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log("Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        exit(1)
+
+    # register the camera once it's open
+    update_params = sliot.UpdateParameters()
+    status_iot = sliot.HubClient.register_camera(zed, update_params)
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_iot)
         exit(1)
 
     depth = sl.Mat()
@@ -57,16 +58,13 @@ def main():
 
         # Do what you want with the data from the camera.
         # For examples of what you can do with the zed camera, visit https://github.com/stereolabs/zed-examples
-
         # For example, you can retrieve a depth image.
-        # zed.retrieve_image(depth, sl.VIEW.DEPTH)
+        zed.retrieve_image(depth, sl.VIEW.DEPTH)
 
-        # Always update IoT at the end of the grab loop
-        # sliot.HubClient.update(depth)
-
-        # If you don't need an image, send update()
-        # It will send the default image and update the cloud.
-        sliot.HubClient.update()
+        # Always update Hub at the end of the grab loop
+        # without giving a sl.Mat, it will retrieve the RGB image automatically.
+        # without giving a registered camera, it will try to update all registered cameras.
+        sliot.HubClient.update(zed, depth)
 
     # Close the camera
     if zed.is_opened():
