@@ -90,9 +90,7 @@ What exactly happens:
     if (status_iot != STATUS_CODE::SUCCESS) {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
-    }
-    HubClient::registerCamera(p_zed);
-    
+    }    
 ```
 
 
@@ -105,6 +103,14 @@ What exactly happens:
     initParameters.depth_mode = DEPTH_MODE::NONE;
 
     sl::ERROR_CODE status_zed = p_zed->open(initParameters);
+
+    // Register the camera once it has been open
+    UpdateParameters updateParameters;
+    status_iot = HubClient::registerCamera(p_zed, updateParameters);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
 ```
 
 
@@ -120,7 +126,7 @@ What exactly happens:
 
         // Insert custom code here
 
-        // Always update IoT at the end of the grab loop
+        // Always update Hub at the end of the grab loop
         HubClient::update();
     }
 ```

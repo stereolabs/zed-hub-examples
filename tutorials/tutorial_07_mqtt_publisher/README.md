@@ -64,12 +64,6 @@ First the app must be **Init**. It allows to connect the app to the local broker
         std::cout << "HubClient " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
-
-    status_iot = HubClient::registerCamera(p_zed);
-    if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "Camera registration error " << status_iot << std::endl;
-        exit(EXIT_FAILURE);
-    }
 ```
 Then the MQTT topic parameters are set.
 ```c++

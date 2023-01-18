@@ -111,7 +111,7 @@ int main(int argc, char **argv)
             led_status_updated = false;
         }
 
-        // Always update IoT at the end of the grab loop
+        // Always update Hub at the end of the grab loop
         // without giving a sl::Mat, it will retrieve the RGB image automatically.
         HubClient::update(p_zed);
     }

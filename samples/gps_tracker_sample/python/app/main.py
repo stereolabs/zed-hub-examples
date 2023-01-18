@@ -58,11 +58,6 @@ def main():
         print("Initialization error ", status_iot)
         exit(1)
 
-    status_iot = sliot.HubClient.register_camera(zed)
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
-        exit(1)
-
     sliot.HubClient.set_log_level_threshold(
         sliot.LOG_LEVEL.DEBUG, sliot.LOG_LEVEL.INFO)
 
@@ -73,6 +68,14 @@ def main():
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log(
             "Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        exit(1)
+
+
+    # register the camera once it's open
+    update_params = sliot.UpdateParameters()
+    status_iot = sliot.HubClient.register_camera(zed, update_params)
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_iot)
         exit(1)
 
     runtime_params = sl.RuntimeParameters()
@@ -133,7 +136,7 @@ def main():
                 sliot.HubClient.send_telemetry("GPS_data", gps)
                 prev_timestamp = current_ts
 
-            # Always update IoT at the end of the grab loop
+            # Always update Hub at the end of the grab loop
             sliot.HubClient.update()
         
     if zed.is_opened():

@@ -118,7 +118,7 @@ What exactly happens:
   (See tutorial_02_live_stream_and_recording README for more information)
 
 ```
-    // Always update IoT at the end of the grab loop
+    // Always update Hub at the end of the grab loop
     HubClient::update();
     sleep_ms(1);
 ```

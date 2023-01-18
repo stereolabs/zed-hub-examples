@@ -80,7 +80,7 @@ int main(int argc, char **argv)
         // For example, you can retrieve a depth image.
         p_zed->retrieveImage(depth, VIEW::DEPTH);
 
-        // Always update IoT at the end of the grab loop
+        // Always update Hub at the end of the grab loop
         // without giving a sl::Mat, it will retrieve the RGB image automatically.
         // without giving a registered camera, it will try to update all registered cameras.
         HubClient::update(p_zed, depth);

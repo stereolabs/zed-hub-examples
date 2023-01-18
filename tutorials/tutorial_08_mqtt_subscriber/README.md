@@ -70,13 +70,6 @@ if (sc != STATUS_CODE::SUCCESS) {
     exit(EXIT_FAILURE);
 }
 
-sc = HubClient::registerCamera(p_zed);
-if (status_iot != STATUS_CODE::SUCCESS) {
-    HubClient::sendLog("Failed to register the camera", LOG_LEVEL::ERROR);
-    exit(EXIT_FAILURE);
-}
-
-
 // Topic to listen
 TARGET topic_prefix = TARGET::LOCAL_NETWORK;
 std::string topic_name = "/my_custom_data";
