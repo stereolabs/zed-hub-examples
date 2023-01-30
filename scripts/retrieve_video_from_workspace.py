@@ -21,7 +21,6 @@
 
 import argparse
 import requests
-import json
 import datetime
 
 def main():
@@ -69,7 +68,7 @@ def main():
     print('Retrieving video from', start_datetime.strftime("%m/%d/%Y, %H:%M:%S"), 'to', end_datetime.strftime("%m/%d/%Y, %H:%M:%S"))
 
     for device_id in devices_ids:
-        print('Downloading from', device_id + '...')
+        print('Downloading from', device_id, '...')
         video_url = 'https://hub.stereolabs.com/api/v1/workspaces/' + args.workspace + '/devices/' + device_id + '/video/download'
         video_params = '?start=' + args.start + '&end=' + args.end + '&type=' + args.format
         video_get = requests.get(video_url + video_params, headers=headers)
