@@ -51,7 +51,7 @@ def main():
         sliot.HubClient.send_log("Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
-    # register the camera once it's open
+    # Register the camera once it's open
     update_params = sliot.UpdateParameters()
     status_iot = sliot.HubClient.register_camera(zed, update_params)
     if status_iot != sliot.STATUS_CODE.SUCCESS:

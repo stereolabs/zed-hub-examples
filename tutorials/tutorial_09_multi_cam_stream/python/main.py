@@ -80,7 +80,7 @@ def main():
             print(" Error:", err )
             zed.close()
     
-        # Register the camera once it has been open
+        # Register the camera once it's open
         updateParameters = sliot.UpdateParameters()
 
         # On Ubuntu desktop, on consumer-level GPUs, you don't have enough hardware encoder to stream multiple devices

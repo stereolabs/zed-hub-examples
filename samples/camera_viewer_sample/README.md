@@ -180,7 +180,7 @@ What exactly appends:
     //Open the ZED camera
     sl::ERROR_CODE errZed = p_zed->open(initParameters);
     
-    // Register the camera once it has been open
+    // Register the camera once it's open
     UpdateParameters updateParameters;
     status_iot = HubClient::registerCamera(p_zed, updateParameters);
     if (status_iot != STATUS_CODE::SUCCESS) {

@@ -36,7 +36,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    // Register the camera once it has been open
+    // Register the camera once it's open
     UpdateParameters updateParameters;
     status_iot = HubClient::registerCamera(p_zed, updateParameters);
     if (status_iot != STATUS_CODE::SUCCESS) {

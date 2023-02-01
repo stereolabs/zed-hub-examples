@@ -104,7 +104,7 @@ What exactly happens:
 
     sl::ERROR_CODE status_zed = p_zed->open(initParameters);
 
-    // Register the camera once it has been open
+    // Register the camera once it's open
     UpdateParameters updateParameters;
     status_iot = HubClient::registerCamera(p_zed, updateParameters);
     if (status_iot != STATUS_CODE::SUCCESS) {

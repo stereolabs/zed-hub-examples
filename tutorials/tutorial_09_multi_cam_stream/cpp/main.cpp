@@ -94,7 +94,7 @@ int main(int argc, char **argv)
             throw(new std::exception());
         }
 
-        // Register the camera once it has been open
+        // Register the camera once it's open
         UpdateParameters updateParameters;
 
         // On Ubuntu desktop, on consumer-level GPUs, you don't have enough hardware encoder to stream multiple devices

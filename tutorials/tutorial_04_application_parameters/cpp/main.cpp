@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     status_iot = HubClient::connect("parameter_app");
     if (status_iot != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Initiliazation error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    // Register the camera once it has been open
+    // Register the camera once it's open
     UpdateParameters updateParameters;
     status_iot = HubClient::registerCamera(p_zed, updateParameters);
     if (status_iot != STATUS_CODE::SUCCESS)
