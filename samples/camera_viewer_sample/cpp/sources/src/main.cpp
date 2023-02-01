@@ -1,6 +1,6 @@
 // ########################################################################
 // #
-// # Copyright (c) 2022, STEREOLABS.
+// # Copyright (c) 2023, STEREOLABS.
 // #
 // # All rights reserved.
 // #
@@ -215,7 +215,6 @@ int main(int argc, char **argv)
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
-    status_iot = HubClient::registerCamera(p_zed);
 
     // Load application parameter file in development mode
     char *application_token = ::getenv("SL_APPLICATION_TOKEN");
@@ -253,6 +252,14 @@ int main(int argc, char **argv)
         HubClient::sendLog("Camera initialization error : " +
                                std::string(toString(err_zed)),
                            LOG_LEVEL::ERROR);
+        exit(EXIT_FAILURE);
+    }
+
+    // Register the camera once it's open
+    UpdateParameters updateParameters;
+    status_iot = HubClient::registerCamera(p_zed, updateParameters);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -327,7 +334,7 @@ int main(int argc, char **argv)
 
         if (err_zed == sl::ERROR_CODE::SUCCESS)
         {
-            HubClient::update();
+            HubClient::update(p_zed);
         }
         else
         {

@@ -1,6 +1,6 @@
 ########################################################################
 #
-# Copyright (c) 2022, STEREOLABS.
+# Copyright (c) 2023, STEREOLABS.
 #
 # All rights reserved.
 #
@@ -88,11 +88,6 @@ def main():
         print("Initialization error ", status_iot)
         exit(1)
 
-    status_iot = sliot.HubClient.register_camera(zed)
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
-        exit(1)
-
     sliot.HubClient.set_log_level_threshold(
         sliot.LOG_LEVEL.DEBUG, sliot.LOG_LEVEL.INFO)
 
@@ -106,6 +101,13 @@ def main():
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log(
             "Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        exit(1)
+
+    # Register the camera once it's open
+    update_params = sliot.UpdateParameters()
+    status_iot = sliot.HubClient.register_camera(zed, update_params)
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_iot)
         exit(1)
 
     # Enable Position tracking (mandatory for object detection)
@@ -223,13 +225,13 @@ def main():
 
                 if is_new_event or not first_event_sent:
                     sliot.HubClient.start_video_event(
-                        event_label, event2send, event_params)
+                        zed, event_label, event2send, event_params)
                     first_event_sent = True
 
                 #  update every 10 s
                 elif current_ts.get_seconds() - prev_timestamp.get_seconds() >= 10:
                     sliot.HubClient.update_video_event(
-                        event_label, event2send, event_params)
+                        zed, event_label, event2send, event_params)
                 # else do nothing
 
                 counter_no_detection = 0  # reset counter as someone as been detected
@@ -283,11 +285,11 @@ def main():
                             int)(br[0]*ratio_x), (int)(br[1]*ratio_y)), (50, 200, 50), 4)
 
                 image_left_custom.timestamp = sl.get_current_timestamp()
-                sliot.HubClient.update(image_left_custom)
+                sliot.HubClient.update(zed, image_left_custom)
 
             else:
-                # Always update IoT at the end of the grab loop
-                sliot.HubClient.update()
+                # Always update Hub at the end of the grab loop
+                sliot.HubClient.update(zed)
 
     if zed.is_opened():
         zed.close()

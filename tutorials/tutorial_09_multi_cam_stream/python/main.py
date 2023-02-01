@@ -1,7 +1,7 @@
  
 ########################################################################
 #
-# Copyright (c) 2022, STEREOLABS.
+# Copyright (c) 2023, STEREOLABS.
 #
 # All rights reserved.
 #
@@ -28,17 +28,17 @@ import json
 run_zeds = True
 zeds = []
 
-def secondary_stream_loop(id, stream_name):
+def stream_loop(zed : sl.Camera):
     global run_zeds
 
-    print("Secondary stream (" + stream_name + ") opened")
+    print("Stream (" + str(zed.get_camera_information().serial_number) + ") opened")
     zed_image = sl.Mat(1280, 720, sl.MAT_TYPE.U8_C4)
 
     while run_zeds:
         # grab current image
-        if zeds[id].grab() == sl.ERROR_CODE.SUCCESS:
-            zeds[id].retrieve_image(zed_image, sl.VIEW.LEFT, sl.MEM.CPU, zed_image.get_resolution())
-            status_code = sliot.HubClient.add_secondary_stream(stream_name, zed_image)
+        if zed.grab() == sl.ERROR_CODE.SUCCESS:
+            zed.retrieve_image(zed_image, sl.VIEW.LEFT, sl.MEM.CPU, zed_image.get_resolution())
+            sliot.HubClient.update(zed, zed_image)
         else:
             run_zeds = False
 
@@ -67,52 +67,48 @@ def main():
     init_params.depth_mode = sl.DEPTH_MODE.NONE
     
     # Open every detected cameras
-    for z in range(nb_detected_zed):
-        init_params.set_from_camera_id(z)
-        zeds.append(sl.Camera())
-        err = zeds[z].open(init_params)
+    for i in range(nb_detected_zed):
+        init_params.set_from_camera_id(i)
+        zed = sl.Camera()
+        zeds.append(zed)
+        err = zed.open(init_params)
 
         if err == sl.ERROR_CODE.SUCCESS:
-            cam_info = zeds[z].get_camera_information()
+            cam_info = zed.get_camera_information()
             print("serial number:", cam_info.serial_number, ", model:", cam_info.camera_model, ", status: opened")
         else:
             print(" Error:", err )
-            zeds[z].close()
+            zed.close()
     
-    # Register the first camera as the main one
-    status_iot = sliot.HubClient.register_camera(zeds[0])
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
-        exit(1)
-    
-    # Thread loops for secondary streams
-    thread_pool = [nb_detected_zed - 1]
-    for z in range(1, nb_detected_zed):
-        if zeds[z].is_opened():
-            cam_info = zeds[z].get_camera_information()
-            thread_pool[z - 1] = threading.Thread(target=secondary_stream_loop, args=(z, str(cam_info.serial_number)))
-            thread_pool[z - 1].start()
-    
-    # Main loop
-    while run_zeds:
-        # Grab a new frame from the ZED
-        status_zed = zeds[0].grab()
-        
-        if status_zed != sl.ERROR_CODE.SUCCESS:
-            break
+        # Register the camera once it's open
+        updateParameters = sliot.UpdateParameters()
 
-        # Always update IoT at the end of the grab loop
-        sliot.HubClient.update()
+        # On Ubuntu desktop, on consumer-level GPUs, you don't have enough hardware encoder to stream multiple devices
+        # and to record at the same time. https://en.wikipedia.org/wiki/Nvidia_NVENC
+        # On jetsons or on business-grade gpus, you can do whatever you want.
+        updateParameters.enable_recording = False
+        status_iot = sliot.HubClient.register_camera(zeds[i], updateParameters)
+        if status_iot != sliot.STATUS_CODE.SUCCESS:
+            print("Camera registration error ", status_iot)
+            exit(1)
     
-    # Close the camera
-    if zeds[0].is_opened():
-        zed[0].close()
+    # Thread loops for all streams
+    thread_pool = {}
+    for zed in zeds:
+        if zed.is_opened():
+            print("Starting a thread for zed", i, zed.get_camera_information().serial_number)
+            thread_pool[zed] = threading.Thread(target=stream_loop, args=(zed,))
+            thread_pool[zed].start()
+    
+    # Idle loop
+    while run_zeds:
+        time.sleep(1)
     
     # Wait for every thread to be stopped
-    for z in range(1, nb_detected_zed):
-        if zeds[z].is_opened():
-            thread_pool[z - 1].join()
-            zeds[z].close()
+    for zed in zeds:
+        if zed.is_opened():
+            thread_pool[zed].join()
+            zed.close()
 
     # Close the communication with ZED Hub properly.
     status_iot = sliot.HubClient.disconnect()

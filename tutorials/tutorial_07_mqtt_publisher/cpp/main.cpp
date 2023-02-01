@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2022, STEREOLABS.
+// Copyright (c) 2023, STEREOLABS.
 //
 // All rights reserved.
 //
@@ -26,13 +26,14 @@ using namespace sl;
 using namespace sl_iot;
 using json = sl_iot::json;
 
-
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 
     STATUS_CODE status_iot;
     // Initialize the communication to ZED Hub, without a zed camera.
     status_iot = HubClient::connect("pub_app");
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -41,7 +42,8 @@ int main(int argc, char **argv) {
     std::string topic_name = "/my_custom_data";
 
     // Main loop
-    while (true) {
+    while (true)
+    {
 
         const auto p1 = std::chrono::system_clock::now();
 
@@ -58,11 +60,11 @@ int main(int argc, char **argv) {
 
     // Close the communication with ZED Hub properly.
     status_iot = HubClient::disconnect();
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Terminating error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
     return 0;
 }
-  

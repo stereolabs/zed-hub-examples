@@ -1,6 +1,6 @@
 ########################################################################
 #
-# Copyright (c) 2022, STEREOLABS.
+# Copyright (c) 2023, STEREOLABS.
 #
 # All rights reserved.
 #
@@ -41,11 +41,6 @@ def main():
         print("Initialization error ", status_iot)
         exit(1)
 
-    status_iot = sliot.HubClient.register_camera(zed)
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
-        exit(1)
-
     # Open the zed camera
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.HD2K
@@ -54,6 +49,13 @@ def main():
     status_zed = zed.open(init_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log("Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        exit(1)
+
+    # Register the camera once it's open
+    update_params = sliot.UpdateParameters()
+    status_iot = sliot.HubClient.register_camera(zed, update_params)
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_iot)
         exit(1)
 
     # Set your parameter callback
@@ -75,7 +77,7 @@ def main():
             led_status_updated = False
 
         # In the end of a grab(), always call a update() on the cloud.
-        sliot.HubClient.update()
+        sliot.HubClient.update(zed)
 
     print("Grab error ", status_zed)
     # Close the camera

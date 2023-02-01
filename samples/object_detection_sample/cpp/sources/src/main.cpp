@@ -1,6 +1,6 @@
 // ########################################################################
 // #
-// # Copyright (c) 2022, STEREOLABS.
+// # Copyright (c) 2023, STEREOLABS.
 // #
 // # All rights reserved.
 // #
@@ -108,8 +108,6 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    status_iot = HubClient::registerCamera(p_zed);
-
     // Load application parameter file in development mode
     char *application_token = ::getenv("SL_APPLICATION_TOKEN");
     if (!application_token)
@@ -132,6 +130,14 @@ int main(int argc, char **argv)
     if (status_zed != ERROR_CODE::SUCCESS)
     {
         HubClient::sendLog("Camera initialization error : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        exit(EXIT_FAILURE);
+    }
+
+    // Register the camera once it's open
+    UpdateParameters updateParameters;
+    status_iot = HubClient::registerCamera(p_zed, updateParameters);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -259,13 +265,13 @@ int main(int argc, char **argv)
 
             if (is_new_event || !first_event_sent)
             {
-                HubClient::startVideoEvent(event_label, event2send, event_params);
+                HubClient::startVideoEvent(p_zed, event_label, event2send, event_params);
                 first_event_sent = true;
             }
             // update every 10 s
             else if ((uint64)(current_ts.getMilliseconds() >= (uint64)(prev_timestamp.getMilliseconds() + (uint64)10 * 1000ULL)))
             {
-                HubClient::updateVideoEvent(event_label, event2send, event_params);
+                HubClient::updateVideoEvent(p_zed, event_label, event2send, event_params);
             }
             // else do nothing
 
@@ -324,14 +330,14 @@ int main(int argc, char **argv)
                 }
             }
 
-            HubClient::update(imgLeftCustom);
+            HubClient::update(p_zed, imgLeftCustom);
         }
 
         else
             /*******************************/
 
-            // Always update IoT at the end of the grab loop
-            HubClient::update();
+            // Always update Hub at the end of the grab loop
+            HubClient::update(p_zed);
     }
 
     // Handling camera error

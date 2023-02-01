@@ -1,6 +1,6 @@
 ########################################################################
 #
-# Copyright (c) 2022, STEREOLABS.
+# Copyright (c) 2023, STEREOLABS.
 #
 # All rights reserved.
 #
@@ -216,11 +216,6 @@ def main():
         print("Initialization error ", status_iot)
         exit(1)
 
-    status_iot = sliot.HubClient.register_camera(zed)
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
-        exit(1)
-
     status_iot = sliot.HubClient.load_application_parameters("parameters.json")
     if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("parameters.json file not found or malformated", status_iot)
@@ -244,6 +239,13 @@ def main():
     if status != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log(
             "Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)
+        exit(1)
+
+    # Register the camera once it's open
+    update_params = sliot.UpdateParameters()
+    status_iot = sliot.HubClient.register_camera(zed, update_params)
+    if status_iot != sliot.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_iot)
         exit(1)
 
     # Setup callbacks for parameters
@@ -308,7 +310,7 @@ def main():
         sdk_guard.release()
 
         if status_zed == sl.ERROR_CODE.SUCCESS:
-            sliot.HubClient.update()
+            sliot.HubClient.update(zed)
         else:
             size_devices = len(sl.Camera.get_device_list())
             sliot.HubClient.send_log("Camera grab error: " + str(status_zed) +

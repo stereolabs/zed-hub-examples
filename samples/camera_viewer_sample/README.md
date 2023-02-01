@@ -172,7 +172,6 @@ What exactly appends:
 
     //Init sl_iot
     STATUS_CODE status_iot = HubClient::connect("camera_app");
-    status_iot = HubClient::registerCamera(p_zed);
 ```
 
 - Open the ZED with `p_zed->open(initParameters)` in the restart loop but before the main loop. [ZED Documentation](https://www.stereolabs.com/docs/video/camera-controls/#camera-configuration)
@@ -180,6 +179,14 @@ What exactly appends:
 ```cpp
     //Open the ZED camera
     sl::ERROR_CODE errZed = p_zed->open(initParameters);
+    
+    // Register the camera once it's open
+    UpdateParameters updateParameters;
+    status_iot = HubClient::registerCamera(p_zed, updateParameters);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
 ```
 
 - Setup the parameters callback before the main loop

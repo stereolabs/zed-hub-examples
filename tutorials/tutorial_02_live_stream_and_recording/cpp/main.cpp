@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2022, STEREOLABS.
+// Copyright (c) 2023, STEREOLABS.
 //
 // All rights reserved.
 //
@@ -31,70 +31,80 @@ using namespace sl;
 using namespace sl_iot;
 using json = sl_iot::json;
 
-
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     // Initialize the communication to ZED Hub, with a zed camera.
     std::shared_ptr<sl::Camera> p_zed;
     p_zed.reset(new sl::Camera());
 
     STATUS_CODE status_iot;
     status_iot = HubClient::connect("streaming_app");
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
-    HubClient::registerCamera(p_zed);
- 
-    //Open the ZED camera
+
+    // Open the ZED camera
     sl::InitParameters initParameters;
     initParameters.camera_resolution = RESOLUTION::HD2K;
     initParameters.depth_mode = DEPTH_MODE::PERFORMANCE;
 
     sl::ERROR_CODE status_zed = p_zed->open(initParameters);
-    if (status_zed != ERROR_CODE::SUCCESS) {
-        HubClient::sendLog("Camera initialization error : "\
-         + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+    if (status_zed != ERROR_CODE::SUCCESS)
+    {
+        HubClient::sendLog("Camera initialization error : " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+        exit(EXIT_FAILURE);
+    }
+
+    // Register the camera once it's open
+    UpdateParameters updateParameters;
+    status_iot = HubClient::registerCamera(p_zed, updateParameters);
+    if (status_iot != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 
     sl::Mat depth;
 
     // Main loop
-    while (true) {
+    while (true)
+    {
         // Grab a new frame from the ZED
         status_zed = p_zed->grab();
-        if (status_zed != ERROR_CODE::SUCCESS) break;
-        
+        if (status_zed != ERROR_CODE::SUCCESS)
+            break;
+
         // Do what you want with the data from the camera.
         // For examples of what you can do with the zed camera, visit https://github.com/stereolabs/zed-examples
         // For example, you can retrieve a depth image.
-        // p_zed->retrieveImage(depth, VIEW::DEPTH);
+        p_zed->retrieveImage(depth, VIEW::DEPTH);
 
-        // Always update IoT at the end of the grab loop
-        // HubClient::update(depth);
-
-        // If you don't need an image, send update()
-        // It will send the default image and update the cloud.
-        HubClient::update();
-
+        // Always update Hub at the end of the grab loop
+        // without giving a sl::Mat, it will retrieve the RGB image automatically.
+        // without giving a registered camera, it will try to update all registered cameras.
+        HubClient::update(p_zed, depth);
     }
 
     // Handling camera error
-    if(status_zed != ERROR_CODE::SUCCESS){
-        HubClient::sendLog("Grab failed, restarting camera. "+\
-        std::string(toString(status_zed)), LOG_LEVEL::ERROR);
+    if (status_zed != ERROR_CODE::SUCCESS)
+    {
+        HubClient::sendLog("Grab failed, restarting camera. " +
+                               std::string(toString(status_zed)),
+                           LOG_LEVEL::ERROR);
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
     // Close the camera
-    else if(p_zed->isOpened())
+    else if (p_zed->isOpened())
         p_zed->close();
 
     // Close the communication with ZED Hub properly.
     status_iot = HubClient::disconnect();
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Terminating error " << status_iot << std::endl;
-        exit(EXIT_FAILURE); 
+        exit(EXIT_FAILURE);
     }
 
     return 0;
