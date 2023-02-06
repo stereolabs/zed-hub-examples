@@ -42,7 +42,7 @@ def cvt(pt, scale):
 def main():
     global colors
 
-    # Initialize the communication to ZED Hub
+    # Initialize the connection to ZED Hub
     status_iot = sliot.HubClient.connect("skeleton_tutorial")
     if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status_iot)
@@ -62,7 +62,7 @@ def main():
         print("Error:", err)
         zed.close()
     
-    # Register the camera once it has been open
+    # Register the camera once it's open
     update_params = sliot.UpdateParameters()
     status_iot = sliot.HubClient.register_camera(zed, update_params)
     if status_iot != sliot.STATUS_CODE.SUCCESS:
@@ -112,7 +112,7 @@ def main():
     camera_resolution = zed.get_camera_information().camera_resolution
     img_scale = [cv_image.shape[1] / camera_resolution.width, cv_image.shape[0] / camera_resolution.height]
 
-    # Objects
+    # Objects to be streamed to ZED Hub
     objects = sl.Objects()
 
     # Main loop
@@ -149,11 +149,11 @@ def main():
                     if kp_a[0] < cv_image.shape[1] and kp_a[1] < cv_image.shape[0] and kp_b[0] < cv_image.shape[1] and kp_b[1] < cv_image.shape[0]:
                         cv2.line(cv_image, (int(kp_a[0]), int(kp_a[1])), (int(kp_b[0]), int(kp_b[1])), color, 1)
 
-        # Always update IoT at the end of the grab loop
+        # Always update Hub at the end of the grab loop to stream data to ZED Hub
         # Update the video stream/recording
         sliot.HubClient.update(zed, image)
 
-        # Update the objects stream
+        # Update the sl.Objects stream
         sliot.HubClient.update_objects(zed, objects)
     
     # Handling camera error
@@ -171,8 +171,6 @@ def main():
     if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("Terminating error ", status_iot)
         exit(1)
-    
-    return
 
 
 if __name__ == "__main__":

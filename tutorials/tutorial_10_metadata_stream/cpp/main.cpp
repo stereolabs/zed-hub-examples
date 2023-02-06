@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     std::shared_ptr<sl::Camera> p_zed;
     p_zed.reset(new sl::Camera());
 
-    // Init sl_iot
+    // Initialize the connection to ZED Hub
     STATUS_CODE status_iot = HubClient::connect("skeleton_app");
     if (status_iot != STATUS_CODE::SUCCESS)
     {
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    // Register the camera once it has been open
+    // Register the camera once it's open
     UpdateParameters update_params;
     status_iot = HubClient::registerCamera(p_zed, update_params);
     if (status_iot != STATUS_CODE::SUCCESS) {
@@ -207,11 +207,11 @@ int main(int argc, char **argv)
             }
         }
 
-        // Always update Hub at the end of the grab loop
+        // Always update Hub at the end of the grab loop to stream data to ZED Hub
         // Update the video stream/recording
         HubClient::update(p_zed, image);
 
-        // Update the objects stream
+        // Update the sl::Objects stream
         HubClient::update(p_zed, objects);
     }
 

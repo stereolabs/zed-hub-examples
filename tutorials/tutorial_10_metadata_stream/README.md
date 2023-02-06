@@ -1,6 +1,6 @@
 # Tutorial 10 - Metadata Stream
 
-This tutorial shows you how to stream skeletons in addition of the video stream.
+This tutorial shows how to stream 3D skeleton data to ZED Hub, in addition to the video stream. You will be able to view the streamed data in the **Video panel** of your device.
 
 [**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_10_metadata_stream)
 
@@ -10,38 +10,24 @@ You will deploy this tutorial on one of the devices installed on **your ZED Hub 
 
 To be able to run this tutorial:
 
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
+- [Sign In to ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
 - [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
 
-This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
-
-You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
+This tutorial requires Edge Agent to be installed and running in order to connect to ZED Hub. You can make sure it is running and connected by using:
 
 ```
-$ edge_cli start
+$ edge_cli status
 ```
 
-If you want to run it in background use :
+If it is not running, you can restart the service using:
 
 ```
-$ edge_cli start -b
-```
-
-And to stop it :
-
-```
-$ edge_cli stop
+$ edge_cli restart
 ```
 
 ## Build and run this tutorial for development
 
-Run the Edge Agent installed on your device using (note that it's already running by default after Edge Agent installation) :
-
-```
-$ edge_cli start
-```
-
-Then to build your app :
+With Edge Agent installed and running, you can build this tutorial with the following commands:
 
 ```
 $ mkdir build
@@ -58,13 +44,13 @@ Then to run your app :
 
 ## Code overview
 
-Retrieve the detection results.
+This tutorial is focused on retrieving and streaming 3D skeleton data from a ZED camera. Retrieving this data is done through the ZED SDK method:
 
 ```c++
 p_zed->retrieveObjects(objects, obj_det_rt_params);
 ```
 
-Send the detection results.
+Once the data is retrieved in an `sl::Objects` instance, the data is sent for every main loop iteration with:
 
 ```c++
 HubClient::update(p_zed, objects);
