@@ -50,6 +50,18 @@ void onTelemetryUpdate(FunctionEvent &event)
     HubClient::sendLog("New parameters : telemetryFreq modified", LOG_LEVEL::INFO);
 }
 
+
+void onWaypoints(FunctionEvent &event)
+{
+    // Get the parameters of the remote function call
+    sl_iot::json params = event.getEventParameters();
+
+    std::cout << "params: " << params.dump() << std::endl;
+    
+    event.status = 0;
+    event.result = params.dump();
+}
+
 int main(int argc, char **argv) {
     // Create camera object
     auto p_zed = std::make_shared<sl::Camera>();
@@ -98,9 +110,12 @@ int main(int argc, char **argv) {
 
     /*********    App parameters      *************/
 
-    CallbackParameters callback_telemetry_param;
-    callback_telemetry_param.setParameterCallback("onTelemetryUpdate", "telemetryFreq", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
-    HubClient::registerFunction(onTelemetryUpdate, callback_telemetry_param);
+    CallbackParameters callback_params;
+    callback_params.setParameterCallback("onTelemetryUpdate", "telemetryFreq", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
+    HubClient::registerFunction(onTelemetryUpdate, callback_params);
+
+    callback_params.setRemoteCallback("onWaypoints", CALLBACK_TYPE::ON_REMOTE_CALL);
+    HubClient::registerFunction(onWaypoints, callback_params);
 
     // get values defined by the Zed Hub interface.
     // Last argument is default value in case of failure
