@@ -139,6 +139,7 @@ int main(int argc, char **argv) {
             // Send Telemetry
             json gps;
             gps["layer_type"] = "geolocation";
+            gps["label"] = "GPS_data";
             gps["position"] = {
                 {"latitude", latitude},
                 {"longitude", longitude},
@@ -159,7 +160,7 @@ int main(int argc, char **argv) {
                 {"z", NULL}
             };
             gps["epoch_timestamp"] = current_ts.getMilliseconds();
-            HubClient::sendTelemetry("GPS_data", gps);
+            HubClient::sendDataToPeers("geolocation", gps.dump());
             prev_timestamp = current_ts;
         }
         
