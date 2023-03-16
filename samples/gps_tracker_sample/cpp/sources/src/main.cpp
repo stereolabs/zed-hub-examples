@@ -53,13 +53,12 @@ void onTelemetryUpdate(FunctionEvent &event)
 
 void onWaypoints(FunctionEvent &event)
 {
-    // Get the parameters of the remote function call
-    sl_iot::json params = event.getEventParameters();
-
-    std::cout << "params: " << params.dump() << std::endl;
+    // Get the waypoints from the device parameters
+    std::string waypoints = HubClient::getParameter<std::string>("waypoints", PARAMETER_TYPE::DEVICE, "[]");
+    std::cout << "waypoints: " << waypoints << std::endl;
     
     event.status = 0;
-    event.result = params.dump();
+    event.result = waypoints;
 }
 
 int main(int argc, char **argv) {
@@ -114,7 +113,7 @@ int main(int argc, char **argv) {
     callback_params.setParameterCallback("onTelemetryUpdate", "telemetryFreq", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
     HubClient::registerFunction(onTelemetryUpdate, callback_params);
 
-    callback_params.setRemoteCallback("onWaypoints", CALLBACK_TYPE::ON_REMOTE_CALL);
+    callback_params.setParameterCallback("onWaypoints", "waypoints", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
     HubClient::registerFunction(onWaypoints, callback_params);
 
     // get values defined by the Zed Hub interface.
