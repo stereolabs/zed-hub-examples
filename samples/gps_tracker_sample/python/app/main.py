@@ -40,6 +40,14 @@ def on_telemetry_update(message_received):
     sliot.HubClient.send_log(
         "New parameters : telemetryFreq modified", sliot.LOG_LEVEL.INFO)
 
+
+def on_waypoints(message_received):
+    # Get the waypoints from the device parameters
+    waypoints = sliot.HubClient.get_parameter_string(
+        "waypoints", sliot.PARAMETER_TYPE.DEVICE, "[]")
+    print("waypoints", waypoints)
+
+
 def main():
     global telemetryFreq
     global latitude
@@ -83,9 +91,12 @@ def main():
     # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
     # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
 
-    callback_telemetry_param = sliot.CallbackParameters()
-    callback_telemetry_param.set_parameter_callback("onTelemetryUpdate", "telemetryFreq",  sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.APPLICATION);
-    sliot.HubClient.register_function(on_telemetry_update, callback_telemetry_param);
+    callback_params = sliot.CallbackParameters()
+    callback_params.set_parameter_callback("onTelemetryUpdate", "telemetryFreq",  sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.APPLICATION)
+    sliot.HubClient.register_function(on_telemetry_update, callback_params)
+
+    callback_params.set_parameter_callback("onWaypoints", "waypoints",  sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.DEVICE)
+    sliot.HubClient.register_function(on_waypoints, callback_params)
 
     # get values defined by the ZED Hub interface.
 
@@ -116,24 +127,13 @@ def main():
                 # Send Telemetry
                 gps = {}
                 gps["layer_type"] = "geolocation"
+                gps["label"] = "GPS_data"
                 gps["position"] = {}
                 gps["position"]["latitude"] = latitude
                 gps["position"]["longitude"] = longitude
                 gps["position"]["altitude"] = altitude
-                gps["position"]["uncertainty"] = {}
-                gps["position"]["uncertainty"]["eph"] = None
-                gps["position"]["uncertainty"]["epv"] = None
-                gps["velocity"] = {}
-                gps["velocity"]["x"] = None
-                gps["velocity"]["y"] = None
-                gps["velocity"]["z"] = None
-                gps["rotation"] = {}
-                gps["rotation"]["x"] = None
-                gps["rotation"]["y"] = None
-                gps["rotation"]["z"] = None
-                gps["epoch_timestamp"] = current_ts.get_milliseconds()
-                
-                sliot.HubClient.send_telemetry("GPS_data", gps)
+
+                sliot.HubClient.send_data_to_peers("geolocation", json.dumps(gps))
                 prev_timestamp = current_ts
 
             # Always update Hub at the end of the grab loop

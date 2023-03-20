@@ -34,13 +34,13 @@ double latitude = 48.818737;
 double longitude = 2.318206;
 double altitude = 0;
 double max_rand = RAND_MAX * 10000.;
-double getRandom() {
+double getRandom()
+{
     return rand() / max_rand - .00005;
 }
 
 // Parameters, defined as global variables
 float telemetryFreq = 1.f; // in seconds
-
 
 // Parameter callbacks
 void onTelemetryUpdate(FunctionEvent &event)
@@ -50,18 +50,18 @@ void onTelemetryUpdate(FunctionEvent &event)
     HubClient::sendLog("New parameters : telemetryFreq modified", LOG_LEVEL::INFO);
 }
 
-
 void onWaypoints(FunctionEvent &event)
 {
     // Get the waypoints from the device parameters
     std::string waypoints = HubClient::getParameter<std::string>("waypoints", PARAMETER_TYPE::DEVICE, "[]");
     std::cout << "waypoints: " << waypoints << std::endl;
-    
+
     event.status = 0;
     event.result = waypoints;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     // Create camera object
     auto p_zed = std::make_shared<sl::Camera>();
 
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
             exit(EXIT_FAILURE);
         }
     }
-    
+
     HubClient::setLogLevelThreshold(LOG_LEVEL::DEBUG, LOG_LEVEL::INFO);
     // Open the ZED camera
     sl::InitParameters initParameters;
@@ -133,10 +133,9 @@ int main(int argc, char **argv) {
         status_zed = p_zed->grab(rt_param);
         if (status_zed != ERROR_CODE::SUCCESS)
             break;
-        
 
         /*******     Define and send Telemetry   *********/
-        
+
         Timestamp current_ts = p_zed->getTimestamp(TIME_REFERENCE::IMAGE);
 
         if ((uint64_t)(current_ts.getMilliseconds() >= (uint64_t)(prev_timestamp.getMilliseconds() + (uint64_t)telemetryFreq * 1000ULL)))
@@ -157,27 +156,11 @@ int main(int argc, char **argv) {
             gps["position"] = {
                 {"latitude", latitude},
                 {"longitude", longitude},
-                {"altitude", altitude}
-            };
-            gps["position"]["uncertainty"] = {
-                {"eph", NULL},
-                {"epv", NULL},
-            };
-            gps["velocity"] = {
-                {"x", NULL},
-                {"y", NULL},
-                {"z", NULL}
-            };
-            gps["rotation"] = {
-                {"x", NULL },
-                {"y", NULL},
-                {"z", NULL}
-            };
-            gps["epoch_timestamp"] = current_ts.getMilliseconds();
+                {"altitude", altitude}};
             HubClient::sendDataToPeers("geolocation", gps.dump());
             prev_timestamp = current_ts;
         }
-        
+
         // Always update Hub at the end of the grab loop
         HubClient::update(p_zed);
     }
