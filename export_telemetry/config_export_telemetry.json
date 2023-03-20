@@ -1,6 +1,5 @@
 {
-    "cloud_url" : "cloud.stereolabs.com",
-    "region_url": "cloud-eu-1.stereolabs.com",
+    "cloud_url" : "hub.stereolabs.com",
     "protocol": "https://",
     "api_token" : "",
     "workspace_id" : 0

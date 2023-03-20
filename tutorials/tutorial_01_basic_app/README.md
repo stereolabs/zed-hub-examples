@@ -2,14 +2,12 @@
 
 This sample shows how to make a very simple application that **connects** itself to the cloud and **sends logs**. 
 
-[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_01_basic_app)
-
 ## Requirements
 You will deploy this tutorial on one of the devices installed on **your ZED Hub workspace**. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 
@@ -50,7 +48,7 @@ Then to run your app :
 
 ## The Source Code explained
 
-To init your application, use the `HubClient::connect` function that starts communications between your app and the cloud. It must be called before using the HubClient API, so before sending logs (`HubClient::sendLog`), telemetry(`HubClient::sendTelemetry`) and others. Then, register your zed camera to the client.
+To init your application, use the `HubClient::connect` function that starts communications between your app and the cloud. It must be called before using the HubClient API, so before sending logs (`HubClient::sendLog`), telemetry (`HubClient::sendTelemetry`) and others. Then, register your ZED camera to the client.
 ```c++
     STATUS_CODE status_iot = HubClient::connect("basic_app");
 ```

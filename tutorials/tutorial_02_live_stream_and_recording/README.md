@@ -2,14 +2,12 @@
 
 This tutorial shows how to deploy an application that starts a ZED camera and sends the live stream to the ZED Hub interface. You will also be able to store the video on your device. The recorded video will be available on the ZED Hub interface and downloadable.
 
-[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_02_live_stream_and_recording)
-
 ## Requirements
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
 
@@ -78,7 +76,7 @@ This sample app starts a ZED and retrieves every frame. Then, the application ge
 
 What exactly happens:
 
-- Init IOT to enable communications with the cloud. Note that compared to tutorial 1 where no ZED was required, here the cloud is init with a ZED pointer p_zed.
+- Init iot to enable communications with the cloud. Note that compared to tutorial 1 where no ZED was required, here the cloud is initialized with a ZED pointer `p_zed`.
 
 ```cpp
     // Initialize the communication to ZED Hub, with a zed camera.
@@ -94,7 +92,7 @@ What exactly happens:
 ```
 
 
-- Open the ZED with `p_zed->open(initParameters)`. [ZED Documentation](https://www.stereolabs.com/docs/video/camera-controls/#camera-configuration)
+- Open the ZED with `p_zed->open(initParameters)` ([ZED Documentation](https://www.stereolabs.com/docs/video/camera-controls/#camera-configuration)).
 
 ```cpp
     //Open the ZED camera

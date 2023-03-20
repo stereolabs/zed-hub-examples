@@ -1,10 +1,8 @@
-# Tutorial 7 - Video Event
+# Tutorial 6 - Video Event
 
 A **video event** is a **Video recording** associated to a **description** stored in one or several json.
 This application shows how to define a Video Event in a ZED Hub app. This event will be available in the Video Event ZED Hub interface.
 In this tutorial a video is considered as event if **at least one person is detected** in the image. To detect people the **Object Detection** module of the SDK will be used. 
-
-[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_06_video_event)
 
 ![](./images/event_detected_people.png " ")
 
@@ -13,8 +11,8 @@ In this tutorial a video is considered as event if **at least one person is dete
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
 
