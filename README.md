@@ -2,19 +2,18 @@
 
 In this repository you will find:
 - [**ZED Hub tutorials**](./tutorials/) that explain how to use the ZED Hub features in your apps and run them.
-- [**Sample apps**](./samples/README.md) that provide examples of ZED Hub usage and package/deploy them on ZED Hub as a service.
+- [**ZED Hub sample**](./samples/README.md) that provide examples of ZED Hub usage and package/deploy them on ZED Hub as a service.
 - [**ZED Hub scripts**](./scripts/README.md) that provide examples of ZED Hub REST API usage.
 
-ZED Hub comes with samples demoing its main features. Each sample is written in C++ and can be deployed as a ZED Hub app. All of them are associated to a Readme that explains how to deploy the app and the main step of the source code. 
+ZED Hub comes with samples demoing its main features. Each sample is written in C++ and can be deployed as a ZED Hub app. All of them are associated to a README that explains how to deploy the app and the main step of the source code. 
 
 ## What are the available ZED Hub features explained in these tutorials:
 
-- Live stream : How to display your camera's live video feed in the ZED Hub interface
-- Telemetry : How to upload and store any kind of data in order to analyze and display it later
-- Application parameters: How to define parameters to your application, settable in the ZED Hub interface
-- Remote functions: How to define and call a remote function
-- Custom stream : How to replace your live camera stream by images of your choice
-- Video event : How to define Video Events, recorded ans accessible through the interface.
+- **Live stream** : How to display your camera's live video feed in the ZED Hub interface
+- **Telemetry** : How to upload and store any kind of data in order to analyze and display it later
+- **Application parameters** : How to define parameters to your application, settable in the ZED Hub interface
+- **Remote functions** : How to define and call a remote function
+- **Video event** : How to define **Video Events**, recorded ans accessible through the interface.
 
 ## Requirements
 You will deploy these tutorials on one of the devices installed on your ZED Hub workspace. ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
@@ -30,17 +29,14 @@ A ZED Hub app is an application deployed in a Docker container on one of the dev
 ## Develop a ZED Hub app
 
 In these [**ZED Hub tutorials**](./tutorials/) you will learn how to develop a ZED Hub app, exploring each feature.
-The only requirement is to setup a device to install the Edge Agent software and the `sl_iot` library.
+The only requirement is to setup a device to install the Edge Agent software.
 
-You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
+You can start it using this command :
 ```
 $ edge_cli start
 ```
 
-If you want to run it in background use :
-```
-$ edge_cli start -b
-```
+> **Note**: It is already running by default after Edge Agent installation
 
 And to stop it :
 ```
