@@ -1,10 +1,10 @@
 # ZED Hub Telemetry Export Plug
 
-Telemetries sent on **ZED Hub** have a default maximum retention of 30 days. After that limit they are deleted from [hub.stereolabs.com](https://hub.stereolabs.com).
+**Telemetries** sent on ZED Hub have a default maximum retention of 30 days. After that limit they are deleted from [hub.stereolabs.com](https://hub.stereolabs.com).
 
-Here is a sample plug using python and mongodb that allows you to export those telemetries in your local database using **ZED Hub** REST API.
+Here is a sample plug using Python and MongoDB that allows you to export those telemetry in your local database using **ZED Hub REST API**.
 
-It exports telemetries between now and 30 days before from a workspace of yours in a mongoDB collection.
+It exports telemetry between now and 30 days before from a workspace of yours in a MongoDB collection.
 
 ## Requirements
 
@@ -36,24 +36,24 @@ You can check your telemetries using `mongosh telemetry`.
 
 ## Sample Code Explanation
 
-First, setup the mongoDB client using pymongo :
-```
+First, setup the MongoDB client using pymongo :
+```python
     client = MongoClient('localhost', 27017)
 ```
 
 Create the database and the collection named `telemetry_ws_yourworkspaceid` :
-```
+```python
     db = client["telemetry"]
     collection = db["telemetry_ws_"+str(workspace_id)]
 ```
 
 To avoid duplicates if you use the program regularly, add a unique constraint on id :
-```
+```python
     collection.create_index([("id",pymongo.ASCENDING)],unique=True)
 ```
 
-Construct your REST request on telemetry URL and headers, using start and end parameters. Check the [**REST API documentation**](https://www.stereolabs.com/docs/cloud/) if you want to add more parameters.
-```
+Construct your REST request on telemetry URL and headers, using start and end parameters. Check the [**REST API documentation**](https://www.stereolabs.com/docs/cloud/rest-api/telemetry/) if you want to add more parameters.
+```python
     headers = {'Content-Type' : 'application/json', 'Authorization': api_token}
     telemetry_url = http+cloud_url+'/api/v1/workspaces/'+str(workspace_id)+'/telemetry'
 
@@ -64,8 +64,8 @@ Construct your REST request on telemetry URL and headers, using start and end pa
     telemetry_url_parameter =telemetry_url + "?start=" + str(start) + "&end=" + str(end)
 ```
 
-We don't get telemetries all at once so we have to get them using multiple requests with the `page` parameter. You have to create a loop while incrementing `page` at each get request and store the results using pymongo. When we receive an empty array of telemetry we can stop requesting the telemetry server. :
-```
+We don't get telemetries all at once so we have to get them using multiple requests with the `page` parameter. You have to create a loop while incrementing `page` at each get request and store the results using pymongo. When we receive an empty array of telemetry we can stop requesting the telemetry server :
+```python
     while (not finished) :
         # Get request
         telemetry_url_page = telemetry_url_parameter + "&page=" + str(page)
