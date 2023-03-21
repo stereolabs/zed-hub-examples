@@ -3,7 +3,8 @@
 This sample is an example that shows you how to send GPS data in a ZED Hub App to display them in the **Map page**. It also shows how to use it to generate:
 
 - **Logs** that informs you about the app's status
-- **Telemetry** that stores data linked to the detections
+- **WebRTC messages** that contains data to be displayed in **Map page**
+- **Callback function** that retrieve waypoints sent from the **Map page**
 
 The app defines **parameters** that can be modified in the ZED Hub interface and to change the app's behavior while its running.
 
@@ -92,13 +93,9 @@ A video with bounding boxes around detected persons should be available in the *
 
 The logs should inform you about the app status.
 
-### Telemetry
-
-The telemetries containing GPS data should be available and generated every second by default.
-
 ### Maps
 
-The GPS data should be displayed on a map.
+The GPS data should be displayed on a map in the **Map page**.
 
 ### Parameters
 
@@ -112,7 +109,7 @@ The following parameter can be used to modify your app behavior:
 
 Some callbacks are defined and will be called when a parameter will be modified through the interface. The are used to modify the parameter value and notify that the change has been done.
 
-Callback for `telemetry_freq` parameter
+Callback for `telemetry_freq` application parameter
 
 ```c++
 void onTelemetryUpdate(FunctionEvent &event)
@@ -123,13 +120,27 @@ void onTelemetryUpdate(FunctionEvent &event)
 }
 ```
 
+Callback for `waypoints` device parameter (as waypoints are sent as device parameter)
+
+```c++
+void onWaypoints(FunctionEvent &event)
+{
+    // Get the waypoints from the device parameters
+    std::string waypoints = HubClient::getParameter<std::string>("waypoints", PARAMETER_TYPE::DEVICE, "[]");
+    std::cout << "waypoints: " << waypoints << std::endl;
+
+    event.status = 0;
+    event.result = waypoints;
+}
+```
+
 ### Initialization
 
 As usual, the app is init with `HubClient::connect` and `HubClient::registerCamera` and the ZED is started with the ZED SDK `open` function.
 
 ### Main loop
 
-- **Telemetries** relative to the detected objects are defined and sent. See [**tutorial_03_telemetries**](/tutorials/tutorial_03_telemetries/README.md).
+- **WebRTC messages** relative to GPS position are defined by a random walk and sent to the `geolocation` label to every connected peers.
 
 ```c++
 Timestamp current_ts = p_zed->getTimestamp(TIME_REFERENCE::IMAGE);
@@ -145,30 +156,15 @@ if ((uint64_t)(current_ts.getMilliseconds() >= (uint64_t)(prev_timestamp.getMill
     longitude = max(-180.0, longitude);
     altitude += getRandom();
 
-    // Send Telemetry
+    // Send data
     json gps;
     gps["layer_type"] = "geolocation";
+    gps["label"] = "GPS_data";
     gps["position"] = {
         {"latitude", latitude},
         {"longitude", longitude},
-        {"altitude", altitude}
-    };
-    gps["position"]["uncertainty"] = {
-        {"eph", NULL},
-        {"epv", NULL},
-    };
-    gps["velocity"] = {
-        {"x", NULL},
-        {"y", NULL},
-        {"z", NULL}
-    };
-    gps["rotation"] = {
-        {"x", NULL },
-        {"y", NULL},
-        {"z", NULL}
-    };
-    gps["epoch_timestamp"] = current_ts.getMilliseconds();
-    HubClient::sendTelemetry("GPS_data", gps);
+        {"altitude", altitude}};
+    HubClient::sendDataToPeers("geolocation", gps.dump());
     prev_timestamp = current_ts;
 }
 ```

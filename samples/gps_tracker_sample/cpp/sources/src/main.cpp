@@ -149,7 +149,7 @@ int main(int argc, char **argv)
             longitude = max(-180.0, longitude);
             altitude += getRandom();
 
-            // Send Telemetry
+            // Send data
             json gps;
             gps["layer_type"] = "geolocation";
             gps["label"] = "GPS_data";

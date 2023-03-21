@@ -124,7 +124,7 @@ def main():
                 longitude = max(-180.0, longitude)
                 altitude += random.random() / 10000 - .00005
 
-                # Send Telemetry
+                # Send data
                 gps = {}
                 gps["layer_type"] = "geolocation"
                 gps["label"] = "GPS_data"
