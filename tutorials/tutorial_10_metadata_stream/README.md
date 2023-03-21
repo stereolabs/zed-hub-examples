@@ -2,16 +2,14 @@
 
 This tutorial shows how to stream 3D skeleton data to ZED Hub, in addition to the video stream. You will be able to view the streamed data in the **Video panel** of your device.
 
-[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_10_metadata_stream)
-
 ## Requirements
 
 You will deploy this tutorial on one of the devices installed on **your ZED Hub workspace**. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
 
-- [Sign In to ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
+- [Sign In to ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 
 This tutorial requires Edge Agent to be installed and running in order to connect to ZED Hub. You can make sure it is running and connected by using:
 

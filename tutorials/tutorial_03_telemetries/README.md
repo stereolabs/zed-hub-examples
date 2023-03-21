@@ -1,14 +1,12 @@
 # Tutorial 3 - Telemetries
 This tutorial shows you how to send a telemetry to the cloud. This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the consecutive positions of your camera.  
 
-[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_03_telemetries)
-
 ## Requirements
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 - A ZED must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device
 
@@ -99,7 +97,7 @@ What exactly happens:
 ```
 
 - Store the camera position inside a json and call `HubClient::sendTelemetry`
-  A label is specified as follows `sendTelemetry(std::string label, json& value)`. It allows to improve the log consultation in the ZEDHub interface as it is possible to sort them by label.
+  A label is specified as follows `sendTelemetry(std::string label, json& value)`. It allows to improve the log consultation in the ZED Hub interface as it is possible to sort them by label.
 
 ```
     // Send Telemetry
@@ -115,7 +113,7 @@ What exactly happens:
 ```
 
 - Call HubClient::update in order to send the current image to the cloud
-  (See tutorial_02_live_stream_and_recording README for more information)
+  (See [tutorial_02_live_stream_and_recording](/tutorials/tutorial_02_live_stream_and_recording/README.md) README for more information)
 
 ```
     // Always update Hub at the end of the grab loop
