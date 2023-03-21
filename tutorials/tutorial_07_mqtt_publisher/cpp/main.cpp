@@ -44,7 +44,6 @@ int main(int argc, char **argv)
     // Main loop
     while (true)
     {
-
         const auto p1 = std::chrono::system_clock::now();
 
         json my_message_js;

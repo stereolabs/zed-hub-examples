@@ -36,7 +36,7 @@ You can start it using this command :
 $ edge_cli start
 ```
 
-> **Note**: It is already running by default after Edge Agent installation
+> **Note**: It is already running by default after Edge Agent installation.
 
 And to stop it :
 ```

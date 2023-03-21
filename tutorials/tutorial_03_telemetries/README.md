@@ -1,5 +1,5 @@
 # Tutorial 3 - Telemetries
-This tutorial shows you how to send a telemetry to the cloud. This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the consecutive positions of your camera.  
+This tutorial shows you how to send a telemetry to the cloud. It opens a ZED camera and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the **Telemetry panel** will contain all the consecutive positions of your camera.  
 
 ## Requirements
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
@@ -12,15 +12,12 @@ To be able to run this tutorial:
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 
-You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
+You can start it using this command :
 ```
 $ edge_cli start
 ```
 
-If you want to run it in background use :
-```
-$ edge_cli start -b
-```
+> **Note**: It is already running by default after Edge Agent installation.
 
 And to stop it :
 ```
@@ -29,12 +26,7 @@ $ edge_cli stop
 
 ## Build and run this tutorial for development
 
-Run the Edge Agent installed on your device using (note that it's already running by default after Edge Agent installation) :
-```
-$ edge_cli start
-```
-
-Then to build your app :
+With Edge Agent installed and running, you can build this tutorial with the following commands :
 ```
 $ mkdir build
 $ cd build
@@ -42,7 +34,7 @@ $ cmake ..
 $ make -j$(nproc)
 ```
 
-Then to run your app :
+Then run your app :
 ```
 ./ZED_Hub_Tutorial_3
 ```
@@ -58,48 +50,55 @@ If you click on the device where the app is deployed in the **Devices** panel, y
 ![](./images/live_and_recordings.png " ")
 
 ### Telemetry
-If you click on the **Telemetry** panel, you should see the telemetry of your camera position as follow:
+If you click on the **Telemetry panel**, you should see the telemetry of your camera position as follow:
 
 ![](./images/telemetry.png " ")
 
 
 ## Code Overview
 
-This sample app opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the Telemetry panel will contain all the consecutive position of your camera.  
+This tutorial opens a ZED and enable ZED tracking, meaning that you can access the camera position at each frame. Then the application gets the camera position and sends it to the cloud at each frame. Therefore the **Telemetry panel** will contain all the consecutive position of your camera.  
 
 What exactly happens:
 
-- Init IOT to enable communications with the cloud. (See tutorial_01_basic_app README for more information).
+- Initialize communications with the cloud. See [tutorial_01_basic_app](/tutorials/tutorial_01_basic_app/README.md) for more information.
 
-- Open the ZED with `p_zed->open(initParameters)`. (See tutorial_02_live_stream_and_recording README for more information).
+- Open the ZED with `p_zed->open(initParameters)`. See [tutorial_02_live_stream_and_recording](/tutorials/tutorial_02_live_stream_and_recording/README.md) for more information.
 
-- Enable Positional Tracking with `p_zed->enablePositionalTracking(positional_tracking_param)`. (See [ZED SDK API documentation](https://www.stereolabs.com/docs/api/classsl_1_1Camera.html#a7989ae783fae435abfdf48feaf147f44) for more information).
+- Enable Positional Tracking with `p_zed->enablePositionalTracking(positional_tracking_param)`. See [ZED SDK API documentation](https://www.stereolabs.com/docs/api/classsl_1_1Camera.html#a7989ae783fae435abfdf48feaf147f44) for more information.
 
-- In a While loop, grab a new frame
+- In a `While loop`, grab a new frame
 
-```
-// Main loop
-    while (true) {
+```cpp
+    // Main loop
+    while (true)
+    {
         // Grab a new frame from the ZED
         status_zed = p_zed->grab(runtime_parameters);
-        if (status_zed != ERROR_CODE::SUCCESS) break;
+        if (status_zed != ERROR_CODE::SUCCESS)
+            break;
+        ...
+    }
 ```
 
-- Every second, get the camera position (Translation and rotation)
+- Every second, get the camera position (translation and rotation)
 
+```cpp
+    if (curr_timestamp.getMilliseconds() >= prev_timestamp.getMilliseconds() + 1000)
+        {
+            // Retrieve camera position
+            p_zed->getPosition(cam_pose);
+            sl::Translation translation = cam_pose.getTranslation();
+            sl::float3 rotation_vector = cam_pose.getRotationVector();
+            ...
+        }
 ```
-    if (curr_timestamp.getMilliseconds() >= prev_timestamp.getMilliseconds() + 1000) {
-        // Retrieve camera position
-        p_zed->getPosition(cam_pose);
-        sl::Translation translation = cam_pose.getTranslation();
-        sl::float3 rotation_vector = cam_pose.getRotationVector();
 
-```
+- Store the camera position inside a JSON and call `HubClient::sendTelemetry`.
 
-- Store the camera position inside a json and call `HubClient::sendTelemetry`
-  A label is specified as follows `sendTelemetry(std::string label, json& value)`. It allows to improve the log consultation in the ZED Hub interface as it is possible to sort them by label.
+  A label is specified as follows `sendTelemetry(std::string label, json& value)`. It allows to improve the telemetry consultation in the ZED Hub interface as it is possible to sort them by label.
 
-```
+```cpp
     // Send Telemetry
     sl_iot::json position_telemetry;
     position_telemetry["tx"] = translation.x;
@@ -112,11 +111,10 @@ What exactly happens:
     prev_timestamp = curr_timestamp;
 ```
 
-- Call HubClient::update in order to send the current image to the cloud
-  (See [tutorial_02_live_stream_and_recording](/tutorials/tutorial_02_live_stream_and_recording/README.md) README for more information)
+- Call `HubClient::update` in order to send the current image to the cloud.
+  See [tutorial_02_live_stream_and_recording](/tutorials/tutorial_02_live_stream_and_recording/README.md) for more information.
 
 ```
     // Always update Hub at the end of the grab loop
-    HubClient::update();
-    sleep_ms(1);
+    HubClient::update(p_zed);
 ```

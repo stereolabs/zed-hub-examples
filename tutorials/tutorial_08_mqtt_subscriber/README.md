@@ -1,6 +1,6 @@
 # Tutorial 8 - MQTT Subscriber
 
-> **NOTE**: This tutorial should be run with the tutorial 7 : **MQTT Publisher**
+> **Note**: This tutorial should be run with the [tutorial 7 : **MQTT Publisher**](/tutorials/tutorial_07_mqtt_publisher/README.md).
 
 This tutorial shows you how to communicate between apps through ZED Hub. It subscribes to a MQTT topics and send a log to notify that the messages have been received.
 
@@ -13,15 +13,12 @@ To be able to run this tutorial:
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 
-You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
+You can start it using this command :
 ```
 $ edge_cli start
 ```
 
-If you want to run it in background use :
-```
-$ edge_cli start -b
-```
+> **Note**: It is already running by default after Edge Agent installation.
 
 And to stop it :
 ```
@@ -30,12 +27,7 @@ $ edge_cli stop
 
 ## Build and run this tutorial for development
 
-Run the Edge Agent installed on your device using (note that it's already running by default after Edge Agent installation) :
-```
-$ edge_cli start
-```
-
-Then to build your app :
+With Edge Agent installed and running, you can build this tutorial with the following commands :
 ```
 $ mkdir build
 $ cd build
@@ -43,7 +35,7 @@ $ cmake ..
 $ make -j$(nproc)
 ```
 
-Then to run your app :
+Then run your app :
 ```
 ./ZED_Hub_Tutorial_8
 ```
@@ -56,34 +48,32 @@ The app subscribes to the MQTT topic where the MQTT Publisher Tutorial publishes
 
 
 ## Code overview
-The app must be **init** to be connected to the local Broker.
+The app must be **initialized** to be connected to the local Broker.
 The app subscribes to the topic `/v1/local_network/my_custom_data` composed of the topic prefix `/v1/local_network` and the topic name `my_custom_data`.
 When a message is received the callback `onDataReceived` is triggered.
 
 ```c++
-//Init sl_iot
-STATUS_CODE sc = HubClient::connect(val);
-if (sc != STATUS_CODE::SUCCESS) {
-    HubClient::sendLog("Failed to Init Cloud", LOG_LEVEL::ERROR);
+// Initialize the communication to ZED Hub, without a zed camera.
+status_iot = HubClient::connect("sub_app");
+if (status_iot != STATUS_CODE::SUCCESS)
+{
+    std::cout << "Initialization error " << status_iot << std::endl;
     exit(EXIT_FAILURE);
 }
 
-// Topic to listen
-TARGET topic_prefix = TARGET::LOCAL_NETWORK;
+// Topic to listen to
 std::string topic_name = "/my_custom_data";
-
-//
-HubClient::subscribeToMqttTopic(topic_name, onDataReceived, topic_prefix);
+HubClient::subscribeToTopic(topic_name, onDataReceived);
 ```
 
 `onDataReceived` is defined as follows. Each time a message is received, a log is sent and the message is also displayed in the runtime terminal.
 
 ```c++
-void onDataReceived(std::string topic, std::string message, TARGET target, void* arg)
+void onDataReceived(const std::string &topic, const std::string &message, TARGET target)
 {
     std::cout << "Message received !" << std::endl;
     json my_raw_data = json::parse(message);
     std::cout << "My received message : " << my_raw_data << std::endl;
-    HubClient::sendLog("MQTT message received on topic " + topic,LOG_LEVEL::INFO);
+    HubClient::sendLog("Message received on topic " + topic, LOG_LEVEL::INFO);
 }
 ```

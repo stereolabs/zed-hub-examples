@@ -1,6 +1,6 @@
 # Tutorial 9 - Multi-camera Stream
 
-This tutorial shows you how to stream secondary cameras in addition to the main stream.
+This tutorial shows you how to stream more than one ZED camera.
 
 ## Requirements
 
@@ -13,17 +13,13 @@ To be able to run this tutorial:
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 
-You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
+You can start it using this command :
 
 ```
 $ edge_cli start
 ```
 
-If you want to run it in background use :
-
-```
-$ edge_cli start -b
-```
+> **Note**: It is already running by default after Edge Agent installation.
 
 And to stop it :
 
@@ -33,14 +29,7 @@ $ edge_cli stop
 
 ## Build and run this tutorial for development
 
-Run the Edge Agent installed on your device using (note that it's already running by default after Edge Agent installation) :
-
-```
-$ edge_cli start
-```
-
-Then to build your app :
-
+With Edge Agent installed and running, you can build this tutorial with the following commands :
 ```
 $ mkdir build
 $ cd build
@@ -48,7 +37,7 @@ $ cmake ..
 $ make -j$(nproc)
 ```
 
-Then to run your app :
+Then run your app :
 
 ```
 ./ZED_Hub_Tutorial_9
@@ -64,40 +53,60 @@ std::vector<DeviceProperties> devList = Camera::getDeviceList();
 int nb_detected_zed = devList.size();
 ```
 
+Then open each cameras and register them.
 ```c++
-// Thread loops for secondary streams
-bool run_zeds = true;
-std::vector<thread> thread_pool(nb_detected_zed - 1);
-for (int z = 1; z < nb_detected_zed; z++)
+// Open every detected cameras
+for (int i = 0; i < nb_detected_zed; i++)
 {
-    if (zeds[z].isOpened())
+    zeds[i].reset(new sl::Camera());
+    initParameters.input.setFromCameraID(i);
+
+    ERROR_CODE err = zeds[i]->open(initParameters);
+    if (err == ERROR_CODE::SUCCESS)
     {
-        auto cam_info = zeds[z].getCameraInformation();
-        thread_pool[z - 1] = std::thread(secondary_stream_loop, ref(zeds[z]), std::to_string(cam_info.serial_number), ref(run_zeds));
+        auto cam_info = zeds[i]->getCameraInformation();
+        std::cout << "serial number: " << cam_info.serial_number << ", model: " << cam_info.camera_model << ", status: opened" << std::endl;
+    }
+    else
+    {
+        std::cout << " Error on camera " << i << " : " << err << std::endl;
+        throw(new std::exception());
+    }
+
+    // Register the camera once it's open
+    UpdateParameters updateParameters;
+
+    // On Ubuntu desktop, on consumer-level GPUs, you don't have enough hardware encoder to stream multiple devices
+    // and to record at the same time. https://en.wikipedia.org/wiki/Nvidia_NVENC
+    // On jetsons or on business-grade gpus, you can do whatever you want.
+    updateParameters.enable_recording = false;
+    status_iot = HubClient::registerCamera(zeds[i], updateParameters);
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
+        std::cout << "Camera registration error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
     }
 }
 ```
 
-Then, using a thread, every secondary streams are associated to a grad loop to make available the secondary stream (MJPEG).
+Then, using a thread, every streams are associated to a `grad loop ` to stream them.
 
 ```c++
 // Secondary streams' loop to grab image
-void secondary_stream_loop(Camera& zed, const std::string& stream_name, bool& run)
+void stream_loop(const std::shared_ptr<Camera> &p_zed, bool &run)
 {
-    std::cout << "Secondary stream (" << stream_name << ") opened" << std::endl;
     Mat zed_image(1280, 720, MAT_TYPE::U8_C4);
 
-    while (run) {
-        // grab current images and compute depth
-        if (zed.grab() == ERROR_CODE::SUCCESS)
+    while (run)
+    {
+        // grab current image
+        if (p_zed->grab() == ERROR_CODE::SUCCESS)
         {
-            zed.retrieveImage(zed_image, VIEW::LEFT, MEM::CPU, zed_image.getResolution());
-            auto status_code = HubClient::addSecondaryStream(stream_name, zed_image);
+            p_zed->retrieveImage(zed_image, VIEW::LEFT, MEM::CPU, zed_image.getResolution());
+            HubClient::update(p_zed, zed_image);
         }
         else
-        {
             run = false;
-        }
     }
 }
 ```

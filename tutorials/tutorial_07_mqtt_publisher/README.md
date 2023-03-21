@@ -11,15 +11,12 @@ To be able to run this tutorial:
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 
-You can start it using this command, and stop it with CTRL+C (note that it's already running by default after Edge Agent installation) :
+You can start it using this command :
 ```
 $ edge_cli start
 ```
 
-If you want to run it in background use :
-```
-$ edge_cli start -b
-```
+> **Note**: It is already running by default after Edge Agent installation.
 
 And to stop it :
 ```
@@ -28,12 +25,7 @@ $ edge_cli stop
 
 ## Build and run this tutorial for development
 
-Run the Edge Agent installed on your device using (note that it's already running by default after Edge Agent installation) :
-```
-$ edge_cli start
-```
-
-Then to build your app :
+With Edge Agent installed and running, you can build this tutorial with the following commands :
 ```
 $ mkdir build
 $ cd build
@@ -41,7 +33,7 @@ $ cmake ..
 $ make -j$(nproc)
 ```
 
-Then to run your app :
+Then run your app :
 ```
 ./ZED_Hub_Tutorial_7
 ```
@@ -52,28 +44,26 @@ The app publishes a basic message on the MQTT topic `/v1/local_network/my_custom
 
 ## Code overview
 
-First the app must be **Init**. It allows to connect the app to the local broker.
+First the app must be **initialized**. It allows to connect the app to the local broker.
 
 ```c++
-    //Init sl_iot
-    const char * application_token = ::getenv("SL_APPLICATION_TOKEN");
-    STATUS_CODE status_iot = HubClient::connect(application_token);
-    if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "HubClient " << status_iot << std::endl;
+    status_iot = HubClient::connect("pub_app");
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
+        std::cout << "Initialization error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
 ```
 Then the MQTT topic parameters are set.
 ```c++
-    TARGET topic_prefix = TARGET::LOCAL_NETWORK;
     std::string topic_name = "/my_custom_data";
 ```
 
 Finally a message is sent every 10 seconds
 ```c++
     // Main loop
-    while (true) {
-
+    while (true)
+    {
         const auto p1 = std::chrono::system_clock::now();
 
         json my_message_js;
@@ -81,7 +71,9 @@ Finally a message is sent every 10 seconds
         my_message_js["my_custom data"] = 54;
         my_message_js["timestamp"] = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
 
-        HubClient::publishOnMqttTopic(topic_name, my_message_js, topic_prefix);
+        HubClient::publishOnTopic(topic_name, my_message_js);
+        HubClient::sendLog("Message published", LOG_LEVEL::INFO);
+
         sleep_ms(10000); // 10 seconds
     }
 ```

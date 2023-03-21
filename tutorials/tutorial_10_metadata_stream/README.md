@@ -34,7 +34,7 @@ $ cmake ..
 $ make -j$(nproc)
 ```
 
-Then to run your app :
+Then run your app :
 
 ```
 ./ZED_Hub_Tutorial_10
