@@ -5,8 +5,6 @@ This sample is a basic example which displays a ZED live view in the ZED Hub Vid
 - **Live Stream** which displays the live video from your ZED camera in the **Video** Panel
 - **Recordings** which are listed hour by hour in the **Video** Panel
 
-
-**Note** That this sample corresponds exactly to the Camera Viewer app that is provided by default when you setup a new device.
 ![](./images/live_view.png " ")
 
 
@@ -16,8 +14,8 @@ This sample uses a part of the **basic tutorials** provided in the `tutorials` f
 You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. ZED Hub supports Jetson Nano, TX2, Xavier and Orin, or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 - A ZED camera must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device.
 
@@ -66,7 +64,7 @@ This command is available by installing Edge Agent on your device.
 
 - The command will ask for the **device type** (Jetson or x86) on which you want to deploy this app.
 - The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the ZED Hub interface.
-- Finally you will be asked the **sl_iot version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker image used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
+- Finally you will be asked the **sl_iot version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker image used to build your app docker image. You can chose the default one, or look for the [most recent version available on Docker Hub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
 
 ### How to deploy your application
 
@@ -76,7 +74,7 @@ Package your app by generating a app.zip file using :
 $ edge_cli build
 ```
 
-You can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the ZED Hub interface:
+You can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/deployment/) using the ZED Hub interface:
 
 - In your workspace, in the **Applications** section, click on **Create a new app** 
 - Select the ZIP file containing the application in your filesystem
@@ -105,7 +103,7 @@ In the **Devices** panel, select the device which is running your app. You shoul
 
 ### Recordings
 
-In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**, which will make the camera record as long as the application is running. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **erased**. (see tutorial_06_video_event to understand the **On Event** recording mode).
+In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**, which will make the camera record as long as the application is running. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **erased**. (see [tutorial_06_video_event](/tutorials/tutorial_06_video_event/README.md) to understand the **On Event** recording mode).
 
 That's it, recording is active! The recordings are listed by hour and day in the **Video** panel of your device. 
 
@@ -129,7 +127,7 @@ Some callbacks are defined and will be called when a parameter will be modified 
 Note that there are two types of parameters : the **device parameters** and the **app parameters**.
 The device parameters can be modified in the settings panel of the device. However to be notified of the modification, the Camera Viewer app must define a callback associated with the parameter.
 
-The app parameters can be modified in the parameters pop up window. They also need to be associated to a callback and must be declared as explained in the **tutorial_03_telemetries**.
+The app parameters can be modified in the parameters pop up window. They also need to be associated to a callback and must be declared as explained in the [**tutorial_03_telemetries**](/tutorials/tutorial_03_telemetries/README.md).
 
 
 ```c++
@@ -161,11 +159,11 @@ void onLocalStreamUpdate(FunctionEvent &event) {
 
 ### Initialization and 'restart' loop
 
-This sample app starts Init the cloud and start the ZED in a first loop that you can consider as a 'restart loop': if the ZED fails, the loop is re-entered and the ZED restart.
+This sample app starts init the cloud and start the ZED in a first loop that you can consider as a 'restart loop': if the ZED fails, the loop is re-entered and the ZED restart.
 
 What exactly appends:
 
-- Init IOT to enable communications with the cloud.
+- Init iot to enable communications with the cloud.
 
 ```cpp
     p_zed.reset(new sl::Camera());
@@ -174,7 +172,7 @@ What exactly appends:
     STATUS_CODE status_iot = HubClient::connect("camera_app");
 ```
 
-- Open the ZED with `p_zed->open(initParameters)` in the restart loop but before the main loop. [ZED Documentation](https://www.stereolabs.com/docs/video/camera-controls/#camera-configuration)
+- Open the ZED with `p_zed->open(initParameters)` in the restart loop but before the main loop ([ZED Documentation](https://www.stereolabs.com/docs/video/camera-controls/#camera-configuration)).
 
 ```cpp
     //Open the ZED camera
@@ -194,7 +192,7 @@ What exactly appends:
 ```c++        
         ... 
     CallbackParameters callback_param;
-    callback_param.setParameterCallback("onParamChange", "camera_resolution|camera_fps|camera_image_flip" ,CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    callback_param.setParameterCallback("onParamChange", "camera_resolution|camera_fps|camera_image_flip", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
     HubClient::registerFunction(onInitParamUpdate, callback_param);
         ...
 ```

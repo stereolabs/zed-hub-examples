@@ -1,6 +1,6 @@
 # ZED Hub Telemetry Export Plug
 
-Telemetries sent on **ZED Hub** have a default maximum retention of 30 days. After that limit they are deleted from cloud.stereolabs.com.
+Telemetries sent on **ZED Hub** have a default maximum retention of 30 days. After that limit they are deleted from [hub.stereolabs.com](https://hub.stereolabs.com).
 
 Here is a sample plug using python and mongodb that allows you to export those telemetries in your local database using **ZED Hub** REST API.
 
@@ -21,10 +21,9 @@ pip3 install -r requirements.txt
 You first need to fill the `config_export_telemetry.json` configuration file to use the sample.
 
 - `cloud_url` : The web address of the cloud server requested by the REST API (IP for local instances).
-- `region_url` : The web address of the region cloud server requested by the REST API (IP:81 for local instances).
 - `protocol` : Wether the server you're using uses http or https (http for local instances)
 - `api_token` : The access token that you'll need  to use the REST API. Generate it by clicking on the account button in **ZED Hub** interface and **Create Token**.
-- `workspace_id` : The ID of the workspace where you want to retrieve your telemetries from. Get it from the **Camera panel** URL (example: cloud.stereolabs.com/#/workspaces/**1234567**/cameras)
+- `workspace_id` : The ID of the workspace where you want to retrieve your telemetries from. Get it from the **Camera panel** URL (example: https://hub.stereolabs.com/workspaces/**1234567**/cameras)
 
 ## Run the sample
 
@@ -53,10 +52,10 @@ To avoid duplicates if you use the program regularly, add a unique constraint on
     collection.create_index([("id",pymongo.ASCENDING)],unique=True)
 ```
 
-Construct your REST request on telemetry URL and headers, using start and end parameters. Check the [**REST API documentation**](https://cloud.stereolabs.com/doc/) if you want to add more parameters.
+Construct your REST request on telemetry URL and headers, using start and end parameters. Check the [**REST API documentation**](https://www.stereolabs.com/docs/cloud/) if you want to add more parameters.
 ```
     headers = {'Content-Type' : 'application/json', 'Authorization': api_token}
-    telemetry_url = http+region_url+'/api/v1/workspaces/'+str(workspace_id)+'/telemetry'
+    telemetry_url = http+cloud_url+'/api/v1/workspaces/'+str(workspace_id)+'/telemetry'
 
     # Get telemetries between now and 30 days before
     now = get_current_milliseconds_round()

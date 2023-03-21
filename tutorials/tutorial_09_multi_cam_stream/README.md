@@ -2,16 +2,14 @@
 
 This tutorial shows you how to stream secondary cameras in addition to the main stream.
 
-[**Github repository**](https://github.com/stereolabs/zed-hub-examples/tree/main/tutorials/tutorial_09_multi_cam_stream)
-
 ## Requirements
 
 You will deploy this tutorial on one of the devices installed on **your ZED Hub workspace**. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
 
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 

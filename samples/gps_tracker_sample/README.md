@@ -1,6 +1,6 @@
 # GPS Tracker
 
-This sample is an example that shows you how to send GPS data in a ZED Hub App to display them in the [Map page](https://cloud.stereolabs.com/maps). It also shows how to use it to generate:
+This sample is an example that shows you how to send GPS data in a ZED Hub App to display them in the **Map page**. It also shows how to use it to generate:
 
 - **Logs** that informs you about the app's status
 - **Telemetry** that stores data linked to the detections
@@ -15,8 +15,8 @@ You will deploy this tutorial on one of the devices installed on your ZED Hub wo
 
 To be able to run this tutorial:
 
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-started/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/get-started/#add-a-camera).
+- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 - A ZED must be plugged to this device.
 
 ## Build and deploy this tutorial
@@ -66,7 +66,7 @@ This command is available by installing Edge Agent on your device.
 
 - The command will ask for the **device type** (Jetson or x86) on which you want to deploy this app.
 - The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the ZED Hub interface.
-- Finally you will be asked the **sl_iot version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker image used to build your app docker image. You can chose the default one, or look for the [most recent version available on Dockerhub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
+- Finally you will be asked the **sl_iot version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker image used to build your app docker image. You can chose the default one, or look for the [most recent version available on Docker Hub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
 
 ### How to deploy your application
 
@@ -76,7 +76,7 @@ Packages your app by generating a app.zip file using :
 $ edge_cli build
 ```
 
-You can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/sample/#deploy) using the ZED Hub interface:
+You can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/deployment/) using the ZED Hub interface:
 
 - In your workspace, in the **Applications** section, click on **Create a new app**
 - Select the ZIP file containing the application in your filesystem
@@ -129,7 +129,7 @@ As usual, the app is init with `HubClient::connect` and `HubClient::registerCame
 
 ### Main loop
 
-- **Telemetries** relative to the detected objects are defined and sent. See `tutorial_03_telemetries`.
+- **Telemetries** relative to the detected objects are defined and sent. See [**tutorial_03_telemetries**](/tutorials/tutorial_03_telemetries/README.md).
 
 ```c++
 Timestamp current_ts = p_zed->getTimestamp(TIME_REFERENCE::IMAGE);

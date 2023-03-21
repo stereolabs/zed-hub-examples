@@ -20,10 +20,10 @@ def load_config() :
     if cloud_url == "" :
         print("Wrong \"cloud_url\" value in config. Check config_export_telemetry.json.")
         exit(1)
-    global region_url
-    region_url = config["region_url"]
-    if region_url == "" :
-        print("Wrong \"region_url\" value in config. Check config_export_telemetry.json.")
+    global cloud_url
+    cloud_url = config["cloud_url"]
+    if cloud_url == "" :
+        print("Wrong \"cloud_url\" value in config. Check config_export_telemetry.json.")
         exit(1)
     global api_token
     api_token = config["api_token"]
@@ -54,7 +54,7 @@ def main() :
 
     # Construct request
     headers = {'Content-Type' : 'application/json', 'Authorization': api_token}
-    telemetry_url = http+region_url+'/api/v1/workspaces/'+str(workspace_id)+'/telemetry'
+    telemetry_url = http+cloud_url+'/api/v1/workspaces/'+str(workspace_id)+'/telemetry'
 
     # Get telemetries between now and 30 days before
     now = get_current_milliseconds_round()
