@@ -2,8 +2,8 @@
 
 In this repository you will find:
 - [**ZED Hub tutorials**](./tutorials/) that explain how to use the ZED Hub features in your apps and run them.
-- [**Sample apps**](./samples/README.md) that provide you examples of ZED Hub usage and package/deploy them on ZED Hub as a service.
-- [**ZED Hub scripts**](./scripts/README.md) that provide you examples of ZED Hub REST API usage.
+- [**Sample apps**](./samples/README.md) that provide examples of ZED Hub usage and package/deploy them on ZED Hub as a service.
+- [**ZED Hub scripts**](./scripts/README.md) that provide examples of ZED Hub REST API usage.
 
 ZED Hub comes with samples demoing its main features. Each sample is written in C++ and can be deployed as a ZED Hub app. All of them are associated to a Readme that explains how to deploy the app and the main step of the source code. 
 

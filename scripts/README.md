@@ -1,8 +1,8 @@
 # ZED Hub scripts
 
-In this folder you will find example scripts of [ZED Hub REST API](https://www.stereolabs.com/docs/cloud/rest-api/) usage in Python which include:
+In this folder you will find example scripts of the [ZED Hub REST API](https://www.stereolabs.com/docs/cloud/rest-api/) usage in Python which include:
 
-- [retrieve_video_from_workspace](./retrieve_video_from_workspace.py) that download SVO or MP3 videos from a workspace.
+- [retrieve_video_from_workspace](./retrieve_video_from_workspace.py) that downloads SVO or MP4 videos from a workspace.
 - [send_telemetry](./send_telemetry.py) that send random telemetry to a workspace.
 
 ## How to get an API token
