@@ -1,15 +1,20 @@
 # Deploy a ZED Hub app a service
 
 For production, you need to deploy your application on your device as a service, using Docker.
-Here is the full explanation on how to do it. Examples are available on [**Sample apps**](./samples/).
+Here is the full explanation on how to do it. Examples are available on [**ZED Hub Samples**](/samples/README.md).
 
 ## General structure
 A ZED Hub app is run in a Docker container. The [ZED Hub documentation](https://www.stereolabs.com/docs/cloud/applications/) explains in detail how an app is structured and deployed.
 To deploy an app you need to upload a .zip file that contains at least:
-- a docker-compose.yml describing how the application should be run
-- a runtime dockerfile listing the steps and commands to compile and run the application.
-- an app.json file that describes your application, specifies its name and release name and defines the parameters (see tutorial_04_application_parameters for more information about it)
+- a `docker-compose.yml` describing how the application should be run
+- a runtime `Dockerfile` listing the steps and commands to compile and run the application.
+- an `app.json` file that describes your application, specifies its name and release name and defines application parameters (see [tutorial_04_application_parameters](/tutorials/tutorial_04_application_parameters/README.md) for more information about it)
 - the source code or the executable
+
+> **Note**: You can generate the correct file structure with
+```
+$ edge_cli create_app PATH [c++|python]
+```
 
 We provide tutorials and sample to develop your app in C++ and Python. The samples are especially made to describe how to deploy an app as a service.
 
@@ -33,7 +38,7 @@ With C++, your app should fit with this design :
 The `Dockerfile` in source is dedicated to build your app. `edge_cli` will help you build an app targeting a jetson platform from your linux machine. If you just want to target your own machine, you can simply build your app with `cmake`.
 
 **Build stage**:
-The source code needs to be compiled before deploying the app. The code is compiled inside a dedicated docker image. To run the associated container you just need to run
+The source code needs to be compiled before deploying the app. The code is compiled inside a dedicated Docker image. To run the associated container you just need to run
 ```
 $ cd /your/app/folder
 $ edge_cli build .
@@ -58,11 +63,11 @@ Python dos not need any build stage.
 
 ### Deploy stage
 The deploy stage consists in create a .zip file containing
-- app/Dockerfile
-- app/<your_app> the binaries generated during the **build stage**, or the source in case your using Python.
+- `app/Dockerfile`
+- `app/<your_app> `the binaries generated during the **build stage**, or the source in case your using Python.
 - app.json
-- docker-compose.yml
-- an icon.png image (optional)
+- `docker-compose.yml`
+- an `icon.png` image (optional)
 
 There is an automated command to do that :
 ```
@@ -80,10 +85,10 @@ Now you just need to deploy your app using the ZED Hub interface:
 ## Docker complement
 This section describes in more detail the different Docker related files used by the ZED Hub.
 
-> **Note** : You will need a bit of experience with docker. (As long as you know and understand the basics of building and running a container you’ll be more than fine)
+> **Note** : You will need a bit of experience with docker. As long as you know and understand the basics of building and running a container you'll be more than fine.
 
 ### docker-compose.yml
-The **docker-compose.yml** file is the first file that is read when the "app" app is deployed. It mainly indicates the path to the runtime Dockerfile that indicates how the app must be run. It also configures the Docker environment.
+The **docker-compose.yml** file is the first file that is read when the "app" app is deployed. It mainly indicates the path to the runtime `Dockerfile` that indicates how the app must be run. It also configures the Docker environment.
 ```
 version: '2.3'
 services:
@@ -126,7 +131,7 @@ CMD ["/app_executable"]
 
 The build Dockerfile is **only used for C++ applications** and is **not part of your app** meaning that it is never packaged in the .zip file. It describes the image used to compile your C++ code. This image is similar to the runtime image (the image used to run your app) but contains additional tools required to build the source code and that your runtime image does not need.
 
-The build Dockerfile is used by the `edge_cli build` command and generates one or several **binaries**. These binaries are then used by the runtime image described by the runtime dockerfile.
+The build `Dockerfile` is used by the `edge_cli build` command and generates one or several **binaries**. These binaries are then used by the runtime image described by the runtime `Dockerfile`.
 
 ### Uploading a new release
 Let's suppose you have modified one of the tutorials and want to deploy your updated version.
@@ -135,7 +140,7 @@ Let's suppose you have modified one of the tutorials and want to deploy your upd
 ```js
     //...
     "release":{
-        "name": "1.0.0",  //modify 1.0.0 by a name of your choice. We recommend to keep the x.x.x version scheme
+        "name": "1.0.0",  // modify 1.0.0 by a name of your choice. We recommend to keep the x.x.x version scheme
       //...
     }
     //...
