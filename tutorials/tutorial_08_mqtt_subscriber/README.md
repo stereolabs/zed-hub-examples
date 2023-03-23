@@ -5,11 +5,11 @@
 This tutorial shows you how to communicate between apps through ZED Hub. It subscribes to a MQTT topics and send a log to notify that the messages have been received.
 
 ## Requirements
-You will deploy this tutorial on one of the devices installed on **your ZED Hub workspace**. The ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy these tutorials on a device installed on your ZED Hub workspace. ZED Hub supports Jetson L4T and Ubuntu operating systems. If you are using a Jetson, make sure it has been flashed beforehand. If you haven't done it already, please take a look at the NVIDIA documentation to [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
+- [Sign in to ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 
 This tutorial needs Edge Agent. By default when your device is setup, Edge Agent is running on your device.
 

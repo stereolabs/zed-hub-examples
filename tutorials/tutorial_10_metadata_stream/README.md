@@ -8,8 +8,8 @@ You will deploy this tutorial on one of the devices installed on **your ZED Hub 
 
 To be able to run this tutorial:
 
-- [Sign In to ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
+- [Sign in to ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 
 This tutorial requires Edge Agent to be installed and running in order to connect to ZED Hub. You can make sure it is running and connected by using:
 

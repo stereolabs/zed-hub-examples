@@ -16,29 +16,29 @@ ZED Hub comes with samples demoing its main features. Each sample is written in 
 - **Video event** : How to define **Video Events**, recorded ans accessible through the interface.
 
 ## Requirements
-You will deploy these tutorials on one of the devices installed on your ZED Hub workspace. ZED Hub supports Jetson Nano, TX2 and Xavier or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy these tutorials on a device installed on your ZED Hub workspace. ZED Hub supports Jetson L4T and Ubuntu operating systems. If you are using a Jetson, make sure it has been flashed beforehand. If you haven't done it already, please take a look at the NVIDIA documentation to [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
+- [Sign in to ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 - As most of the tutorials require a ZED camera, a ZED should be plugged to this device.
 
 ## What is a ZED Hub app ?
-A ZED Hub app is an application deployed in a Docker container on one of the devices that you installed on your ZED Hub workspace. Note that it can be coded in the language of your choice and is not limited to a camera usage. It can be everything: a web server, a sensor reporter, an alert notifier, a node-red application... However the ZED Hub interface is optimized for camera management, and is especially adapted to the ZED 3D cameras. Therefore most of the available tutorials requires a ZED to be run.
+A ZED Hub app is an application deployed in a Docker container on a device that you installed on your ZED Hub workspace. ZED Hub's interface is optimized for camera management, and is especially adapted to the ZED 3D cameras. Therefore most of the available tutorials require a ZED to be run.
 
 ## Develop a ZED Hub app
 
 In these [**ZED Hub tutorials**](./tutorials/) you will learn how to develop a ZED Hub app, exploring each feature.
 The only requirement is to setup a device to install the Edge Agent software.
 
-You can start it using this command :
+Once Edge Agent has been installed, you can start the Edge Agent services using:
 ```
 $ edge_cli start
 ```
 
 > **Note**: It is already running by default after Edge Agent installation.
 
-And to stop it :
+To stop the services, run:
 ```
 $ edge_cli stop
 ```
@@ -46,6 +46,3 @@ $ edge_cli stop
 ## Deploying a ZED Hub app for production
 
 Once you have successfully been able to run and test the apps in a development environment, you can look into deploying the same apps in production-ready environments with our [Deploy a ZED Hub app as a service](./deploy_as_a_service.md) tutorial.
-
-## Next steps
-These samples and tutorials can be used as starting points to develop your own app. There are some additional, more advanced tutorials available, which can be used and modified in order to fit your specific needs.

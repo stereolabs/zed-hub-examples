@@ -11,11 +11,11 @@ This sample is a basic example which displays a ZED live view in the **ZED Hub V
 ## Requirements
 This sample uses a part of the **basic tutorials** provided in the `tutorials` folder. We recommend to **read and test the first 3 tutorials** before running this sample. These tutorials provide a lot of information on the ZED Hub features and will make it easier to understand the **Camera Viewer Sample**.
 
-You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. ZED Hub supports Jetson Nano, TX2, Xavier and Orin, or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy these tutorials on a device installed on your ZED Hub workspace. ZED Hub supports Jetson L4T and Ubuntu operating systems. If you are using a Jetson, make sure it has been flashed beforehand. If you haven't done it already, please take a look at the NVIDIA documentation to [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
+- [Sign in to ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 - A ZED camera must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device.
 
