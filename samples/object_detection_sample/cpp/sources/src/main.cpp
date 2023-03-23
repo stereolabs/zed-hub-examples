@@ -190,7 +190,7 @@ int main(int argc, char **argv)
     callback_telemetry_param.setParameterCallback("onTelemetryUpdate", "recordTelemetry|telemetryFreq", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
     HubClient::registerFunction(onTelemetryUpdate, callback_telemetry_param);
 
-    // get values defined by the Zed Hub interface.
+    // get values defined by the ZED Hub interface.
     // Last argument is default value in case of failure
     draw_bboxes = HubClient::getParameter<bool>("draw_bboxes", PARAMETER_TYPE::APPLICATION, draw_bboxes);
     recordVideoEvent = HubClient::getParameter<bool>("recordVideoEvent", PARAMETER_TYPE::APPLICATION, recordVideoEvent);

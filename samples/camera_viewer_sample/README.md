@@ -1,9 +1,9 @@
 # Camera Viewer
 
-This sample is a basic example which displays a ZED live view in the ZED Hub Video Panel. It also allows you to continuously record the video. This sample showcases the following ZED Hub features :
+This sample is a basic example which displays a ZED live view in the **ZED Hub Video Panel**. It also allows you to continuously record the video. This sample showcases the following ZED Hub features :
 - **Logs** which informs you about the app's status
-- **Live Stream** which displays the live video from your ZED camera in the **Video** Panel
-- **Recordings** which are listed hour by hour in the **Video** Panel
+- **Live Stream** which displays the live video from your ZED camera in the **Video Panel**
+- **Recordings** which are listed hour by hour in the **Video Panel**
 
 ![](./images/live_view.png " ")
 
@@ -11,11 +11,11 @@ This sample is a basic example which displays a ZED live view in the ZED Hub Vid
 ## Requirements
 This sample uses a part of the **basic tutorials** provided in the `tutorials` folder. We recommend to **read and test the first 3 tutorials** before running this sample. These tutorials provide a lot of information on the ZED Hub features and will make it easier to understand the **Camera Viewer Sample**.
 
-You will deploy this tutorial on one of the devices installed on your ZED Hub workspace. ZED Hub supports Jetson Nano, TX2, Xavier and Orin, or any computer. If you are using a Jetson, make sure it has been flashed. If you haven't done it already, [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
+You will deploy these tutorials on a device installed on your ZED Hub workspace. ZED Hub supports Jetson L4T and Ubuntu operating systems. If you are using a Jetson, make sure it has been flashed beforehand. If you haven't done it already, please take a look at the NVIDIA documentation to [flash your Jetson](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html).
 
 To be able to run this tutorial:
-- [Sign In the ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
-- [Add and Setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
+- [Sign in to ZED Hub and create a workspace](https://www.stereolabs.com/docs/cloud/overview/get-workspace/).
+- [Add and setup a device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
 - A ZED camera must be plugged to this device.
 - **Enable recordings** and **disable privacy mode** in the Settings panel of your device.
 
@@ -57,7 +57,7 @@ To build your app just run:
 
 ```
 $ cd /PATH/TO/camera_viewer_sample
-$ edge_cli build
+$ edge_cli build .
 ```
 
 This command is available by installing Edge Agent on your device.
@@ -68,34 +68,28 @@ This command is available by installing Edge Agent on your device.
 
 ### How to deploy your application
 
-Package your app by generating a app.zip file using :
+After packaging your app by generating a `app.zip`, you can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/deployment/) using the ZED Hub interface:
 
-```
-$ edge_cli build
-```
-
-You can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/deployment/) using the ZED Hub interface:
-
-- In your workspace, in the **Applications** section, click on **Create a new app** 
+- In your workspace, in the **Applications** section, click on **Add application** 
 - Select the ZIP file containing the application in your filesystem
-- Select the devices on which you want to deploy the app and press **Deploy** 
+- Select the devices on which you want to deploy the app and press **Upload app** 
 
 
 ## What you should see after deployment
-Make sure that the recordings are enabled and that the privacy mode is disabled (Settings panel of your device, in the ZED Hub interface).
-thanks to this app you will have access to:
+Make sure that the recordings are enabled and that the privacy mode is disabled (**Settings panel** of your device, in the ZED Hub interface).
+Thanks to this app you will have access to:
 - a **Live Stream** that shows you the live video
-- **Recordings** listed in the **Video** panel
+- **Recordings** listed in the **Video panel**
 - **Logs** that informs you about the app's status
 
 
 ### Live video
-In the **Settings** panel of your device, make sure that the **Privacy mode** is disabled, otherwise the video won't be visible.
+In the **Settings panel** of your device, make sure that the **Privacy mode** is disabled, otherwise the video won't be visible.
 Wait at least until your app is **running**. 
 
 ![](./images/running.png " ")
 
-In the **Devices** panel, select the device which is running your app. You should see the live video displayed (with a delay of a few seconds).
+In the **Devices** panel, select the device which is running your app. You should see the live video displayed in real-time.
 
 ![](./images/live_view.png " ")
 
@@ -103,9 +97,9 @@ In the **Devices** panel, select the device which is running your app. You shoul
 
 ### Recordings
 
-In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to True, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**, which will make the camera record as long as the application is running. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **erased**. (see [tutorial_06_video_event](/tutorials/tutorial_06_video_event/README.md) to understand the **On Event** recording mode).
+In the **Settings** panel of your device, make sure that the **Enable Recording** parameter is set to `True`, otherwise the video won't be recorded. Keep **Recording Mode** on **Continuous**, which will make the camera record as long as the application is running. The only limit is your device Hard Drive storage. When there is no space left on it, the older recordings are **erased**. See [tutorial_06_video_event](/tutorials/tutorial_06_video_event/README.md) to understand the **On Event** recording mode.
 
-That's it, recording is active! The recordings are listed by hour and day in the **Video** panel of your device. 
+That's it, recording is active! The recordings are listed by hour and day in the **Video panel** of your device. 
 
 
 ###  App logs
@@ -124,33 +118,36 @@ If you click on the app status, you will have access to the app **logs in a term
 ### Parameters callback
 Some callbacks are defined and will be called when a parameter will be modified through the interface. They are used to modify a parameter value and notify that the change has been done.
 
-Note that there are two types of parameters : the **device parameters** and the **app parameters**.
-The device parameters can be modified in the settings panel of the device. However to be notified of the modification, the Camera Viewer app must define a callback associated with the parameter.
+> **Note**: There are two types of parameters : the **device parameters** and the **app parameters**.
+The device parameters can be modified in the settings panel of the device. However to be notified of the modification, the **Camera Viewer app** must define a callback associated with the parameter.
 
 The app parameters can be modified in the parameters pop up window. They also need to be associated to a callback and must be declared as explained in the [**tutorial_03_telemetries**](/tutorials/tutorial_03_telemetries/README.md).
 
 
 ```c++
-void onLocalStreamUpdate(FunctionEvent &event) {
+void onLocalStreamUpdate(FunctionEvent &event)
+{
     event.status = 0;
-    local_stream_change = true;
     bool local_stream = HubClient::getParameter<bool>("local_stream", PARAMETER_TYPE::APPLICATION, false);
 
-    if (local_stream){
+    if (local_stream)
+    {
 
-        StreamingParameters stream_param;
+        sl::StreamingParameters stream_param;
         stream_param.codec = sl::STREAMING_CODEC::H264;
 
-        //restart streaming with new parameters
+        // restart streaming with new parameters
         p_zed->disableStreaming();
-        auto zed_error = p_zed->enableStreaming(streaming_param);
-        if (zed_error != ERROR_CODE::SUCCESS) {
-            std::cout << "[onAppStreamParamUpdate] "<<sl::toVerbose(zed_error) << "\nExit program." << std::endl;
+        auto zed_error = p_zed->enableStreaming(stream_param);
+        if (zed_error != sl::ERROR_CODE::SUCCESS)
+        {
+            std::cout << "[onAppStreamParamUpdate] " << sl::toVerbose(zed_error) << "\nExit program." << std::endl;
             p_zed->close();
             exit(EXIT_FAILURE);
         }
     }
-    else{
+    else
+    {
         p_zed->disableStreaming();
     }
 }
@@ -163,19 +160,25 @@ This sample app starts init the cloud and start the ZED in a first loop that you
 
 What exactly appends:
 
-- Init iot to enable communications with the cloud.
+- Initialize communications with the cloud.
 
 ```cpp
+    // Create ZED Object
     p_zed.reset(new sl::Camera());
 
-    //Init sl_iot
-    STATUS_CODE status_iot = HubClient::connect("camera_app");
+    STATUS_CODE status_iot;
+    status_iot = HubClient::connect("camera_viewer");
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
+        std::cout << "Initialization error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
 ```
 
 - Open the ZED with `p_zed->open(initParameters)` in the restart loop but before the main loop ([ZED Documentation](https://www.stereolabs.com/docs/video/camera-controls/#camera-configuration)).
 
 ```cpp
-    //Open the ZED camera
+    // Open the ZED camera
     sl::ERROR_CODE errZed = p_zed->open(initParameters);
     
     // Register the camera once it's open
