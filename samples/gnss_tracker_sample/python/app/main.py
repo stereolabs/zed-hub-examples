@@ -37,8 +37,6 @@ def on_date_freq_update(message_received):
     print("Data frequency updated")
     dataFreq = sliot.HubClient.get_parameter_float(
         "dataFreq", sliot.PARAMETER_TYPE.APPLICATION, dataFreq)
-    sliot.HubClient.send_log(
-        "New parameters : dataFreq modified", sliot.LOG_LEVEL.INFO)
 
 
 def on_waypoints(message_received):

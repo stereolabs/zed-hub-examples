@@ -47,7 +47,6 @@ void onDataFreqUpdate(FunctionEvent &event)
 {
     event.status = 0;
     dataFreq = HubClient::getParameter<float>("dataFreq", PARAMETER_TYPE::APPLICATION, dataFreq);
-    HubClient::sendLog("New parameters : dataFreq modified", LOG_LEVEL::INFO);
 }
 
 void onWaypoints(FunctionEvent &event)
