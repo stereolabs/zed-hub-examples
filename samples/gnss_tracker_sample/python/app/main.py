@@ -30,15 +30,15 @@ longitude = 2.318206
 altitude = 0
 
 # Parameters, defined as global variables
-telemetryFreq = 1.0
+dataFreq = 1.0
 
-def on_telemetry_update(message_received):
-    global telemetryFreq
-    print("Telemetry updated")
-    telemetryFreq = sliot.HubClient.get_parameter_float(
-        "telemetryFreq", sliot.PARAMETER_TYPE.APPLICATION, telemetryFreq)
+def on_date_freq_update(message_received):
+    global dataFreq
+    print("Data frequency updated")
+    dataFreq = sliot.HubClient.get_parameter_float(
+        "dataFreq", sliot.PARAMETER_TYPE.APPLICATION, dataFreq)
     sliot.HubClient.send_log(
-        "New parameters : telemetryFreq modified", sliot.LOG_LEVEL.INFO)
+        "New parameters : dataFreq modified", sliot.LOG_LEVEL.INFO)
 
 
 def on_waypoints(message_received):
@@ -49,14 +49,14 @@ def on_waypoints(message_received):
 
 
 def main():
-    global telemetryFreq
+    global dataFreq
     global latitude
     global longitude
     global altitude
 
     sliot.HubClient.load_application_parameters("parameters.json")
 
-    telemetryFreq = 1.0  # in seconds
+    dataFreq = 1.0  # in seconds
 
     # Initialize the communication to ZED Hub, with a zed camera.
     zed = sl.Camera()
@@ -92,16 +92,16 @@ def main():
     # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
 
     callback_params = sliot.CallbackParameters()
-    callback_params.set_parameter_callback("onTelemetryUpdate", "telemetryFreq",  sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.APPLICATION)
-    sliot.HubClient.register_function(on_telemetry_update, callback_params)
+    callback_params.set_parameter_callback("onDataFreqUpdate", "dataFreq",  sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.APPLICATION)
+    sliot.HubClient.register_function(on_date_freq_update, callback_params)
 
     callback_params.set_parameter_callback("onWaypoints", "waypoints",  sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.DEVICE)
     sliot.HubClient.register_function(on_waypoints, callback_params)
 
     # get values defined by the ZED Hub interface.
 
-    telemetryFreq = sliot.HubClient.get_parameter_float(
-        "telemetryFreq", sliot.PARAMETER_TYPE.APPLICATION, telemetryFreq)
+    dataFreq = sliot.HubClient.get_parameter_float(
+        "dataFreq", sliot.PARAMETER_TYPE.APPLICATION, dataFreq)
 
     prev_timestamp = zed.get_timestamp(sl.TIME_REFERENCE.CURRENT)
 
@@ -112,9 +112,9 @@ def main():
 
             current_ts = zed.get_timestamp(sl.TIME_REFERENCE.IMAGE)
 
-            # /*******     Define and send Telemetry   *********/
+            # /*******     Define and send data   *********/
             
-            if current_ts.get_seconds() >= prev_timestamp.get_seconds() + telemetryFreq:
+            if current_ts.get_seconds() >= prev_timestamp.get_seconds() + dataFreq:
                 # Update coordinate
                 latitude += random.random() / 10000 - .00005
                 latitude = min(90.0, latitude)

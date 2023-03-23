@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(GPS_Tacker_Sample)
+project(GNSS_Tacker_Sample)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

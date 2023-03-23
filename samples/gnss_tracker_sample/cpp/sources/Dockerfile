@@ -16,7 +16,7 @@ WORKDIR /home
 RUN mkdir build
 WORKDIR /home/build
 RUN cmake -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -DCMAKE_CXX_FLAGS="-Wl,--allow-shlib-undefined" .. && \
-make -j3 && mv GPS_Tacker_Sample /
+make -j3 && mv GNSS_Tacker_Sample /
 WORKDIR /
 RUN cd ..
 

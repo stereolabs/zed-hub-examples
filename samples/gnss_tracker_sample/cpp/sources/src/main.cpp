@@ -40,14 +40,14 @@ double getRandom()
 }
 
 // Parameters, defined as global variables
-float telemetryFreq = 1.f; // in seconds
+float dataFreq = 1.f; // in seconds
 
 // Parameter callbacks
-void onTelemetryUpdate(FunctionEvent &event)
+void onDataFreqUpdate(FunctionEvent &event)
 {
     event.status = 0;
-    telemetryFreq = HubClient::getParameter<float>("telemetryFreq", PARAMETER_TYPE::APPLICATION, telemetryFreq);
-    HubClient::sendLog("New parameters : telemetryFreq modified", LOG_LEVEL::INFO);
+    dataFreq = HubClient::getParameter<float>("dataFreq", PARAMETER_TYPE::APPLICATION, dataFreq);
+    HubClient::sendLog("New parameters : dataFreq modified", LOG_LEVEL::INFO);
 }
 
 void onWaypoints(FunctionEvent &event)
@@ -110,15 +110,15 @@ int main(int argc, char **argv)
     /*********    App parameters      *************/
 
     CallbackParameters callback_params;
-    callback_params.setParameterCallback("onTelemetryUpdate", "telemetryFreq", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
-    HubClient::registerFunction(onTelemetryUpdate, callback_params);
+    callback_params.setParameterCallback("onDataFreqUpdate", "dataFreq", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
+    HubClient::registerFunction(onDataFreqUpdate, callback_params);
 
     callback_params.setParameterCallback("onWaypoints", "waypoints", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
     HubClient::registerFunction(onWaypoints, callback_params);
 
     // get values defined by the ZED Hub interface.
     // Last argument is default value in case of failure
-    telemetryFreq = HubClient::getParameter<float>("telemetryFreq", PARAMETER_TYPE::APPLICATION, telemetryFreq);
+    dataFreq = HubClient::getParameter<float>("dataFreq", PARAMETER_TYPE::APPLICATION, dataFreq);
 
     /****************************/
 
@@ -134,11 +134,11 @@ int main(int argc, char **argv)
         if (status_zed != ERROR_CODE::SUCCESS)
             break;
 
-        /*******     Define and send Telemetry   *********/
+        /*******     Define and send data   *********/
 
         Timestamp current_ts = p_zed->getTimestamp(TIME_REFERENCE::IMAGE);
 
-        if ((uint64_t)(current_ts.getMilliseconds() >= (uint64_t)(prev_timestamp.getMilliseconds() + (uint64_t)telemetryFreq * 1000ULL)))
+        if ((uint64_t)(current_ts.getMilliseconds() >= (uint64_t)(prev_timestamp.getMilliseconds() + (uint64_t)dataFreq * 1000ULL)))
         {
             // Update coordinate
             latitude += getRandom();
