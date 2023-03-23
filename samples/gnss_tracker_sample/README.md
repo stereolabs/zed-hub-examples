@@ -1,7 +1,7 @@
 # GNSS Tracker
 
 This sample shows how to send GPS data in a ZED Hub Application to display them in the **Map page**.
-It also breaks down how to generate:
+It also explains how to generate:
 
 - **Logs** that give information about the application's status
 - **WebRTC messages** that contain data to be displayed in ZED Hub's **Map page**
