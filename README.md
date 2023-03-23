@@ -2,7 +2,7 @@
 
 In this repository you will find:
 - [**ZED Hub tutorials**](./tutorials/) that explain how to use the ZED Hub features in your apps and run them.
-- [**ZED Hub sample**](./samples/README.md) that provide examples of ZED Hub usage and package/deploy them on ZED Hub as a service.
+- [**ZED Hub samples**](./samples/README.md) that provide examples of ZED Hub usage and package/deploy them on ZED Hub as a service.
 - [**ZED Hub scripts**](./scripts/README.md) that provide examples of ZED Hub REST API usage.
 
 ZED Hub comes with samples demoing its main features. Each sample is written in C++ and can be deployed as a ZED Hub app. All of them are associated to a README that explains how to deploy the app and the main step of the source code. 
@@ -29,7 +29,7 @@ A ZED Hub app is an application deployed in a Docker container on a device that 
 ## Develop a ZED Hub app
 
 In these [**ZED Hub tutorials**](./tutorials/) you will learn how to develop a ZED Hub app, exploring each feature.
-The only requirement is to setup a device to install the Edge Agent software.
+The only requirement is to setup a device to install the Edge Agent software, which is done automatically when you register your device on ZED Hub.
 
 Once Edge Agent has been installed, you can start the Edge Agent services using:
 ```
