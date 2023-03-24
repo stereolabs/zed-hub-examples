@@ -58,7 +58,7 @@ def main():
 
     # Initialize the communication to ZED Hub, with a zed camera.
     zed = sl.Camera()
-    status_iot = sliot.HubClient.connect("gps_app")
+    status_iot = sliot.HubClient.connect("gnss_app")
 
     if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status_iot)
@@ -123,15 +123,15 @@ def main():
                 altitude += random.random() / 10000 - .00005
 
                 # Send data
-                gps = {}
-                gps["layer_type"] = "geolocation"
-                gps["label"] = "GPS_data"
-                gps["position"] = {}
-                gps["position"]["latitude"] = latitude
-                gps["position"]["longitude"] = longitude
-                gps["position"]["altitude"] = altitude
+                gnss = {}
+                gnss["layer_type"] = "geolocation"
+                gnss["label"] = "GNSS_data"
+                gnss["position"] = {}
+                gnss["position"]["latitude"] = latitude
+                gnss["position"]["longitude"] = longitude
+                gnss["position"]["altitude"] = altitude
 
-                sliot.HubClient.send_data_to_peers("geolocation", json.dumps(gps))
+                sliot.HubClient.send_data_to_peers("geolocation", json.dumps(gnss))
                 prev_timestamp = current_ts
 
             # Always update Hub at the end of the grab loop

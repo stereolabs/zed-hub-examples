@@ -13,7 +13,7 @@ It consists in:
     - A custom video streamed where we highlight detected person with ```opencv```
     - Callbacks that enables / disables a few parameter : highlighting, events, telemetry, etc.
 
-- [**GPS Tracker Sample**](/samples/gps_tracker_sample/README.md) show how to send GPS data to the **Maps page** with a random walk. It consists in:
+- [**GNSS Tracker Sample**](/samples/gnss_tracker_sample/README.md) show how to send GNSS data to the **Maps page** with a random walk. It consists in:
     - A basic setup of the camera
     - A video stream
     - WebRTC messages simulating a random walk

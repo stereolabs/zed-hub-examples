@@ -13,5 +13,5 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata libx11-dev  && \
      rm -rf /var/lib/apt/lists/* && apt autoremove && apt clean
 
 #Copy your binary
-COPY GPS_Tacker_Sample /
-CMD ["/GPS_Tacker_Sample"]
+COPY GNSS_Tacker_Sample /
+CMD ["/GNSS_Tacker_Sample"]

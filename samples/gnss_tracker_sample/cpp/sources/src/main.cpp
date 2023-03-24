@@ -65,7 +65,7 @@ int main(int argc, char **argv)
     auto p_zed = std::make_shared<sl::Camera>();
 
     STATUS_CODE status_iot;
-    status_iot = HubClient::connect("gps_app");
+    status_iot = HubClient::connect("gnss_app");
     if (status_iot != STATUS_CODE::SUCCESS)
     {
         std::cout << "Initialization error " << status_iot << std::endl;
@@ -149,14 +149,14 @@ int main(int argc, char **argv)
             altitude += getRandom();
 
             // Send data
-            json gps;
-            gps["layer_type"] = "geolocation";
-            gps["label"] = "GPS_data";
-            gps["position"] = {
+            json gnss;
+            gnss["layer_type"] = "geolocation";
+            gnss["label"] = "GNSS_data";
+            gnss["position"] = {
                 {"latitude", latitude},
                 {"longitude", longitude},
                 {"altitude", altitude}};
-            HubClient::sendDataToPeers("geolocation", gps.dump());
+            HubClient::sendDataToPeers("geolocation", gnss.dump());
             prev_timestamp = current_ts;
         }
 

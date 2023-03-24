@@ -1,6 +1,6 @@
 # GNSS Tracker
 
-This sample shows how to send GPS data in a ZED Hub Application to display them in the **Map page**.
+This sample shows how to send GNSS data in a ZED Hub Application to display them in the **Map page**.
 It also explains how to generate:
 
 - **Logs** that give information about the application's status
@@ -50,7 +50,7 @@ $ cp ../parameters.json .
 Then to run your app :
 
 ```
-./GPS_Tracker_Sample
+./GNSS_Tracker_Sample
 ```
 
 To dynamically change the parameters and activate their callbacks, edit the `parameters.json` file.
@@ -60,7 +60,7 @@ To dynamically change the parameters and activate their callbacks, edit the `par
 To build your app just run:
 
 ```
-$ cd /PATH/TO/gps_tracker_sample
+$ cd /PATH/TO/gnss_tracker_sample
 $ edge_cli build
 ```
 
@@ -96,7 +96,7 @@ The logs should inform you about the app status.
 
 ### Maps
 
-The GPS data should be displayed on a map in the **Map page** on ZED Hub.
+The GNSS data should be displayed on a map in the **Map page** on ZED Hub.
 
 ### Parameters
 
@@ -140,7 +140,7 @@ The application is initialized using `HubClient::connect`, the ZED camera is sta
 
 ### Main loop
 
-- **WebRTC messages** containing GPS position (which is randomly generated) are sent to the `geolocation` label to all connected peers.
+- **WebRTC messages** containing GNSS position (which is randomly generated) are sent to the `geolocation` label to all connected peers.
 
 ```c++
 Timestamp current_ts = p_zed->getTimestamp(TIME_REFERENCE::IMAGE);
@@ -157,14 +157,14 @@ if ((uint64_t)(current_ts.getMilliseconds() >= (uint64_t)(prev_timestamp.getMill
     altitude += getRandom();
 
     // Send data
-    json gps;
-    gps["layer_type"] = "geolocation";
-    gps["label"] = "GPS_data";
-    gps["position"] = {
+    json gnss;
+    gnss["layer_type"] = "geolocation";
+    gnss["label"] = "GNSS_data";
+    gnss["position"] = {
         {"latitude", latitude},
         {"longitude", longitude},
         {"altitude", altitude}};
-    HubClient::sendDataToPeers("geolocation", gps.dump());
+    HubClient::sendDataToPeers("geolocation", gnss.dump());
     prev_timestamp = current_ts;
 }
 ```
