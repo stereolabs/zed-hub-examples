@@ -21,7 +21,6 @@
 
 import pyzed.sl as sl
 import pyzed.sl_iot as sliot
-import json
 import cv2
 
 colors = [
