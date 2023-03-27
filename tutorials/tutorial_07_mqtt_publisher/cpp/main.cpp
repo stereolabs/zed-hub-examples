@@ -28,9 +28,8 @@ using json = sl_iot::json;
 
 int main(int argc, char **argv)
 {
-
-    STATUS_CODE status_iot;
     // Initialize the communication to ZED Hub, without a zed camera.
+    STATUS_CODE status_iot;
     status_iot = HubClient::connect("pub_app");
     if (status_iot != STATUS_CODE::SUCCESS)
     {

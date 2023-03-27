@@ -18,6 +18,7 @@
 #
 ########################################################################
 
+import os
 import pyzed.sl as sl
 import pyzed.sl_iot as sliot
 
@@ -60,28 +61,43 @@ def main():
 
     # Set your parameter callback
     callback_param_led = sliot.CallbackParameters()
-    callback_param_led.set_parameter_callback("onLedStatusChange", "led_status", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    callback_param_led.set_parameter_callback("onLedStatusChange", "led_status", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
     sliot.HubClient.register_function(on_led_status_update, callback_param_led)
+    
+    # Load application parameter file in development mode
+    application_token = os.getenv("SL_APPLICATION_TOKEN")
+    if application_token == None:
+        status_iot = sliot.HubClient.load_application_parameters("parameters.json")
+        if status_iot != sliot.STATUS_CODE.SUCCESS:
+            print("parameters.json file not found or malformated")
+            exit(1)
 
     # Main loop
     while True:
+        # Grab a new frame from the ZED
         status_zed = zed.grab()
         if status_zed != sl.ERROR_CODE.SUCCESS:
             break
 
         if led_status_updated:
             curr_led_status = zed.get_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS)
-            led_status = sliot.HubClient.get_parameter_bool("led_status", sliot.PARAMETER_TYPE.DEVICE, bool(curr_led_status))
-            sliot.HubClient.report_parameter("led_status", sliot.PARAMETER_TYPE.DEVICE, led_status)
+            led_status = sliot.HubClient.get_parameter_bool("led_status", sliot.PARAMETER_TYPE.APPLICATION, bool(curr_led_status))
+            sliot.HubClient.report_parameter("led_status", sliot.PARAMETER_TYPE.APPLICATION, led_status)
             zed.set_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS, led_status)
             led_status_updated = False
 
-        # In the end of a grab(), always call a update() on the cloud.
+        # Always update Hub at the end of the grab loop
+        # without giving a sl::Mat, it will retrieve the RGB image automatically.
         sliot.HubClient.update(zed)
 
-    print("Grab error ", status_zed)
+    # Handling camera error
+    if status_zed != sl.ERROR_CODE.SUCCESS:
+        sliot.HubClient.send_log("Grab failed, restarting camera. " + str(status_zed),
+                                sliot.LOG_LEVEL.ERROR)
+        zed.close()
+        sl.Camera.reboot(zed.get_camera_information().serial_number)
     # Close the camera
-    if zed.is_opened():
+    elif zed.is_opened():
         zed.close()
 
     # Close the communication with ZED Hub properly.

@@ -71,7 +71,7 @@ The **Object detection** is enabled with `enableObjectDetection`.Note that the t
     sl::ObjectDetectionParameters obj_det_params;
     obj_det_params.image_sync = true;
     obj_det_params.enable_tracking = false;
-    obj_det_params.detection_model = sl::DETECTION_MODEL::MULTI_CLASS_BOX;
+    obj_det_params.detection_model = sl::OBJECT_DETECTION_MODEL::MULTI_CLASS_BOX_FAST;
     zed_error = p_zed->enableObjectDetection(obj_det_params);
 ```
 

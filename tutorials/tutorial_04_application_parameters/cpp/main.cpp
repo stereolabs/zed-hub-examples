@@ -78,11 +78,11 @@ int main(int argc, char **argv)
 
     // Set your parameter callback
     CallbackParameters callback_param_led;
-    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
     HubClient::registerFunction(onLedStatusUpdate, callback_param_led);
 
     // Load application parameter file in development mode
-    char *application_token = ::getenv("SL_APPLICATION_TOKEN");
+    char *application_token = getenv("SL_APPLICATION_TOKEN");
     if (!application_token)
     {
         status_iot = HubClient::loadApplicationParameters("parameters.json");
@@ -104,10 +104,11 @@ int main(int argc, char **argv)
 
         if (led_status_updated)
         {
-            int curr_led_status = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS);
-            bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, curr_led_status);
+            int curr_led_status;
+            status_zed = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, curr_led_status);
+            bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, curr_led_status);            
             p_zed->setCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, led_status);
-            HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, led_status);
+            HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, led_status);
             led_status_updated = false;
         }
 
@@ -121,7 +122,7 @@ int main(int argc, char **argv)
     {
         HubClient::sendLog("Grab failed, restarting camera. " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         p_zed->close();
-        sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
+        sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
     // Close the camera
     else if (p_zed->isOpened())

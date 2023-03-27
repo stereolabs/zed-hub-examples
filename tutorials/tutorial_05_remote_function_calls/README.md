@@ -115,7 +115,6 @@ Then the remote function is registered: the function `additionCallback` associat
     callback_params.setRemoteCallback("tuto05_add", CALLBACK_TYPE::ON_REMOTE_CALL);
     // Register your callback function
     HubClient::registerFunction(additionCallback, callback_params);
-    std::cout << "Waiting for remote function to be called." << std::endl;
 ```
 
 
@@ -155,8 +154,8 @@ Then the remote function can use these parameters to do anything. In our case th
 
 ```c++
     // Check if parameters are present and valid
-    if (params.find("num1") != params.end() && params["num1"].is_number_integer() &&
-        params.find("num2") != params.end() && params["num2"].is_number_integer())
+    if (params.contains("num1") && params["num1"].is_number_integer() &&
+        params.contains("num2") && params["num2"].is_number_integer())
     {
         int num1 = params["num1"].get<int>();
         int num2 = params["num2"].get<int>();
@@ -190,9 +189,10 @@ void additionCallback(FunctionEvent &event)
     // Get the parameters of the remote function call
     std::cout << "function called !" << std::endl;
     sl_iot::json params = event.getEventParameters();
+
     // Check if parameters are present and valid
-    if (params.find("num1") != params.end() && params["num1"].is_number_integer() &&
-        params.find("num2") != params.end() && params["num2"].is_number_integer())
+    if (params.contains("num1") && params["num1"].is_number_integer() &&
+        params.contains("num2") && params["num2"].is_number_integer())
     {
         int num1 = params["num1"].get<int>();
         int num2 = params["num2"].get<int>();

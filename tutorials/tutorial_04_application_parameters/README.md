@@ -76,7 +76,7 @@ We can do this in three steps:
 
 ```c++
     // Load application parameter file in development mode
-    char *application_token = ::getenv("SL_APPLICATION_TOKEN");
+    char *application_token = getenv("SL_APPLICATION_TOKEN");
     if (!application_token)
     {
         status_iot = HubClient::loadApplicationParameters("parameters.json");
@@ -93,8 +93,7 @@ We can do this in three steps:
 
 ```c++
     CallbackParameters callback_param_led;
-    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
-
+    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
 ```
 
 - declare this association to the cloud :
@@ -107,7 +106,7 @@ So we finally have:
 ```c++
     // Set your parameter callback
     CallbackParameters callback_param_led;
-    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
     HubClient::registerFunction(onLedStatusUpdate, callback_param_led);
 ```
 
@@ -143,7 +142,7 @@ Not that the callback name `onLedStatusUpdate` must correspond to the first para
 
 ```c++
     CallbackParameters callback_param_led;
-    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
 
 ```
 
@@ -157,7 +156,7 @@ In the main loop of the application:
 > **Note**: `led_status` is the parameter id defined in the `app.json` file.
   `curr_led_status` is used as default value in the case where `getParameter` fails.
 ```c++
-    bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, curr_led_status);
+    bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, curr_led_status);
 
 ```
 
@@ -168,9 +167,9 @@ In the main loop of the application:
     if (led_status_updated)
     {
         int curr_led_status = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS);
-        bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, curr_led_status);
+        bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, curr_led_status);
         p_zed->setCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, led_status);
-        HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, led_status);
+        HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, led_status);
         led_status_updated = false;
     }
 ```

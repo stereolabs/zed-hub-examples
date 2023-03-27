@@ -130,14 +130,14 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    // Enable the Objects detection module
-    std::cout << "Enable Object Detection Module" << std::endl;
-    sl::ObjectDetectionParameters obj_det_params;
-    obj_det_params.enable_tracking = true;
-    obj_det_params.enable_body_fitting = false; // smooth skeletons moves
-    obj_det_params.body_format = BODY_FORMAT::POSE_34;
-    obj_det_params.detection_model = DETECTION_MODEL::HUMAN_BODY_ACCURATE;
-    zed_error = p_zed->enableObjectDetection(obj_det_params);
+    // Enable the Body Tracking module
+    std::cout << "Enable Body Tracking Module" << std::endl;
+    sl::BodyTrackingParameters body_track_params;
+    body_track_params.enable_tracking = true;
+    body_track_params.enable_body_fitting = false; // smooth skeletons moves
+    body_track_params.body_format = BODY_FORMAT::BODY_38;
+    body_track_params.detection_model = BODY_TRACKING_MODEL::HUMAN_BODY_ACCURATE;
+    zed_error = p_zed->enableBodyTracking(body_track_params);
     if (zed_error != ERROR_CODE::SUCCESS)
     {
         std::cout << sl::toVerbose(zed_error) << "\nExit program." << std::endl;
@@ -149,9 +149,9 @@ int main(int argc, char **argv)
     RuntimeParameters rt_params;
     rt_params.measure3D_reference_frame = REFERENCE_FRAME::WORLD;
 
-    // Object Detection runtime parameters
-    ObjectDetectionRuntimeParameters obj_det_rt_params;
-    obj_det_rt_params.detection_confidence_threshold = 50;
+    // Body Tracking runtime parameters
+    BodyTrackingRuntimeParameters body_track_rt_params;
+    body_track_rt_params.detection_confidence_threshold = 50;
 
     // Images
     sl::Mat image(1280, 720, MAT_TYPE::U8_C4);
@@ -159,12 +159,12 @@ int main(int argc, char **argv)
     cv_image = slMat2cvMat(image);
 
     // 2D Drawing helpers
-    Resolution camera_resolution = p_zed->getCameraInformation().camera_resolution;
+    Resolution camera_resolution = p_zed->getCameraInformation().camera_configuration.resolution;
     sl::float2 img_scale((float)cv_image.cols / (float)camera_resolution.width, (float)cv_image.rows / (float)camera_resolution.height);
     cv::Rect roi_render(0, 0, cv_image.cols, cv_image.rows);
 
-    // Objects
-    sl::Objects objects;
+    // Bodies to be streamed to ZED Hub
+    sl::Bodies bodies;
 
     // Main loop
     while (true)
@@ -177,19 +177,19 @@ int main(int argc, char **argv)
         // Retrieve left image
         p_zed->retrieveImage(image, VIEW::LEFT, MEM::CPU, image.getResolution());
         
-        // Retrieve objects
-        p_zed->retrieveObjects(objects, obj_det_rt_params);
+        // Retrieve bodies
+        p_zed->retrieveBodies(bodies, body_track_rt_params);
 
         // Draw 2D skeletons
-        for (int i = 0; i < objects.object_list.size(); i++)
+        for (int i = 0; i < bodies.body_list.size(); i++)
         {
-            sl::ObjectData& obj = (objects.object_list[i]);
-            if (obj.tracking_state == sl::OBJECT_TRACKING_STATE::OK)
+            sl::BodyData& body = (bodies.body_list[i]);
+            if (body.tracking_state == sl::OBJECT_TRACKING_STATE::OK)
             {
-                cv::Scalar color = colors[obj.id % colors.size()];
+                cv::Scalar color = colors[body.id % colors.size()];
 
                 // Skeleton joints
-                for (auto& kp : obj.keypoint_2d)
+                for (auto& kp : body.keypoint_2d)
                 {
                     auto cv_kp = cvt(kp, img_scale);
                     if (roi_render.contains(cv_kp))
@@ -197,10 +197,10 @@ int main(int argc, char **argv)
                 }
 
                 // Skeleton bones
-                for (auto& limb : BODY_BONES_POSE_34)
+                for (auto& limb : BODY_38_BONES)
                 {
-                    auto kp_a = cvt(obj.keypoint_2d[getIdx(limb.first)], img_scale);
-                    auto kp_b = cvt(obj.keypoint_2d[getIdx(limb.second)], img_scale);
+                    auto kp_a = cvt(body.keypoint_2d[getIdx(limb.first)], img_scale);
+                    auto kp_b = cvt(body.keypoint_2d[getIdx(limb.second)], img_scale);
                     if (roi_render.contains(kp_a) && roi_render.contains(kp_b))
                         cv::line(cv_image, kp_a, kp_b, color, 1);                                
                 }
@@ -211,13 +211,13 @@ int main(int argc, char **argv)
         // Update the video stream/recording
         HubClient::update(p_zed, image);
 
-        // Update the sl::Objects stream
-        HubClient::update(p_zed, objects);
+        // Update the sl::Bodies stream
+        HubClient::update(p_zed, bodies);
     }
 
     // Clear objects
     image.free();
-    objects.object_list.clear();
+    bodies.body_list.clear();
     
     // Handling camera error
     if (status_zed != ERROR_CODE::SUCCESS)

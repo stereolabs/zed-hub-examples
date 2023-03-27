@@ -66,8 +66,14 @@ def main():
         # without giving a registered camera, it will try to update all registered cameras.
         sliot.HubClient.update(zed, depth)
 
+    # Handling camera error
+    if status_zed != sl.ERROR_CODE.SUCCESS:
+        sliot.HubClient.send_log("Grab failed, restarting camera. " + str(status_zed),
+                                sliot.LOG_LEVEL.ERROR)
+        zed.close()
+        sl.Camera.reboot(zed.get_camera_information().serial_number)
     # Close the camera
-    if zed.is_opened():
+    elif zed.is_opened():
         zed.close()
 
     # Close the communication with ZED Hub properly.

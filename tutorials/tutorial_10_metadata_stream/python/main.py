@@ -82,14 +82,14 @@ def main():
         zed.close()
         exit(1)
     
-    # Enable the Objects detection module
-    print("Enable Object Detection Module")
-    obj_det_params = sl.ObjectDetectionParameters()
-    obj_det_params.enable_tracking = True
-    obj_det_params.enable_body_fitting = False; # smooth skeletons moves
-    obj_det_params.body_format = sl.BODY_FORMAT.POSE_34
-    obj_det_params.detection_model = sl.DETECTION_MODEL.HUMAN_BODY_ACCURATE
-    err = zed.enable_object_detection(obj_det_params)
+    # Enable the Body Tracking module
+    print("Enable Body Tracking Module")
+    body_track_params = sl.BodyTrackingParameters()
+    body_track_params.enable_tracking = True
+    body_track_params.enable_body_fitting = False; # smooth skeletons moves
+    body_track_params.body_format = sl.BODY_FORMAT.BODY_38
+    body_track_params.detection_model = sl.BODY_TRACKING_MODEL.HUMAN_BODY_ACCURATE
+    err = zed.enable_body_tracking(body_track_params)
     if err != sl.ERROR_CODE.SUCCESS:
         print("Error:", err)
         print("Exit program.")
@@ -100,20 +100,20 @@ def main():
     rt_params = sl.RuntimeParameters()
     rt_params.measure3D_reference_frame = sl.REFERENCE_FRAME.WORLD
 
-    # Object Detection runtime parameters
-    obj_det_rt_params = sl.ObjectDetectionRuntimeParameters()
-    obj_det_rt_params.detection_confidence_threshold = 50
+    # Body Tracking runtime parameters
+    body_track_rt_params = sl.BodyTrackingRuntimeParameters()
+    body_track_rt_params.detection_confidence_threshold = 50
     
     # Image
     image = sl.Mat(1280, 720, sl.MAT_TYPE.U8_C4)
     cv_image = image.get_data()
 
     # 2D Drawing helpers
-    camera_resolution = zed.get_camera_information().camera_resolution
+    camera_resolution = zed.get_camera_information().camera_configuration.resolution
     img_scale = [cv_image.shape[1] / camera_resolution.width, cv_image.shape[0] / camera_resolution.height]
 
-    # Objects to be streamed to ZED Hub
-    objects = sl.Objects()
+    # Bodies to be streamed to ZED Hub
+    bodies = sl.Bodies()
 
     # Main loop
     while True:
@@ -126,25 +126,25 @@ def main():
         # Retrieve left image
         zed.retrieve_image(image, sl.VIEW.LEFT)
 
-        # Retrieve objects
-        zed.retrieve_objects(objects, obj_det_rt_params)
+        # Retrieve bodies
+        zed.retrieve_bodies(bodies, body_track_rt_params)
 
         # Draw 2D skeletons
-        for obj in objects.object_list:
-            if obj.tracking_state == sl.OBJECT_TRACKING_STATE.OK:
-                color = colors[obj.id % len(colors)]
+        for body in bodies.body_list:
+            if body.tracking_state == sl.OBJECT_TRACKING_STATE.OK:
+                color = colors[body.id % len(colors)]
                 
                 # Skeleton joints
-                for kp in obj.keypoint_2d:
+                for kp in body.keypoint_2d:
                     cv_kp = cvt(kp, img_scale)
                 
                     if cv_kp[0] < cv_image.shape[1] and cv_kp[1] < cv_image.shape[0]:
                         cv2.circle(cv_image, (int(cv_kp[0]), int(cv_kp[1])), 3, color, -1)
 
                 # Skeleton bones
-                for limb in sl.BODY_BONES_POSE_34:
-                    kp_a = cvt(obj.keypoint_2d[sl.get_idx_34(limb[0])], img_scale)
-                    kp_b = cvt(obj.keypoint_2d[sl.get_idx_34(limb[1])], img_scale)
+                for limb in sl.BODY_38_BONES:
+                    kp_a = cvt(body.keypoint_2d[sl.get_idx_34(limb[0])], img_scale)
+                    kp_b = cvt(body.keypoint_2d[sl.get_idx_34(limb[1])], img_scale)
 
                     if kp_a[0] < cv_image.shape[1] and kp_a[1] < cv_image.shape[0] and kp_b[0] < cv_image.shape[1] and kp_b[1] < cv_image.shape[0]:
                         cv2.line(cv_image, (int(kp_a[0]), int(kp_a[1])), (int(kp_b[0]), int(kp_b[1])), color, 1)
@@ -153,8 +153,8 @@ def main():
         # Update the video stream/recording
         sliot.HubClient.update(zed, image)
 
-        # Update the sl.Objects stream
-        sliot.HubClient.update_objects(zed, objects)
+        # Update the sl.Bodies stream
+        sliot.HubClient.update_bodies(zed, bodies)
     
     # Handling camera error
     if status_zed != sl.ERROR_CODE.SUCCESS:

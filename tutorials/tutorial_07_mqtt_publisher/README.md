@@ -47,6 +47,8 @@ The app publishes a basic message on the MQTT topic `/v1/local_network/my_custom
 First the app must be **initialized**. It allows to connect the app to the local broker.
 
 ```c++
+    // Initialize the communication to ZED Hub, without a zed camera.
+    STATUS_CODE status_iot;
     status_iot = HubClient::connect("pub_app");
     if (status_iot != STATUS_CODE::SUCCESS)
     {
