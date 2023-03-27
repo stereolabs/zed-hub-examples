@@ -20,7 +20,6 @@
 
 import pyzed.sl as sl
 import pyzed.sl_iot as sliot
-import json
 import os
 from threading import Lock
 
@@ -208,20 +207,27 @@ def main():
     global zed
     global init_params
 
-    # Initialize the communication to ZED Hub, with a zed camera.
+    # Create ZED Object
     zed = sl.Camera()
-    status_iot = sliot.HubClient.connect("camera_viewer_sample")
 
+    # Initialize the communication to ZED Hub, with a zed camera.
+    status_iot = sliot.HubClient.connect("camera_viewer_sample")
     if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status_iot)
         exit(1)
 
-    status_iot = sliot.HubClient.load_application_parameters("parameters.json")
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("parameters.json file not found or malformated", status_iot)
-        exit(1)
+    # Load application parameter file in development mode
+    application_token = os.getenv("SL_APPLICATION_TOKEN")
+    if application_token == None:
+        status_iot = sliot.HubClient.load_application_parameters("parameters.json")
+        if status_iot != sliot.STATUS_CODE.SUCCESS:
+            print("parameters.json file not found or malformated")
+            exit(1)
 
-    # Setup init parameters
+    # Init logger (optional)
+    sliot.HubClient.set_log_level_threshold(sliot.LOG_LEVEL.DEBUG, sliot.LOG_LEVEL.DEBUG)
+
+    # Setup Init Parameters
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.HD2K
     init_params.depth_mode = sl.DEPTH_MODE.NONE
@@ -232,10 +238,11 @@ def main():
     update_init_params_from_cloud(init_params)
 
     # Override parameters
+    init_params.sdk_verbose = True
     init_params.sensors_required = True
 
+    # Open the ZED camera
     status = zed.open(init_params)
-
     if status != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log(
             "Camera initialization error : " + str(status), sliot.LOG_LEVEL.ERROR)

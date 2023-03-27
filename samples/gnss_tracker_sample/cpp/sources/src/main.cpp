@@ -64,6 +64,7 @@ int main(int argc, char **argv)
     // Create camera object
     auto p_zed = std::make_shared<sl::Camera>();
 
+    // Initialize the communication to ZED Hub, with a zed camera.
     STATUS_CODE status_iot;
     status_iot = HubClient::connect("gnss_app");
     if (status_iot != STATUS_CODE::SUCCESS)
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
     }
 
     // Load application parameter file in development mode
-    char *application_token = ::getenv("SL_APPLICATION_TOKEN");
+    char *application_token = getenv("SL_APPLICATION_TOKEN");
     if (!application_token)
     {
         status_iot = HubClient::loadApplicationParameters("parameters.json");
@@ -85,6 +86,7 @@ int main(int argc, char **argv)
     }
 
     HubClient::setLogLevelThreshold(LOG_LEVEL::DEBUG, LOG_LEVEL::INFO);
+    
     // Open the ZED camera
     sl::InitParameters initParameters;
     sl::ERROR_CODE status_zed = p_zed->open(initParameters);

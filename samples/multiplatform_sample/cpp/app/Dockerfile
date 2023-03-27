@@ -7,13 +7,13 @@ COPY ./sources /home/
 RUN mkdir /home/build
 WORKDIR /home/build
 RUN cmake -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -DCMAKE_CXX_FLAGS="-Wl,--allow-shlib-undefined" .. && \
-make -j8 && mv multiplatform_sample /
+make -j8 && mv Multiplatform_Sample /
 WORKDIR /
 
 ## Output part -- send files out of docker context
 ARG RUNTIME_IMAGE
 FROM ${RUNTIME_IMAGE}
 
-COPY --from=builder /multiplatform_sample ./
+COPY --from=builder /Multiplatform_Sample ./
  
-CMD ["/multiplatform_sample"]
+CMD ["/Multiplatform_Sample"]

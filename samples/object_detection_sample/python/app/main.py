@@ -22,7 +22,6 @@ import pyzed.sl as sl
 import pyzed.sl_iot as sliot
 import cv2
 import numpy as np
-import json
 import os
 
 # Parameters, defined as global variables
@@ -80,13 +79,22 @@ def main():
     recordTelemetry = True
     telemetryFreq = 10.0  # in seconds
 
-    # Initialize the communication to ZED Hub, with a zed camera.
+    # Create camera object
     zed = sl.Camera()
-    status_iot = sliot.HubClient.connect("object_app")
 
+    # Initialize the communication to ZED Hub, with a zed camera.
+    status_iot = sliot.HubClient.connect("object_app")
     if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status_iot)
         exit(1)
+
+    # Load application parameter file in development mode
+    application_token = os.getenv("SL_APPLICATION_TOKEN")
+    if application_token == None:
+        status_iot = sliot.HubClient.load_application_parameters("parameters.json")
+        if status_iot != sliot.STATUS_CODE.SUCCESS:
+            print("parameters.json file not found or malformated")
+            exit(1)
 
     sliot.HubClient.set_log_level_threshold(
         sliot.LOG_LEVEL.DEBUG, sliot.LOG_LEVEL.INFO)
@@ -122,8 +130,6 @@ def main():
     # Enable the Objects detection module
     object_detection_params = sl.ObjectDetectionParameters()
     object_detection_params.image_sync = True
-    object_detection_params.enable_tracking = False
-    object_detection_params.detection_model = sl.DETECTION_MODEL.MULTI_CLASS_BOX
     status_zed = zed.enable_object_detection(object_detection_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log(
@@ -180,7 +186,7 @@ def main():
     prev_timestamp = zed.get_timestamp(sl.TIME_REFERENCE.CURRENT)
 
     image_left_custom = sl.Mat(1280, 720, sl.MAT_TYPE.U8_C4)
-    image_raw_res = zed.get_camera_information().camera_resolution
+    image_raw_res = zed.get_camera_information().camera_configuration.resolution
 
     # Main loop
     while True:
