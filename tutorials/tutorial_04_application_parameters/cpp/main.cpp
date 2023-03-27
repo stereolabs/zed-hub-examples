@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
     // Set your parameter callback
     CallbackParameters callback_param_led;
-    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
+    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
     HubClient::registerFunction(onLedStatusUpdate, callback_param_led);
 
     // Load application parameter file in development mode
@@ -106,9 +106,9 @@ int main(int argc, char **argv)
         {
             int curr_led_status;
             status_zed = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, curr_led_status);
-            bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, curr_led_status);            
+            bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, curr_led_status);            
             p_zed->setCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, led_status);
-            HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::APPLICATION, led_status);
+            HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, led_status);
             led_status_updated = false;
         }
 
