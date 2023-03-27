@@ -145,7 +145,7 @@ def main():
                     kp_a = cvt(body.keypoint_2d[sl.get_idx_34(limb[0])], img_scale)
                     kp_b = cvt(body.keypoint_2d[sl.get_idx_34(limb[1])], img_scale)
 
-                    if kp_a[0] < cv_image.shape[1] and kp_a[1] < cv_image.shape[0] and kp_b[0] < cv_image.shape[1] and kp_b[1] < cv_image.shape[0]:
+                    if 0 < kp_a[0] < cv_image.shape[1] and 0 < kp_a[1] < cv_image.shape[0] and 0 < kp_b[0] < cv_image.shape[1] and 0 < kp_b[1] < cv_image.shape[0]:
                         cv2.line(cv_image, (int(kp_a[0]), int(kp_a[1])), (int(kp_b[0]), int(kp_b[1])), color, 1)
 
         # Always update Hub at the end of the grab loop to stream data to ZED Hub
