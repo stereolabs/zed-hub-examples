@@ -162,7 +162,7 @@ def main():
         sl.Camera.reboot(zed.get_camera_information().serial_number)
     
     # Close the camera
-    elif zed.is_opened():
+    if zed.is_opened():
         zed.close()
 
     # Close the communication with ZED Hub properly.

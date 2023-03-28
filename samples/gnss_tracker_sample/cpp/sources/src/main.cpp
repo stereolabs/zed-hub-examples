@@ -173,8 +173,9 @@ int main(int argc, char **argv)
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
+    
     // Close the camera
-    else if (p_zed->isOpened())
+    if (p_zed->isOpened())
         p_zed->close();
 
     status_iot = HubClient::disconnect();
