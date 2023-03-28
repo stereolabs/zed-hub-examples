@@ -22,13 +22,23 @@ import os
 import pyzed.sl as sl
 import pyzed.sl_iot as sliot
 
-led_status_updated = False
+led_status_updated = True
+app_param = ""
 
 
+# Callback on led status update, it sets a boolean to true to turn off/on the led status in the main loop.
 def on_led_status_update(event):
     global led_status_updated
+    event.status = 0
     led_status_updated = True
     print("led status updated !")
+
+# Callback on app_param update, it log its new value
+def on_app_param_update(event):
+    global app_param
+    event.status = 0
+    app_param = sliot.HubClient.get_parameter_string("app_param", sliot.PARAMETER_TYPE.APPLICATION, app_param)
+    print("App Param updated:", app_param)
 
 
 def main():
@@ -59,11 +69,6 @@ def main():
         print("Camera registration error ", status_iot)
         exit(1)
 
-    # Set your parameter callback
-    callback_param_led = sliot.CallbackParameters()
-    callback_param_led.set_parameter_callback("onLedStatusChange", "led_status", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
-    sliot.HubClient.register_function(on_led_status_update, callback_param_led)
-    
     # Load application parameter file in development mode
     application_token = os.getenv("SL_APPLICATION_TOKEN")
     if application_token == None:
@@ -72,6 +77,15 @@ def main():
             print("parameters.json file not found or malformated")
             exit(1)
 
+    # Set your parameter callback
+    callback_param_led = sliot.CallbackParameters()
+    callback_param_led.set_parameter_callback("on_led_status_update", "led_status", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.DEVICE)
+    sliot.HubClient.register_function(on_led_status_update, callback_param_led)
+
+    callback_app_param = sliot.CallbackParameters()
+    callback_app_param.set_parameter_callback("on_app_param_update", "app_param", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE, sliot.PARAMETER_TYPE.APPLICATION)
+    sliot.HubClient.register_function(on_app_param_update, callback_app_param)
+    
     # Main loop
     while True:
         # Grab a new frame from the ZED
@@ -81,8 +95,8 @@ def main():
 
         if led_status_updated:
             curr_led_status = zed.get_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS)
-            led_status = sliot.HubClient.get_parameter_bool("led_status", sliot.PARAMETER_TYPE.APPLICATION, bool(curr_led_status))
-            sliot.HubClient.report_parameter("led_status", sliot.PARAMETER_TYPE.APPLICATION, led_status)
+            led_status = sliot.HubClient.get_parameter_bool("led_status", sliot.PARAMETER_TYPE.DEVICE, bool(curr_led_status))
+            sliot.HubClient.report_parameter("led_status", sliot.PARAMETER_TYPE.DEVICE, led_status)
             zed.set_camera_settings(sl.VIDEO_SETTINGS.LED_STATUS, led_status)
             led_status_updated = False
 

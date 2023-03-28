@@ -31,7 +31,8 @@ using namespace sl;
 using namespace sl_iot;
 using json = sl_iot::json;
 
-bool led_status_updated = false;
+bool led_status_updated = true;
+string app_param = "";
 
 // Callback on led status update, it sets a boolean to true to turn off/on the led status in the main loop.
 void onLedStatusUpdate(FunctionEvent &event)
@@ -39,6 +40,14 @@ void onLedStatusUpdate(FunctionEvent &event)
     event.status = 0;
     led_status_updated = true;
     std::cout << "Led Status updated !" << std::endl;
+}
+
+// Callback on app_param update, it log its new value
+void onAppParamUpdate(FunctionEvent &event)
+{
+    event.status = 0;
+    app_param = HubClient::getParameter<std::string>("app_param", PARAMETER_TYPE::APPLICATION, app_param);
+    std::cout << "App Param updated: " << app_param << std::endl;
 }
 
 int main(int argc, char **argv)
@@ -76,11 +85,6 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    // Set your parameter callback
-    CallbackParameters callback_param_led;
-    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
-    HubClient::registerFunction(onLedStatusUpdate, callback_param_led);
-
     // Load application parameter file in development mode
     char *application_token = getenv("SL_APPLICATION_TOKEN");
     if (!application_token)
@@ -94,6 +98,15 @@ int main(int argc, char **argv)
         }
     }
 
+    // Set your parameter callback
+    CallbackParameters callback_param_led;
+    callback_param_led.setParameterCallback("onLedStatusChange", "led_status", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    HubClient::registerFunction(onLedStatusUpdate, callback_param_led);
+
+    CallbackParameters callback_app_param;
+    callback_app_param.setParameterCallback("onAppParamUpdate", "app_param", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::APPLICATION);
+    HubClient::registerFunction(onAppParamUpdate, callback_app_param);
+
     // Main loop
     while (true)
     {
@@ -106,7 +119,7 @@ int main(int argc, char **argv)
         {
             int curr_led_status;
             status_zed = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, curr_led_status);
-            bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, curr_led_status);            
+            bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, curr_led_status);
             p_zed->setCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, led_status);
             HubClient::reportParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, led_status);
             led_status_updated = false;
