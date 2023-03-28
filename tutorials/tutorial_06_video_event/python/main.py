@@ -108,7 +108,6 @@ def main():
             event_params = sliot.EventParameters()
             event_params.timestamp = current_ts.get_milliseconds()
             event_params.reference = event_reference
-            event_params.retention = 5
             event_label = "People detection"
             event_to_send = {}
             event_to_send["message"] = "Current event as reference : " + \
