@@ -23,10 +23,11 @@ import pyzed.sl_iot as sliot
 
 
 def main():
-    # Initialize the communication to ZED Hub, with a zed camera.
+    # Create camera object
     zed = sl.Camera()
-    status_iot = sliot.HubClient.connect("event_app")
 
+    # Initialize the communication to ZED Hub, with a zed camera.
+    status_iot = sliot.HubClient.connect("event_app")
     if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status_iot)
         exit(1)
@@ -35,7 +36,6 @@ def main():
     init_params = sl.InitParameters()
     init_params.camera_resolution = sl.RESOLUTION.HD2K
     init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE
-
     status_zed = zed.open(init_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log(
@@ -55,14 +55,14 @@ def main():
     status_zed = zed.enable_positional_tracking(track_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log(
-            "Positionnal tracking initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+            "Positional tracking initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
         exit(1)
 
     # Enable the Objects detection module
     object_detection_params = sl.ObjectDetectionParameters()
     object_detection_params.image_sync = True
     object_detection_params.enable_tracking = False
-    object_detection_params.detection_model = sl.DETECTION_MODEL.MULTI_CLASS_BOX
+    object_detection_params.detection_model = sl.OBJECT_DETECTION_MODEL.MULTI_CLASS_BOX_FAST
     status_zed = zed.enable_object_detection(object_detection_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
         sliot.HubClient.send_log(
@@ -108,7 +108,6 @@ def main():
             event_params = sliot.EventParameters()
             event_params.timestamp = current_ts.get_milliseconds()
             event_params.reference = event_reference
-            event_params.retention = 5
             event_label = "People detection"
             event_to_send = {}
             event_to_send["message"] = "Current event as reference : " + \
@@ -134,7 +133,13 @@ def main():
         # In the end of a grab(), always call a update() on the cloud.
         sliot.HubClient.update(zed)
 
-    print("Grab error ", status_zed)
+    # Handling camera error
+    if status_zed != sl.ERROR_CODE.SUCCESS:
+        sliot.HubClient.send_log("Grab failed, restarting camera. " + str(status_zed),
+                                sliot.LOG_LEVEL.ERROR)
+        zed.close()
+        sl.Camera.reboot(zed.get_camera_information().serial_number)
+        
     # Close the camera
     if zed.is_opened():
         zed.close()

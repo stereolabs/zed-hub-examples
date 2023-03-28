@@ -28,7 +28,7 @@ using json = sl_iot::json;
 #include <chrono>
 #include <thread>
 
-// Secondary streams' loop to grab image
+// Streams' loop to grab image
 void stream_loop(const std::shared_ptr<Camera> &p_zed, bool &run)
 {
     Mat zed_image(1280, 720, MAT_TYPE::U8_C4);
@@ -48,8 +48,8 @@ void stream_loop(const std::shared_ptr<Camera> &p_zed, bool &run)
 
 int main(int argc, char **argv)
 {
-    STATUS_CODE status_iot;
     // Initialize the communication to ZED Hub
+    STATUS_CODE status_iot;
     status_iot = HubClient::connect("multi_stream_tutorial");
     if (status_iot != STATUS_CODE::SUCCESS)
     {
@@ -90,7 +90,7 @@ int main(int argc, char **argv)
         }
         else
         {
-            std::cout << " Error on camera " << i << " : " << err << std::endl;
+            std::cout << "Error on camera " << i << " : " << err << std::endl;
             throw(new std::exception());
         }
 
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 
         // On Ubuntu desktop, on consumer-level GPUs, you don't have enough hardware encoder to stream multiple devices
         // and to record at the same time. https://en.wikipedia.org/wiki/Nvidia_NVENC
-        // On jetsons or on business-grade gpus, you can do whatever you want.
+        // On Jetsons or on business-grade gpus, you can do whatever you want.
         updateParameters.enable_recording = false;
         status_iot = HubClient::registerCamera(zeds[i], updateParameters);
         if (status_iot != STATUS_CODE::SUCCESS)
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // Thread loops for secondary streams
+    // Thread loops for all streams
     bool run_zeds = true;
     std::vector<thread> thread_pool(nb_detected_zed);
     for (int i = 0; i < nb_detected_zed; i++)

@@ -48,7 +48,8 @@ void onLedStatusUpdate(FunctionEvent &event)
 
     sdk_guard.lock();
     // Use current status as default
-    int curr_led_status = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS);
+    int curr_led_status;
+    p_zed->getCameraSettings(sl::VIDEO_SETTINGS::LED_STATUS, curr_led_status);
 
     // Get `led_status` parameter from cloud and set it on camera
     bool led_status = HubClient::getParameter<bool>("led_status", PARAMETER_TYPE::DEVICE, curr_led_status);
@@ -69,7 +70,8 @@ void onGammaUpdate(FunctionEvent &event)
 
     sdk_guard.lock();
     // Use current parameter as default
-    int curr_gamma = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::GAMMA);
+    int curr_gamma;
+    p_zed->getCameraSettings(sl::VIDEO_SETTINGS::GAMMA, curr_gamma);
 
     // Get `camera_status` parameter from cloud and set it on camera
     int gamma = HubClient::getParameter<int>("camera_gamma", PARAMETER_TYPE::DEVICE, curr_gamma);
@@ -91,7 +93,8 @@ void onGainUpdate(FunctionEvent &event)
 
     sdk_guard.lock();
     // Use current parameter as default
-    int curr_gain = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::GAIN);
+    int curr_gain;
+    p_zed->getCameraSettings(sl::VIDEO_SETTINGS::GAIN, curr_gain);
 
     // Get `gain` parameter from cloud and set it on camera
     int gain = HubClient::getParameter<int>("camera_gain", PARAMETER_TYPE::DEVICE, curr_gain);
@@ -114,7 +117,8 @@ void onAutoExposureUpdate(FunctionEvent &event)
     sdk_guard.lock();
 
     // Use current parameter as default
-    int curr_auto_exposure = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::AEC_AGC);
+    int curr_auto_exposure;
+    p_zed->getCameraSettings(sl::VIDEO_SETTINGS::AEC_AGC, curr_auto_exposure);
 
     // Get `auto_exposure` parameter from cloud and set it on camera
     bool auto_exposure = HubClient::getParameter<bool>("camera_auto_exposure", PARAMETER_TYPE::DEVICE, curr_auto_exposure);
@@ -137,7 +141,8 @@ void onExposureUpdate(FunctionEvent &event)
     sdk_guard.lock();
 
     // Use current parameter as default
-    int curr_exposure = p_zed->getCameraSettings(sl::VIDEO_SETTINGS::EXPOSURE);
+    int curr_exposure;
+    p_zed->getCameraSettings(sl::VIDEO_SETTINGS::EXPOSURE, curr_exposure);
 
     // Get `exposure` parameter from cloud and set it on camera
     int exposure = HubClient::getParameter<int>("camera_exposure", PARAMETER_TYPE::DEVICE, curr_exposure);
@@ -208,6 +213,7 @@ int main(int argc, char **argv)
     // Create ZED Object
     p_zed.reset(new sl::Camera());
 
+    // Initialize the communication to ZED Hub, with a zed camera.
     STATUS_CODE status_iot;
     status_iot = HubClient::connect("camera_viewer");
     if (status_iot != STATUS_CODE::SUCCESS)
@@ -217,7 +223,7 @@ int main(int argc, char **argv)
     }
 
     // Load application parameter file in development mode
-    char *application_token = ::getenv("SL_APPLICATION_TOKEN");
+    char *application_token = getenv("SL_APPLICATION_TOKEN");
     if (!application_token)
     {
         status_iot = HubClient::loadApplicationParameters("parameters.json");
@@ -242,10 +248,11 @@ int main(int argc, char **argv)
     // Get Init Parameters from cloud parameters
     updateInitParamsFromCloud(initParameters);
 
+    // Override parameters
     initParameters.sdk_verbose = true;
     initParameters.sensors_required = true;
 
-    // Open init parameters
+    // Open the ZED camera
     sl::ERROR_CODE err_zed = p_zed->open(initParameters);
     if (err_zed != sl::ERROR_CODE::SUCCESS)
     {

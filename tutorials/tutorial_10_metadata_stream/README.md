@@ -45,11 +45,11 @@ Then run your app :
 This tutorial is focused on retrieving and streaming 3D skeleton data from a ZED camera. Retrieving this data is done through the ZED SDK method:
 
 ```c++
-p_zed->retrieveObjects(objects, obj_det_rt_params);
+p_zed->retrieveBodies(bodies, body_track_rt_params);
 ```
 
-Once the data is retrieved in an `sl::Objects` instance, the data is sent for every main loop iteration with:
+Once the data is retrieved in an `sl::Bodies` instance, the data is sent for every main loop iteration with:
 
 ```c++
-HubClient::update(p_zed, objects);
+HubClient::update(p_zed, bodies);
 ```

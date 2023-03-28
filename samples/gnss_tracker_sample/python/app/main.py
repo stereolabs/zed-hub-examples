@@ -56,13 +56,22 @@ def main():
 
     dataFreq = 1.0  # in seconds
 
-    # Initialize the communication to ZED Hub, with a zed camera.
+    # Create camera object
     zed = sl.Camera()
-    status_iot = sliot.HubClient.connect("gnss_app")
 
+    # Initialize the communication to ZED Hub, with a zed camera.
+    status_iot = sliot.HubClient.connect("gnss_app")
     if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status_iot)
         exit(1)
+
+    # Load application parameter file in development mode
+    application_token = os.getenv("SL_APPLICATION_TOKEN")
+    if application_token == None:
+        status_iot = sliot.HubClient.load_application_parameters("parameters.json")
+        if status_iot != sliot.STATUS_CODE.SUCCESS:
+            print("parameters.json file not found or malformated")
+            exit(1)
 
     sliot.HubClient.set_log_level_threshold(
         sliot.LOG_LEVEL.DEBUG, sliot.LOG_LEVEL.INFO)

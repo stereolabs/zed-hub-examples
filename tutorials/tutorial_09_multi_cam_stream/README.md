@@ -92,7 +92,7 @@ for (int i = 0; i < nb_detected_zed; i++)
 Then, using a thread, every streams are associated to a `grad loop ` to stream them.
 
 ```c++
-// Secondary streams' loop to grab image
+// Streams' loop to grab image
 void stream_loop(const std::shared_ptr<Camera> &p_zed, bool &run)
 {
     Mat zed_image(1280, 720, MAT_TYPE::U8_C4);

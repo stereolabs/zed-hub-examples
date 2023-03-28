@@ -100,6 +100,7 @@ int main(int argc, char **argv)
     // Create camera object
     auto p_zed = std::make_shared<sl::Camera>();
 
+    // Initialize the communication to ZED Hub, with a zed camera.
     STATUS_CODE status_iot;
     status_iot = HubClient::connect("object_app");
     if (status_iot != STATUS_CODE::SUCCESS)
@@ -109,7 +110,7 @@ int main(int argc, char **argv)
     }
 
     // Load application parameter file in development mode
-    char *application_token = ::getenv("SL_APPLICATION_TOKEN");
+    char *application_token = getenv("SL_APPLICATION_TOKEN");
     if (!application_token)
     {
         status_iot = HubClient::loadApplicationParameters("parameters.json");
@@ -212,7 +213,7 @@ int main(int argc, char **argv)
     cv::Mat leftImageCpuCV;
     leftImageCpuCV = slMat2cvMat(imgLeftCustom);
 
-    sl::Resolution image_raw_res = p_zed->getCameraInformation().camera_resolution;
+    sl::Resolution image_raw_res = p_zed->getCameraInformation().camera_configuration.resolution;
 
     while (true)
     {
@@ -347,8 +348,9 @@ int main(int argc, char **argv)
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
+
     // Close the camera
-    else if (p_zed->isOpened())
+    if (p_zed->isOpened())
         p_zed->close();
 
     status_iot = HubClient::disconnect();

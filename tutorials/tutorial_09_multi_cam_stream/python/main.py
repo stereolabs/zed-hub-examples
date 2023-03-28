@@ -23,15 +23,14 @@ import pyzed.sl as sl
 import pyzed.sl_iot as sliot
 import threading
 import time
-import json
 
 run_zeds = True
 zeds = []
 
+# Streams' loop to grab image
 def stream_loop(zed : sl.Camera):
     global run_zeds
 
-    print("Stream (" + str(zed.get_camera_information().serial_number) + ") opened")
     zed_image = sl.Mat(1280, 720, sl.MAT_TYPE.U8_C4)
 
     while run_zeds:
@@ -77,7 +76,7 @@ def main():
             cam_info = zed.get_camera_information()
             print("serial number:", cam_info.serial_number, ", model:", cam_info.camera_model, ", status: opened")
         else:
-            print(" Error:", err )
+            print("Error on camera", i, ":", err )
             zed.close()
     
         # Register the camera once it's open
@@ -85,7 +84,7 @@ def main():
 
         # On Ubuntu desktop, on consumer-level GPUs, you don't have enough hardware encoder to stream multiple devices
         # and to record at the same time. https://en.wikipedia.org/wiki/Nvidia_NVENC
-        # On jetsons or on business-grade gpus, you can do whatever you want.
+        # On Jetsons or on business-grade gpus, you can do whatever you want.
         updateParameters.enable_recording = False
         status_iot = sliot.HubClient.register_camera(zeds[i], updateParameters)
         if status_iot != sliot.STATUS_CODE.SUCCESS:

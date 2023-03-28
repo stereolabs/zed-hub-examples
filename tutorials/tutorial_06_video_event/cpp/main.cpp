@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     std::shared_ptr<sl::Camera> p_zed;
     p_zed.reset(new sl::Camera());
 
-    // Init sl_iot
+    // Initialize the communication to ZED Hub, with a zed camera.
     STATUS_CODE status_iot = HubClient::connect("event_app");
     if (status_iot != STATUS_CODE::SUCCESS)
     {
@@ -28,7 +28,6 @@ int main(int argc, char **argv)
     sl::InitParameters initParameters;
     initParameters.camera_resolution = RESOLUTION::HD2K;
     initParameters.depth_mode = DEPTH_MODE::PERFORMANCE;
-
     sl::ERROR_CODE status_zed = p_zed->open(initParameters);
     if (status_zed != ERROR_CODE::SUCCESS)
     {
@@ -60,7 +59,7 @@ int main(int argc, char **argv)
     sl::ObjectDetectionParameters obj_det_params;
     obj_det_params.image_sync = true;
     obj_det_params.enable_tracking = false;
-    obj_det_params.detection_model = sl::DETECTION_MODEL::MULTI_CLASS_BOX;
+    obj_det_params.detection_model = sl::OBJECT_DETECTION_MODEL::MULTI_CLASS_BOX_FAST;
     zed_error = p_zed->enableObjectDetection(obj_det_params);
     if (zed_error != ERROR_CODE::SUCCESS)
     {
@@ -149,8 +148,9 @@ int main(int argc, char **argv)
         p_zed->close();
         sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
+
     // Close the camera
-    else if (p_zed->isOpened())
+    if (p_zed->isOpened())
         p_zed->close();
 
     status_iot = HubClient::disconnect();

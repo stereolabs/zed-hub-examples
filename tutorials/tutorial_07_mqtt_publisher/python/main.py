@@ -41,7 +41,8 @@ def main():
 
         sliot.HubClient.publish_on_topic(topic_name, my_message_js)
         sliot.HubClient.send_log("Message published", sliot.LOG_LEVEL.INFO)
-        time.sleep(10)
+
+        time.sleep(10) # 10 seconds
 
     # Close the communication with ZED Hub properly.
     status_iot = sliot.HubClient.disconnect()

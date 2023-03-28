@@ -179,8 +179,15 @@ What exactly appends:
 
 ```cpp
     // Open the ZED camera
-    sl::ERROR_CODE errZed = p_zed->open(initParameters);
-    
+    sl::ERROR_CODE err_zed = p_zed->open(initParameters);
+    if (err_zed != sl::ERROR_CODE::SUCCESS)
+    {
+        HubClient::sendLog("Camera initialization error : " +
+                               std::string(toString(err_zed)),
+                           LOG_LEVEL::ERROR);
+        exit(EXIT_FAILURE);
+    }
+
     // Register the camera once it's open
     UpdateParameters updateParameters;
     status_iot = HubClient::registerCamera(p_zed, updateParameters);
@@ -193,9 +200,13 @@ What exactly appends:
 - Setup the parameters callback before the main loop
 
 ```c++        
-        ... 
+        ...
+    // Setup callback for parameters
     CallbackParameters callback_param;
-    callback_param.setParameterCallback("onParamChange", "camera_resolution|camera_fps|camera_image_flip", CALLBACK_TYPE::ON_PARAMETER_UPDATE, PARAMETER_TYPE::DEVICE);
+    callback_param.setParameterCallback("onParamChange",
+                                        "camera_resolution|camera_fps|camera_image_flip",
+                                        CALLBACK_TYPE::ON_PARAMETER_UPDATE,
+                                        PARAMETER_TYPE::DEVICE);
     HubClient::registerFunction(onInitParamUpdate, callback_param);
         ...
 ```
@@ -205,28 +216,5 @@ What exactly appends:
 
 
 ```c++
-    HubClient::update();
-```
-
-Some logs are also sent if the grab FPS is too low for a too long time.
-
-```c++
-if (frame > 40) {
-    if (grab_fps <= 5) {
-        switch(grab_fps_warning_state){
-        case 0:
-            timestamp_warning_grab_fps = p_zed->getTimestamp(sl::TIME_REFERENCE::CURRENT).getMilliseconds();
-            grab_fps_warning_state=1;
-            break;
-        case 1:
-            if (p_zed->getTimestamp(sl::TIME_REFERENCE::CURRENT).getMilliseconds()-timestamp_warning_grab_fps>5*1000) { //warning if too low during at least 5 seconds
-                HubClient::sendLog("Grab fps low " + to_string((int)grab_fps), LOG_LEVEL::WARNING);
-                grab_fps_warning_state=2;
-            }
-            break;
-        default:
-            break;
-        }
-    } else grab_fps_warning_state = 0;
-}
+    HubClient::update(p_zed);
 ```

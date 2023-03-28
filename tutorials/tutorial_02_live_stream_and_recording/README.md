@@ -106,7 +106,8 @@ What exactly happens:
     // Register the camera once it's open
     UpdateParameters updateParameters;
     status_iot = HubClient::registerCamera(p_zed, updateParameters);
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Camera registration error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }

@@ -23,6 +23,8 @@ import time
 
 
 def addition_callback(event : sliot.FunctionEvent):
+    # Get the parameters of the remote function call
+    print("function called !")
     params = event.parameters
     num1 = params["num1"]
     num2 = params["num2"]
@@ -39,15 +41,14 @@ def addition_callback(event : sliot.FunctionEvent):
         return result
 
     else:
-        print("There was an issue with the parameters type.")
+        sliot.HubClient.send_log("Addition remote function was used with wrong arguments.", sliot.LOG_LEVEL.ERROR)
         event.status = 1
-        event.result = "Error"
+        event.result = "Addition remote function was used with wrong arguments."
     return None
 
 
 def main():
     status_iot = sliot.HubClient.connect("callback_app")
-
     if status_iot != sliot.STATUS_CODE.SUCCESS:
         print("Initialization error ", status_iot)
         exit(1)
@@ -56,9 +57,11 @@ def main():
     callback_params = sliot.CallbackParameters()
     callback_params.set_remote_callback("tuto05_add", sliot.CALLBACK_TYPE.ON_REMOTE_CALL)
     my_callback = addition_callback
+    # Register your callback function
     sliot.HubClient.register_function(my_callback, callback_params)
 
     print("Waiting for remote function to be called.")
+    
     # Main loop
     while True:
         time.sleep(1)

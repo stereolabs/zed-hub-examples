@@ -60,7 +60,8 @@ int main(int argc, char **argv)
     // Register the camera once it's open
     UpdateParameters updateParameters;
     status_iot = HubClient::registerCamera(p_zed, updateParameters);
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Camera registration error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -93,10 +94,11 @@ int main(int argc, char **argv)
                                std::string(toString(status_zed)),
                            LOG_LEVEL::ERROR);
         p_zed->close();
-        sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
+        sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
+
     // Close the camera
-    else if (p_zed->isOpened())
+    if (p_zed->isOpened())
         p_zed->close();
 
     // Close the communication with ZED Hub properly.

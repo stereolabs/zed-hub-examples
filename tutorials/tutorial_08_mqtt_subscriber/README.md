@@ -53,17 +53,18 @@ The app subscribes to the topic `/v1/local_network/my_custom_data` composed of t
 When a message is received the callback `onDataReceived` is triggered.
 
 ```c++
-// Initialize the communication to ZED Hub, without a zed camera.
-status_iot = HubClient::connect("sub_app");
-if (status_iot != STATUS_CODE::SUCCESS)
-{
-    std::cout << "Initialization error " << status_iot << std::endl;
-    exit(EXIT_FAILURE);
-}
+    // Initialize the communication to ZED Hub, without a zed camera.
+    STATUS_CODE status_iot;
+    status_iot = HubClient::connect("sub_app");
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
+        std::cout << "Initialization error " << status_iot << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
-// Topic to listen to
-std::string topic_name = "/my_custom_data";
-HubClient::subscribeToTopic(topic_name, onDataReceived);
+    // Topic to listen to
+    std::string topic_name = "/my_custom_data";
+    HubClient::subscribeToTopic(topic_name, onDataReceived);
 ```
 
 `onDataReceived` is defined as follows. Each time a message is received, a log is sent and the message is also displayed in the runtime terminal.

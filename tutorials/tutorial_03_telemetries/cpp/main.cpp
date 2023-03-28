@@ -33,7 +33,7 @@ using json = sl_iot::json;
 
 int main(int argc, char **argv)
 {
-    // initialize the communication to zed hub, with a zed camera.
+    // Initialize the communication to zed hub, with a zed camera.
     std::shared_ptr<sl::Camera> p_zed;
     p_zed.reset(new sl::Camera());
 
@@ -59,7 +59,8 @@ int main(int argc, char **argv)
     // Register the camera once it's open
     UpdateParameters updateParameters;
     status_iot = HubClient::registerCamera(p_zed, updateParameters);
-    if (status_iot != STATUS_CODE::SUCCESS) {
+    if (status_iot != STATUS_CODE::SUCCESS)
+    {
         std::cout << "Camera registration error " << status_iot << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -78,6 +79,7 @@ int main(int argc, char **argv)
     sl::RuntimeParameters runtime_parameters;
     runtime_parameters.measure3D_reference_frame = sl::REFERENCE_FRAME::WORLD;
     sl::Timestamp prev_timestamp = 0;
+
     // Main loop
     while (true)
     {
@@ -114,15 +116,17 @@ int main(int argc, char **argv)
     }
 
     p_zed->disablePositionalTracking();
+    
     // Handling camera error
     if (status_zed != ERROR_CODE::SUCCESS)
     {
         HubClient::sendLog("Grab failed, restarting camera. " + std::string(toString(status_zed)), LOG_LEVEL::ERROR);
         p_zed->close();
-        sl::ERROR_CODE e = sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
+        sl::Camera::reboot(p_zed->getCameraInformation().serial_number);
     }
+
     // Close the camera
-    else if (p_zed->isOpened())
+    if (p_zed->isOpened())
         p_zed->close();
 
     status_iot = HubClient::disconnect();

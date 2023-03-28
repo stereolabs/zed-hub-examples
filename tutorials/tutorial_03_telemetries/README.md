@@ -114,7 +114,7 @@ What exactly happens:
 - Call `HubClient::update` in order to send the current image to the cloud.
   See [tutorial_02_live_stream_and_recording](/tutorials/tutorial_02_live_stream_and_recording/README.md) for more information.
 
-```
+```cpp
     // Always update Hub at the end of the grab loop
     HubClient::update(p_zed);
 ```

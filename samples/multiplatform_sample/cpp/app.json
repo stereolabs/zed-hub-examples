@@ -1,6 +1,6 @@
 {
     "name": "Multiplatform sample",
-    "description": "A sample that shows how to deploy an applicaiton to multiple platforms.",
+    "description": "A sample that shows how to deploy an application to multiple platforms.",
      "release":{
         "name": "1.0.0",
         "description": "Initial release",
