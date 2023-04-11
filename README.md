@@ -1,8 +1,8 @@
 # Examples using ZED Hub
 
 In this repository you will find:
-- [**Tutorials**](./tutorials/) that explain how to use the ZED Hub features in your apps and run them.
-- [**Samples**](./samples/README.md) that provide examples of ZED Hub usage and package/deploy them on ZED Hub as a service.
+- [**Tutorials**](./tutorials/) that explain how to connect your app to ZED Hub and use the main features.
+- [**Samples**](./samples/README.md) that provide complete examples of production-ready applications
 - [**Scripts**](./scripts/README.md) that provide examples of ZED Hub REST API usage.
 
 ## What features are explained in these tutorials:
