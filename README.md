@@ -1,7 +1,7 @@
 # Examples using ZED Hub
 
 In this repository you will find:
-- [**Tutorials**](./tutorials/) that explain how to connect your app to ZED Hub and use the main features.
+- [**Tutorials**](./tutorials/) that explain how to connect any app to ZED Hub and use the main features.
 - [**Samples**](./samples/README.md) that provide complete examples of production-ready applications
 - [**Scripts**](./scripts/README.md) that provide examples of ZED Hub REST API usage.
 
@@ -24,4 +24,5 @@ ZED Hub supports Jetson Linux and Ubuntu operating systems.
 
 ## Connect your app to ZED Hub
 In the [**tutorials**](./tutorials/), you will learn how to connect a C++ or python app to ZED Hub and use its features.
+
 In the [**samples**](./samples/), you will learn how to package your app with docker, deploy it to ZED Hub and run it through the platform on all your devices. This is the recommended workflow for production-ready environments. Check out [How to deloy an app as a service](./deploy_as_a_service.md) tutorial for more details
