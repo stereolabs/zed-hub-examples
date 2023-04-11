@@ -67,10 +67,11 @@ int main(int argc, char **argv)
     }
 
     sl::Mat depth;
-
+    int i = 0;
     // Main loop
     while (true)
     {
+        i++;
         // Grab a new frame from the ZED
         status_zed = p_zed->grab();
         if (status_zed != ERROR_CODE::SUCCESS)
@@ -84,7 +85,7 @@ int main(int argc, char **argv)
         // Always update Hub at the end of the grab loop
         // without giving a sl::Mat, it will retrieve the RGB image automatically.
         // without giving a registered camera, it will try to update all registered cameras.
-        HubClient::update(p_zed, depth);
+        HubClient::update(p_zed);
     }
 
     // Handling camera error
