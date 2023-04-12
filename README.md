@@ -13,9 +13,9 @@ ZED Hub is a module that allows your application based on ZED SDK to connect to 
     </tr>
     <tr></tr>
     <tr>
-      <td align="center"><img alt="Applications management" src="https://user-images.githubusercontent.com/101094358/231504872-c5467d96-e216-4ab3-b4d8-3598e707e57b.gif"></a></td>
+      <td align="center"><img alt="Applications management" src="https://user-images.githubusercontent.com/101094358/231520425-f4634ef2-b3a5-4638-a1d1-7cc9a1afed7f.gif"></a></td>
       <td align="center"><img alt="Live WebRTC Stream" src="https://user-images.githubusercontent.com/101094358/231516124-cf1d21d0-be53-4d12-88db-b622cc0f7a5f.gif"></a></td>      
-      <td align="center"><img alt="Devices monitoring" src="https://user-images.githubusercontent.com/101094358/231518025-e2aa6375-b5db-40bf-92a6-700b912a7aa5.gif"></a></td>       
+      <td align="center"><img alt="Devices monitoring" src="https://user-images.githubusercontent.com/101094358/231521084-9f226479-3a01-4506-a3c2-78b572087d82.gif"></a></td>       
     </tr>
     <tr></tr>
     <tr>
@@ -33,7 +33,7 @@ ZED Hub is a module that allows your application based on ZED SDK to connect to 
 
 In this repository you will find:
 - [**Tutorials**](./tutorials/) that explain how to connect any app to ZED Hub and use the main features.
-- [**Samples**](./samples/README.md) that provide complete examples of production-ready applications. You can have more details about [How to deloy an app as a service](./deploy_as_a_service.md) for production environments.
+- [**Samples**](./samples/README.md) that provide complete examples of production-ready applications. You can have more details about [How to deploy an app as a service](./deploy_as_a_service.md) for production environments.
 - [**Scripts**](./scripts/README.md) that provide examples of ZED Hub REST API usage.
 
 ## What features are explained in these tutorials:
