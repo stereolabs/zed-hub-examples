@@ -1,4 +1,35 @@
-# Examples using ZED Hub
+# ZED Hub
+
+ZED Hub is a module that allows your application based on ZED SDK to connect to the cloud.
+
+## Overview
+
+<table>
+  <tbody>
+    <tr>
+      <td align="center"><b>Applications management</b></td>
+      <td align="center"><b>Live WebRTC stream</b></td>
+      <td align="center"><b>Devices monitoring</b></td>
+    </tr>
+    <tr></tr>
+    <tr>
+      <td align="center"><img alt="Applications management" src="https://user-images.githubusercontent.com/101094358/231504872-c5467d96-e216-4ab3-b4d8-3598e707e57b.gif"></a></td>
+      <td align="center"><img alt="Live WebRTC Stream" src="https://user-images.githubusercontent.com/101094358/231516124-cf1d21d0-be53-4d12-88db-b622cc0f7a5f.gif"></a></td>      
+      <td align="center"><img alt="Devices monitoring" src="https://user-images.githubusercontent.com/101094358/231518025-e2aa6375-b5db-40bf-92a6-700b912a7aa5.gif"></a></td>       
+    </tr>
+    <tr></tr>
+    <tr>
+      <td align="center"><b>System Metrics</b></td>
+      <td align="center"><b>Telemetry</b></td>
+      <td align="center"><b>Events</b></td>
+    </tr>
+    <tr>
+      <td align="center"><img alt="System metrics" src="https://user-images.githubusercontent.com/101094358/231516885-b9f09aac-6b80-4a4d-9721-25a08e1b0397.gif"></a></td>
+        <td align="center"><img alt="Telemetry" src="https://user-images.githubusercontent.com/101094358/231509333-2a17c7bf-5d4e-47d1-8961-a78d8f280af6.gif"></a></td>
+      <td align="center"><img alt="Events" src="https://user-images.githubusercontent.com/101094358/231516332-d62989b9-61b7-4afc-8c31-91010cbd0133.gif"></a></td>
+    </tr>
+  <tbody>
+</table>
 
 In this repository you will find:
 - [**Tutorials**](./tutorials/) that explain how to connect any app to ZED Hub and use the main features.
