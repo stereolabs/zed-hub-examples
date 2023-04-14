@@ -5,7 +5,7 @@ services:
       context: ./app
       dockerfile: Dockerfile
       args:
-        BASE_IMAGE: stereolabs/iot:0.63.0-runtime-ubuntu22-cu11.7
+        BASE_IMAGE: stereolabs/iot:0.72.0-runtime-ubuntu22-cu11.8
     runtime: nvidia
     privileged: true
     network_mode: host
