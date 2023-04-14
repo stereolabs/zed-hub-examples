@@ -18,12 +18,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
-#include <sl_iot/HubClient.hpp>
+#include <sl_hub/HubClient.hpp>
 
 using namespace std;
 using namespace sl;
-using namespace sl_iot;
-using json = sl_iot::json;
+using namespace sl_hub;
+using json = sl_hub::json;
 
 #include <chrono>
 #include <thread>
@@ -49,11 +49,11 @@ void stream_loop(const std::shared_ptr<Camera> &p_zed, bool &run)
 int main(int argc, char **argv)
 {
     // Initialize the communication to ZED Hub
-    STATUS_CODE status_iot;
-    status_iot = HubClient::connect("multi_stream_tutorial");
-    if (status_iot != STATUS_CODE::SUCCESS)
+    STATUS_CODE status_hub;
+    status_hub = HubClient::connect("multi_stream_tutorial");
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Initialization error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -101,10 +101,10 @@ int main(int argc, char **argv)
         // and to record at the same time. https://en.wikipedia.org/wiki/Nvidia_NVENC
         // On Jetsons or on business-grade gpus, you can do whatever you want.
         updateParameters.enable_recording = false;
-        status_iot = HubClient::registerCamera(zeds[i], updateParameters);
-        if (status_iot != STATUS_CODE::SUCCESS)
+        status_hub = HubClient::registerCamera(zeds[i], updateParameters);
+        if (status_hub != STATUS_CODE::SUCCESS)
         {
-            std::cout << "Camera registration error " << status_iot << std::endl;
+            std::cout << "Camera registration error " << status_hub << std::endl;
             exit(EXIT_FAILURE);
         }
     }

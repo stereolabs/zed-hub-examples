@@ -19,7 +19,7 @@
 ########################################################################
 
 import pyzed.sl as sl
-import pyzed.sl_iot as sliot
+import pyzed.sl_hub as hub
 import cv2
 import numpy as np
 import os
@@ -34,10 +34,10 @@ telemetryFreq = 10.0
 def on_display_parameters_update(message_received):
     global draw_bboxes
     print("Display parameter updated")
-    draw_bboxes = sliot.HubClient.get_parameter_bool(
-        "draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION)
-    sliot.HubClient.send_log(
-        "New parameter : draw_bboxes modified to " + str(draw_bboxes), sliot.LOG_LEVEL.INFO)
+    draw_bboxes = hub.HubClient.get_parameter_bool(
+        "draw_bboxes", hub.PARAMETER_TYPE.APPLICATION)
+    hub.HubClient.send_log(
+        "New parameter : draw_bboxes modified to " + str(draw_bboxes), hub.LOG_LEVEL.INFO)
     return True
 
 
@@ -45,24 +45,24 @@ def on_video_event_update(message_received):
     global recordVideoEvent
     global nbFramesNoDetBtw2Events
     print("Video event updated")
-    recordVideoEvent = sliot.HubClient.get_parameter_bool(
-        "recordVideoEvent", sliot.PARAMETER_TYPE.APPLICATION, recordVideoEvent)
-    nbFramesNoDetBtw2Events = sliot.HubClient.get_parameter_int(
-        "nbFramesNoDetBtw2Events", sliot.PARAMETER_TYPE.APPLICATION, nbFramesNoDetBtw2Events)
-    sliot.HubClient.send_log(
-        "New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified", sliot.LOG_LEVEL.INFO)
+    recordVideoEvent = hub.HubClient.get_parameter_bool(
+        "recordVideoEvent", hub.PARAMETER_TYPE.APPLICATION, recordVideoEvent)
+    nbFramesNoDetBtw2Events = hub.HubClient.get_parameter_int(
+        "nbFramesNoDetBtw2Events", hub.PARAMETER_TYPE.APPLICATION, nbFramesNoDetBtw2Events)
+    hub.HubClient.send_log(
+        "New parameters : recordVideoEvent or nbFramesNoDetBtw2Events modified", hub.LOG_LEVEL.INFO)
 
 
 def on_telemetry_update(message_received):
     global recordTelemetry
     global telemetryFreq
     print("Telemetry updated")
-    recordTelemetry = sliot.HubClient.get_parameter_bool(
-        "recordTelemetry", sliot.PARAMETER_TYPE.APPLICATION, recordTelemetry)
-    telemetryFreq = sliot.HubClient.get_parameter_float(
-        "telemetryFreq", sliot.PARAMETER_TYPE.APPLICATION, telemetryFreq)
-    sliot.HubClient.send_log(
-        "New parameters : recordTelemetry or telemetryFreq modified", sliot.LOG_LEVEL.INFO)
+    recordTelemetry = hub.HubClient.get_parameter_bool(
+        "recordTelemetry", hub.PARAMETER_TYPE.APPLICATION, recordTelemetry)
+    telemetryFreq = hub.HubClient.get_parameter_float(
+        "telemetryFreq", hub.PARAMETER_TYPE.APPLICATION, telemetryFreq)
+    hub.HubClient.send_log(
+        "New parameters : recordTelemetry or telemetryFreq modified", hub.LOG_LEVEL.INFO)
 
 
 def main():
@@ -72,7 +72,7 @@ def main():
     global recordTelemetry
     global telemetryFreq
 
-    sliot.HubClient.load_application_parameters("parameters.json")
+    hub.HubClient.load_application_parameters("parameters.json")
 
     recordVideoEvent = True
     nbFramesNoDetBtw2Events = 30  # number of frame
@@ -83,21 +83,21 @@ def main():
     zed = sl.Camera()
 
     # Initialize the communication to ZED Hub, with a zed camera.
-    status_iot = sliot.HubClient.connect("object_app")
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status_iot)
+    status_hub = hub.HubClient.connect("object_app")
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_hub)
         exit(1)
 
     # Load application parameter file in development mode
     application_token = os.getenv("SL_APPLICATION_TOKEN")
     if application_token == None:
-        status_iot = sliot.HubClient.load_application_parameters("parameters.json")
-        if status_iot != sliot.STATUS_CODE.SUCCESS:
+        status_hub = hub.HubClient.load_application_parameters("parameters.json")
+        if status_hub != hub.STATUS_CODE.SUCCESS:
             print("parameters.json file not found or malformated")
             exit(1)
 
-    sliot.HubClient.set_log_level_threshold(
-        sliot.LOG_LEVEL.DEBUG, sliot.LOG_LEVEL.INFO)
+    hub.HubClient.set_log_level_threshold(
+        hub.LOG_LEVEL.DEBUG, hub.LOG_LEVEL.INFO)
 
     # Open the zed camera
     init_params = sl.InitParameters()
@@ -107,15 +107,15 @@ def main():
     status_zed = zed.open(init_params)
 
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log(
-            "Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log(
+            "Camera initialization error : " + str(status_zed), hub.LOG_LEVEL.ERROR)
         exit(1)
 
     # Register the camera once it's open
-    update_params = sliot.UpdateParameters()
-    status_iot = sliot.HubClient.register_camera(zed, update_params)
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
+    update_params = hub.UpdateParameters()
+    status_hub = hub.HubClient.register_camera(zed, update_params)
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_hub)
         exit(1)
 
     # Enable Position tracking (mandatory for object detection)
@@ -123,8 +123,8 @@ def main():
     track_params.set_as_static = False
     status_zed = zed.enable_positional_tracking(track_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log(
-            "Positional tracking initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log(
+            "Positional tracking initialization error : " + str(status_zed), hub.LOG_LEVEL.ERROR)
         exit(1)
 
     # Enable the Objects detection module
@@ -132,8 +132,8 @@ def main():
     object_detection_params.image_sync = True
     status_zed = zed.enable_object_detection(object_detection_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log(
-            "Object detection initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log(
+            "Object detection initialization error : " + str(status_zed), hub.LOG_LEVEL.ERROR)
         exit(1)
 
     # Setup callback for parameters
@@ -151,33 +151,33 @@ def main():
     # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
     # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
 
-    callback_display_param = sliot.CallbackParameters()
-    callback_display_param.set_parameter_callback("onDisplayParametersUpdate", "draw_bboxes", sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.APPLICATION);
-    sliot.HubClient.register_function(on_display_parameters_update, callback_display_param);
+    callback_display_param = hub.CallbackParameters()
+    callback_display_param.set_parameter_callback("onDisplayParametersUpdate", "draw_bboxes", hub.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  hub.PARAMETER_TYPE.APPLICATION);
+    hub.HubClient.register_function(on_display_parameters_update, callback_display_param);
 
-    callback_event_param = sliot.CallbackParameters()
-    callback_event_param.set_parameter_callback("onVideoEventUpdate", "recordVideoEvent|nbFramesNoDetBtw2Events",  sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.APPLICATION);
-    sliot.HubClient.register_function(on_video_event_update, callback_event_param);
+    callback_event_param = hub.CallbackParameters()
+    callback_event_param.set_parameter_callback("onVideoEventUpdate", "recordVideoEvent|nbFramesNoDetBtw2Events",  hub.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  hub.PARAMETER_TYPE.APPLICATION);
+    hub.HubClient.register_function(on_video_event_update, callback_event_param);
 
-    callback_telemetry_param = sliot.CallbackParameters()
-    callback_telemetry_param.set_parameter_callback("onTelemetryUpdate", "recordTelemetry|telemetryFreq",  sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.APPLICATION);
-    sliot.HubClient.register_function(on_telemetry_update, callback_telemetry_param);
+    callback_telemetry_param = hub.CallbackParameters()
+    callback_telemetry_param.set_parameter_callback("onTelemetryUpdate", "recordTelemetry|telemetryFreq",  hub.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  hub.PARAMETER_TYPE.APPLICATION);
+    hub.HubClient.register_function(on_telemetry_update, callback_telemetry_param);
 
     # get values defined by the ZED Hub interface.
     # Last argument is default value in case of failure
     
-    raw_bboxes = sliot.HubClient.get_parameter_bool(
-        "draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION, draw_bboxes)
-    recordVideoEvent = sliot.HubClient.get_parameter_bool(
-        "recordVideoEvent", sliot.PARAMETER_TYPE.APPLICATION, recordVideoEvent)
-    nbFramesNoDetBtw2Events = sliot.HubClient.get_parameter_int(
-        "nbFramesNoDetBtw2Events", sliot.PARAMETER_TYPE.APPLICATION, nbFramesNoDetBtw2Events)
-    recordTelemetry = sliot.HubClient.get_parameter_bool(
-        "recordTelemetry", sliot.PARAMETER_TYPE.APPLICATION, recordTelemetry)
-    telemetryFreq = sliot.HubClient.get_parameter_float(
-        "telemetryFreq", sliot.PARAMETER_TYPE.APPLICATION, telemetryFreq)
-    draw_bboxes = sliot.HubClient.get_parameter_bool(
-        "draw_bboxes", sliot.PARAMETER_TYPE.APPLICATION, True)
+    raw_bboxes = hub.HubClient.get_parameter_bool(
+        "draw_bboxes", hub.PARAMETER_TYPE.APPLICATION, draw_bboxes)
+    recordVideoEvent = hub.HubClient.get_parameter_bool(
+        "recordVideoEvent", hub.PARAMETER_TYPE.APPLICATION, recordVideoEvent)
+    nbFramesNoDetBtw2Events = hub.HubClient.get_parameter_int(
+        "nbFramesNoDetBtw2Events", hub.PARAMETER_TYPE.APPLICATION, nbFramesNoDetBtw2Events)
+    recordTelemetry = hub.HubClient.get_parameter_bool(
+        "recordTelemetry", hub.PARAMETER_TYPE.APPLICATION, recordTelemetry)
+    telemetryFreq = hub.HubClient.get_parameter_float(
+        "telemetryFreq", hub.PARAMETER_TYPE.APPLICATION, telemetryFreq)
+    draw_bboxes = hub.HubClient.get_parameter_bool(
+        "draw_bboxes", hub.PARAMETER_TYPE.APPLICATION, True)
 
     counter_no_detection = 0
     objects = sl.Objects()
@@ -212,14 +212,14 @@ def main():
                 if (not first_event_sent) or (counter_no_detection >= nbFramesNoDetBtw2Events):
                     event_reference = "detected_person_" + \
                         str(current_ts.get_milliseconds())
-                    sliot.HubClient.send_log(
-                        "New Video Event defined", sliot.LOG_LEVEL.INFO)
+                    hub.HubClient.send_log(
+                        "New Video Event defined", hub.LOG_LEVEL.INFO)
 
                 else:
                     # Do nothing, keep previous event reference --> The current frame will be defined as being part of the previous video event
                     is_new_event = False
 
-                event_params = sliot.EventParameters()
+                event_params = hub.EventParameters()
                 event_params.timestamp = current_ts.get_milliseconds()
                 event_params.reference = event_reference
                 event_label = "People Detection"  # or the label of your choice
@@ -230,13 +230,13 @@ def main():
                 event2send["nb_detected_person"] = len(objects.object_list)
 
                 if is_new_event or not first_event_sent:
-                    sliot.HubClient.start_video_event(
+                    hub.HubClient.start_video_event(
                         zed, event_label, event2send, event_params)
                     first_event_sent = True
 
                 #  update every 10 s
                 elif current_ts.get_seconds() - prev_timestamp.get_seconds() >= 10:
-                    sliot.HubClient.update_video_event(
+                    hub.HubClient.update_video_event(
                         zed, event_label, event2send, event_params)
                 # else do nothing
 
@@ -264,7 +264,7 @@ def main():
                 position_telemetry["number_of_detection"] = len(
                     objects.object_list)
                 position_telemetry["mean_distance_from_cam"] = mean_distance
-                sliot.HubClient.send_telemetry(
+                hub.HubClient.send_telemetry(
                     "object_detection", position_telemetry)
                 prev_timestamp = current_ts
 
@@ -291,18 +291,18 @@ def main():
                             int)(br[0]*ratio_x), (int)(br[1]*ratio_y)), (50, 200, 50), 4)
 
                 image_left_custom.timestamp = sl.get_current_timestamp()
-                sliot.HubClient.update(zed, image_left_custom)
+                hub.HubClient.update(zed, image_left_custom)
 
             else:
                 # Always update Hub at the end of the grab loop
-                sliot.HubClient.update(zed)
+                hub.HubClient.update(zed)
 
     if zed.is_opened():
         zed.close()
 
     # Close the communication with ZED Hub properly.
-    status = sliot.HubClient.disconnect()
-    if status != sliot.STATUS_CODE.SUCCESS:
+    status = hub.HubClient.disconnect()
+    if status != hub.STATUS_CODE.SUCCESS:
         print("Terminating error ", status)
         exit(1)
 

@@ -80,10 +80,10 @@ for (int i = 0; i < nb_detected_zed; i++)
     // and to record at the same time. https://en.wikipedia.org/wiki/Nvidia_NVENC
     // On jetsons or on business-grade gpus, you can do whatever you want.
     updateParameters.enable_recording = false;
-    status_iot = HubClient::registerCamera(zeds[i], updateParameters);
-    if (status_iot != STATUS_CODE::SUCCESS)
+    status_hub = HubClient::registerCamera(zeds[i], updateParameters);
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Camera registration error " << status_iot << std::endl;
+        std::cout << "Camera registration error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 }

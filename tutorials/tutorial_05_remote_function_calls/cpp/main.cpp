@@ -22,19 +22,19 @@
 #include <string.h>
 #include <chrono>
 
-#include <sl_iot/HubClient.hpp>
+#include <sl_hub/HubClient.hpp>
 
 using namespace std;
 using namespace sl;
-using namespace sl_iot;
-using json = sl_iot::json;
+using namespace sl_hub;
+using json = sl_hub::json;
 
 // Your addition function callback
 void additionCallback(FunctionEvent &event)
 {
     // Get the parameters of the remote function call
     std::cout << "function called !" << std::endl;
-    sl_iot::json params = event.getEventParameters();
+    sl_hub::json params = event.getEventParameters();
 
     // Check if parameters are present and valid
     if (params.contains("num1") && params["num1"].is_number_integer() &&
@@ -61,11 +61,11 @@ void additionCallback(FunctionEvent &event)
 
 int main(int argc, char **argv)
 {
-    STATUS_CODE status_iot;
-    status_iot = HubClient::connect("callback_app");
-    if (status_iot != STATUS_CODE::SUCCESS)
+    STATUS_CODE status_hub;
+    status_hub = HubClient::connect("callback_app");
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Initialization error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -84,10 +84,10 @@ int main(int argc, char **argv)
     }
 
     // Close the communication with ZED Hub properly.
-    status_iot = HubClient::disconnect();
-    if (status_iot != STATUS_CODE::SUCCESS)
+    status_hub = HubClient::disconnect();
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Terminating error " << status_iot << std::endl;
+        std::cout << "Terminating error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 

@@ -75,11 +75,11 @@ What exactly happens:
     std::shared_ptr<sl::Camera> p_zed;
     p_zed.reset(new sl::Camera());
 
-    STATUS_CODE status_iot;
-    status_iot = HubClient::connect("streaming_app");
-    if (status_iot != STATUS_CODE::SUCCESS)
+    STATUS_CODE status_hub;
+    status_hub = HubClient::connect("streaming_app");
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Initialization error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 ```
@@ -105,10 +105,10 @@ What exactly happens:
 ```cpp
     // Register the camera once it's open
     UpdateParameters updateParameters;
-    status_iot = HubClient::registerCamera(p_zed, updateParameters);
-    if (status_iot != STATUS_CODE::SUCCESS)
+    status_hub = HubClient::registerCamera(p_zed, updateParameters);
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Camera registration error " << status_iot << std::endl;
+        std::cout << "Camera registration error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 ```

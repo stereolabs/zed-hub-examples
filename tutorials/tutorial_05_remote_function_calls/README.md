@@ -76,8 +76,8 @@ To call your remote function, simply use the script ```remote_function_call.sh``
 The REST request uses this format :\
 It uses the endpoint ```https://hub.stereolabs.com/api/v1/workspaces/${workspace_id}/devices/${device_id}/functions/${function_name}``` where ```function_name``` is the name of the function you registered in your application.
 You will use
-- ```sl_iot::HubClient::registerFunction``` to register it in C++
-- ```sliot.HubClient.register_function``` to register it in python.
+- ```sl_hub::HubClient::registerFunction``` to register it in C++
+- ```hub.HubClient.register_function``` to register it in python.
 
 In this tutorial the function registered is `tuto05_add` .
 The `parameters` key of the json contained in the request contains the parameters of the function. In our case `num1` and `num2`.
@@ -124,7 +124,7 @@ A remote function must have this minimum structure:
 
 ```c++
 void myRemoteFunction(FunctionEvent& event) {
-    sl_iot::json params = event.getEvenParameters();
+    sl_hub::json params = event.getEvenParameters();
 
     // TODO : your custom code
     bool success = true;
@@ -188,7 +188,7 @@ void additionCallback(FunctionEvent &event)
 {
     // Get the parameters of the remote function call
     std::cout << "function called !" << std::endl;
-    sl_iot::json params = event.getEventParameters();
+    sl_hub::json params = event.getEventParameters();
 
     // Check if parameters are present and valid
     if (params.contains("num1") && params["num1"].is_number_integer() &&

@@ -19,17 +19,17 @@
 ########################################################################
 
 import pyzed.sl as sl
-import pyzed.sl_iot as sliot
+import pyzed.sl_hub as hub
 import time
 
 
 def main():
     # Initialize the communication to ZED Hub, with a zed camera.
     zed = sl.Camera() 
-    status_iot = sliot.HubClient.connect("telemetry_app")
+    status_hub = hub.HubClient.connect("telemetry_app")
 
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status_iot)
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_hub)
         exit(1)
 
     # Open the zed camera
@@ -38,14 +38,14 @@ def main():
     
     status_zed = zed.open(init_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log("Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log("Camera initialization error : " + str(status_zed), hub.LOG_LEVEL.ERROR)
         exit(1)
 
     # Register the camera once it's open
-    update_params = sliot.UpdateParameters()
-    status_iot = sliot.HubClient.register_camera(zed, update_params)
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
+    update_params = hub.UpdateParameters()
+    status_hub = hub.HubClient.register_camera(zed, update_params)
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_hub)
         exit(1)
 
     # Enable Positional Tracking
@@ -53,7 +53,7 @@ def main():
     positional_tracking_params.enable_area_memory = True
     status_zed = zed.enable_positional_tracking(positional_tracking_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log("Enabling positional tracking failed : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log("Enabling positional tracking failed : " + str(status_zed), hub.LOG_LEVEL.ERROR)
         exit(1)    
 
     cam_pose = sl.Pose()
@@ -85,21 +85,21 @@ def main():
             position_telemetry["ry"] = rot[1]
             position_telemetry["rz"] = rot[2]
 
-            sliot.HubClient.send_telemetry("camera_position", position_telemetry)
+            hub.HubClient.send_telemetry("camera_position", position_telemetry)
             previous_timestamp = current_timestamp
 
         # Insert custom code here
 
         # In the end of a grab(), always call a update() on the cloud.
-        sliot.HubClient.update(zed)
+        hub.HubClient.update(zed)
         time.sleep(0.001)
 
     zed.disable_positional_tracking()
 
     # Handling camera error
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log("Grab failed, restarting camera. " + str(status_zed),
-                                sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log("Grab failed, restarting camera. " + str(status_zed),
+                                hub.LOG_LEVEL.ERROR)
         zed.close()
         sl.Camera.reboot(zed.get_camera_information().serial_number)
         
@@ -108,9 +108,9 @@ def main():
         zed.close()
 
     # Close the communication with ZED Hub properly.
-    status_iot = sliot.HubClient.disconnect()
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Terminating error ", status_iot)
+    status_hub = hub.HubClient.disconnect()
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Terminating error ", status_hub)
         exit(1)
     
     return

@@ -3,12 +3,12 @@
 #include <chrono>
 
 #include <sl/Camera.hpp>
-#include <sl_iot/HubClient.hpp>
+#include <sl_hub/HubClient.hpp>
 
 using namespace std;
 using namespace sl;
-using namespace sl_iot;
-using json = sl_iot::json;
+using namespace sl_hub;
+using json = sl_hub::json;
 
 int main(int argc, char **argv)
 {
@@ -17,10 +17,10 @@ int main(int argc, char **argv)
     p_zed.reset(new sl::Camera());
 
     // Initialize the communication to ZED Hub, with a zed camera.
-    STATUS_CODE status_iot = HubClient::connect("event_app");
-    if (status_iot != STATUS_CODE::SUCCESS)
+    STATUS_CODE status_hub = HubClient::connect("event_app");
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "HubClient " << status_iot << std::endl;
+        std::cout << "HubClient " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -37,9 +37,9 @@ int main(int argc, char **argv)
 
     // Register the camera once it's open
     UpdateParameters updateParameters;
-    status_iot = HubClient::registerCamera(p_zed, updateParameters);
-    if (status_iot != STATUS_CODE::SUCCESS) {
-        std::cout << "Camera registration error " << status_iot << std::endl;
+    status_hub = HubClient::registerCamera(p_zed, updateParameters);
+    if (status_hub != STATUS_CODE::SUCCESS) {
+        std::cout << "Camera registration error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -153,10 +153,10 @@ int main(int argc, char **argv)
     if (p_zed->isOpened())
         p_zed->close();
 
-    status_iot = HubClient::disconnect();
-    if (status_iot != STATUS_CODE::SUCCESS)
+    status_hub = HubClient::disconnect();
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Terminating error " << status_iot << std::endl;
+        std::cout << "Terminating error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 

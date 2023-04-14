@@ -81,8 +81,8 @@ We can do this in three steps:
     char *application_token = getenv("SL_APPLICATION_TOKEN");
     if (!application_token)
     {
-        status_iot = HubClient::loadApplicationParameters("parameters.json");
-        if (status_iot != STATUS_CODE::SUCCESS)
+        status_hub = HubClient::loadApplicationParameters("parameters.json");
+        if (status_hub != STATUS_CODE::SUCCESS)
         {
             std::cout << "parameters.json file not found or malformated"
                       << std::endl;

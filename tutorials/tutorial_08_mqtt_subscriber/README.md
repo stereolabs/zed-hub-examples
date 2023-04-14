@@ -54,11 +54,11 @@ When a message is received the callback `onDataReceived` is triggered.
 
 ```c++
     // Initialize the communication to ZED Hub, without a zed camera.
-    STATUS_CODE status_iot;
-    status_iot = HubClient::connect("sub_app");
-    if (status_iot != STATUS_CODE::SUCCESS)
+    STATUS_CODE status_hub;
+    status_hub = HubClient::connect("sub_app");
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Initialization error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 

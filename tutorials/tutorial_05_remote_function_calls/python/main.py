@@ -18,11 +18,11 @@
 #
 ########################################################################
 
-import pyzed.sl_iot as sliot
+import pyzed.sl_hub as hub
 import time
 
 
-def addition_callback(event : sliot.FunctionEvent):
+def addition_callback(event : hub.FunctionEvent):
     # Get the parameters of the remote function call
     print("function called !")
     params = event.parameters
@@ -35,30 +35,30 @@ def addition_callback(event : sliot.FunctionEvent):
         # Log your result
         log = "Addition called : " + \
             str(num1) + " + " + str(num2) + " = " + str(result)
-        sliot.HubClient.send_log(log, sliot.LOG_LEVEL.INFO)
+        hub.HubClient.send_log(log, hub.LOG_LEVEL.INFO)
         event.status = 0
         event.result = result
         return result
 
     else:
-        sliot.HubClient.send_log("Addition remote function was used with wrong arguments.", sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log("Addition remote function was used with wrong arguments.", hub.LOG_LEVEL.ERROR)
         event.status = 1
         event.result = "Addition remote function was used with wrong arguments."
     return None
 
 
 def main():
-    status_iot = sliot.HubClient.connect("callback_app")
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status_iot)
+    status_hub = hub.HubClient.connect("callback_app")
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_hub)
         exit(1)
 
     # Set your parameter callback
-    callback_params = sliot.CallbackParameters()
-    callback_params.set_remote_callback("tuto05_add", sliot.CALLBACK_TYPE.ON_REMOTE_CALL)
+    callback_params = hub.CallbackParameters()
+    callback_params.set_remote_callback("tuto05_add", hub.CALLBACK_TYPE.ON_REMOTE_CALL)
     my_callback = addition_callback
     # Register your callback function
-    sliot.HubClient.register_function(my_callback, callback_params)
+    hub.HubClient.register_function(my_callback, callback_params)
 
     print("Waiting for remote function to be called.")
     
@@ -68,9 +68,9 @@ def main():
         pass
 
     # Close the communication with ZED Hub properly.
-    status_iot = sliot.HubClient.disconnect()
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Terminating error ", status_iot)
+    status_hub = hub.HubClient.disconnect()
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Terminating error ", status_hub)
         exit(1)
 
     return

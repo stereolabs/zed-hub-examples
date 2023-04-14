@@ -19,7 +19,7 @@
 ########################################################################
 
 import pyzed.sl as sl
-import pyzed.sl_iot as sliot
+import pyzed.sl_hub as hub
 
 
 def main():
@@ -27,9 +27,9 @@ def main():
     zed = sl.Camera()
 
     # Initialize the communication to ZED Hub, with a zed camera.
-    status_iot = sliot.HubClient.connect("event_app")
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status_iot)
+    status_hub = hub.HubClient.connect("event_app")
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_hub)
         exit(1)
 
     # Open the zed camera
@@ -38,15 +38,15 @@ def main():
     init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE
     status_zed = zed.open(init_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log(
-            "Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log(
+            "Camera initialization error : " + str(status_zed), hub.LOG_LEVEL.ERROR)
         exit(1)
 
     # Register the camera once it's open
-    update_params = sliot.UpdateParameters()
-    status_iot = sliot.HubClient.register_camera(zed, update_params)
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
+    update_params = hub.UpdateParameters()
+    status_hub = hub.HubClient.register_camera(zed, update_params)
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_hub)
         exit(1)
 
     # Enable Position tracking (mandatory for object detection)
@@ -54,8 +54,8 @@ def main():
     track_params.set_as_static = False
     status_zed = zed.enable_positional_tracking(track_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log(
-            "Positional tracking initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log(
+            "Positional tracking initialization error : " + str(status_zed), hub.LOG_LEVEL.ERROR)
         exit(1)
 
     # Enable the Objects detection module
@@ -65,8 +65,8 @@ def main():
     object_detection_params.detection_model = sl.OBJECT_DETECTION_MODEL.MULTI_CLASS_BOX_FAST
     status_zed = zed.enable_object_detection(object_detection_params)
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log(
-            "Object detection initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log(
+            "Object detection initialization error : " + str(status_zed), hub.LOG_LEVEL.ERROR)
         exit(1)
 
     # Object Detection runtime parameters : detect person only
@@ -105,7 +105,7 @@ def main():
             else:
                 new_event = False
 
-            event_params = sliot.EventParameters()
+            event_params = hub.EventParameters()
             event_params.timestamp = current_ts.get_milliseconds()
             event_params.reference = event_reference
             event_label = "People detection"
@@ -115,12 +115,12 @@ def main():
             event_to_send["nb_detected_person"] = len(objects.object_list)
 
             if new_event or not first_event_sent:
-                sliot.HubClient.start_video_event(
+                hub.HubClient.start_video_event(
                     zed, event_label, event_to_send)
                 first_event_sent = True
                 print("Event started")
             else:
-                sliot.HubClient.update_video_event(
+                hub.HubClient.update_video_event(
                     zed, event_label, event_to_send)
                 print("Event updated")
 
@@ -131,12 +131,12 @@ def main():
             counter_no_detection = counter_no_detection + 1
 
         # In the end of a grab(), always call a update() on the cloud.
-        sliot.HubClient.update(zed)
+        hub.HubClient.update(zed)
 
     # Handling camera error
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log("Grab failed, restarting camera. " + str(status_zed),
-                                sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log("Grab failed, restarting camera. " + str(status_zed),
+                                hub.LOG_LEVEL.ERROR)
         zed.close()
         sl.Camera.reboot(zed.get_camera_information().serial_number)
         
@@ -145,9 +145,9 @@ def main():
         zed.close()
 
     # Close the communication with ZED Hub properly.
-    status_iot = sliot.HubClient.disconnect()
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Terminating error ", status_iot)
+    status_hub = hub.HubClient.disconnect()
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Terminating error ", status_hub)
         exit(1)
 
     return

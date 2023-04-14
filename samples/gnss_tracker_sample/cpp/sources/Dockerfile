@@ -1,5 +1,5 @@
 # Build Image
-# This image contains all the necessary dependencies to build your sl_iot application
+# This image contains all the necessary dependencies to build your sl_hub application
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE} AS builder
 
