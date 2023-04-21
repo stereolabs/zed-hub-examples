@@ -5,8 +5,8 @@ services:
         context : ./app
         dockerfile: Dockerfile   
         args:
-          BUILD_IMAGE: stereolabs/iot:0.72.0-devel-ubuntu20-cu11.8
-          RUNTIME_IMAGE: stereolabs/iot:0.72.0-runtime-ubuntu20-cu11.8
+          BUILD_IMAGE: stereolabs/iot:0.72.1-devel-ubuntu20-cu11.8
+          RUNTIME_IMAGE: stereolabs/iot:0.72.1-runtime-ubuntu20-cu11.8
     runtime: nvidia
     environment:
      - NVIDIA_DRIVER_CAPABILITIES=all

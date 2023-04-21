@@ -55,35 +55,19 @@ Then to run your app :
 
 To dynamically change the parameters and activate their callbacks, edit the `parameters.json` file.
 
-### How to build your application (for service deployment)
-
-To build your app just run:
-
-```
-$ cd /PATH/TO/gnss_tracker_sample
-$ edge_cli build
-```
-
-This command is available by installing Edge Agent on your device.
-
-- The command will ask for the **device type** (Jetson or x86) on which you want to deploy this app.
-- The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the ZED Hub interface.
-- Finally you will be asked the **sl_hub version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker image used to build your app docker image. You can chose the default one, or look for the [most recent version available on Docker Hub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
-
 ### How to deploy your application
 
 Packages your app by generating a app.zip file using :
 
 ```
-$ edge_cli build
+$ edge_cli deploy .
 ```
 
 You can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/deployment/) using the ZED Hub interface:
 
-- In your workspace, in the **Applications** section, click on **Create a new app**
+- In your workspace, in the **Applications** section, click on **Add application**
 - Select the ZIP file containing the application in your filesystem
-- Select the devices on which you want to deploy the app and press **Deploy**
-
+- Select the devices on which you want to deploy the app and press **Upload**
 ## What you should see after deployment
 
 ### Live video
