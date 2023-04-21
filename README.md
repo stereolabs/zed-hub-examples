@@ -55,6 +55,6 @@ In this repository you will find:
 To connect your app to ZED Hub, you'll need to
 - [Have a ZED Hub account](https://hub.stereolabs.com).
 - [Connect your device](https://www.stereolabs.com/docs/cloud/overview/setup-device/).
-- A ZED camera is recommended .
+- A ZED camera is recommended.
 
 ZED Hub supports Jetson Linux and Ubuntu operating systems.
