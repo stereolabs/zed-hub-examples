@@ -31,7 +31,6 @@ With C++, your app should fit with this design :
 ├── README.md
 └── sources
     ├── CMakeLists.txt
-    ├── Dockerfile
     └── src
         └── main.cpp
 ```
@@ -59,7 +58,7 @@ Python does not need any build stage.
 ### Deploy stage
 The deploy stage consists in create a .zip file containing
 - `app/Dockerfile`
-- `app/<your_app> `the binaries generated during the **build stage**, or the source in case your using Python.
+- `app/<your_app> `the binaries generated during the **build stage**, or the source in case you are using Python.
 - app.json
 - `docker-compose.yml`
 - an `icon.png` image (optional)
