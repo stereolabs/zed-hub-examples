@@ -26,13 +26,14 @@ With C++, your app should fit with this design :
 .
 ├── app
 │   └── Dockerfile
+    └── sources
+        ├── CMakeLists.txt
+        └── src
+            └── main.cpp
 ├── app.json
 ├── docker-compose.yml
-├── README.md
-└── sources
-    ├── CMakeLists.txt
-    └── src
-        └── main.cpp
+└── README.md
+   
 ```
 The `Dockerfile` in source is dedicated to run your app. 
 - If you want it to build on the device, you should put a build step in the `Dockerfile` and provide the sources. This is the easiest way to deploy an application.
