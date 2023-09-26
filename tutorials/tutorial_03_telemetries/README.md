@@ -100,7 +100,7 @@ What exactly happens:
 
 ```cpp
     // Send Telemetry
-    sl_iot::json position_telemetry;
+    sl_hub::json position_telemetry;
     position_telemetry["tx"] = translation.x;
     position_telemetry["ty"] = translation.y;
     position_telemetry["tz"] = translation.z;

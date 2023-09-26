@@ -40,8 +40,8 @@ Then run your app :
 
 To initialize your application, use the `HubClient::connect` function that starts communications between your app and the cloud. It must be called before using the HubClient API, so before sending logs (`HubClient::sendLog`), telemetry (`HubClient::sendTelemetry`) and others.
 ```c++
-    STATUS_CODE status_iot;
-    status_iot = HubClient::connect("basic_app");
+    STATUS_CODE status_hub;
+    status_hub = HubClient::connect("basic_app");
 ```
 You can set the log level limit to be displayed. Every log with LOG_LEVEL below the limit will not be print.  ``` setLogLevelThreshold(LOG_LEVEL local_terminal_log_level, LOG_LEVEL cloud_log_level)```
 ```c++

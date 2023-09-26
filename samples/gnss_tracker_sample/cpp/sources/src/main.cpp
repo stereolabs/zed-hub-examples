@@ -22,12 +22,12 @@
 #include <iostream>
 #include <ctime>
 #include <sl/Camera.hpp>
-#include <sl_iot/HubClient.hpp>
+#include <sl_hub/HubClient.hpp>
 
 using namespace std;
 using namespace sl;
-using namespace sl_iot;
-using json = sl_iot::json;
+using namespace sl_hub;
+using json = sl_hub::json;
 
 // Constants, defined as global variables
 double latitude = 48.818737;
@@ -65,11 +65,11 @@ int main(int argc, char **argv)
     auto p_zed = std::make_shared<sl::Camera>();
 
     // Initialize the communication to ZED Hub, with a zed camera.
-    STATUS_CODE status_iot;
-    status_iot = HubClient::connect("gnss_app");
-    if (status_iot != STATUS_CODE::SUCCESS)
+    STATUS_CODE status_hub;
+    status_hub = HubClient::connect("gnss_app");
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Initialization error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -77,8 +77,8 @@ int main(int argc, char **argv)
     char *application_token = getenv("SL_APPLICATION_TOKEN");
     if (!application_token)
     {
-        status_iot = HubClient::loadApplicationParameters("parameters.json");
-        if (status_iot != STATUS_CODE::SUCCESS)
+        status_hub = HubClient::loadApplicationParameters("parameters.json");
+        if (status_hub != STATUS_CODE::SUCCESS)
         {
             std::cout << "parameters.json file not found or malformated" << std::endl;
             exit(EXIT_FAILURE);
@@ -98,10 +98,10 @@ int main(int argc, char **argv)
 
     // Register the camera once it's open
     UpdateParameters updateParameters;
-    status_iot = HubClient::registerCamera(p_zed, updateParameters);
-    if (status_iot != STATUS_CODE::SUCCESS)
+    status_hub = HubClient::registerCamera(p_zed, updateParameters);
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Camera registration error " << status_iot << std::endl;
+        std::cout << "Camera registration error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -178,10 +178,10 @@ int main(int argc, char **argv)
     if (p_zed->isOpened())
         p_zed->close();
 
-    status_iot = HubClient::disconnect();
-    if (status_iot != STATUS_CODE::SUCCESS)
+    status_hub = HubClient::disconnect();
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Terminating error " << status_iot << std::endl;
+        std::cout << "Terminating error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 

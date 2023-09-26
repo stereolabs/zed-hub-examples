@@ -20,7 +20,7 @@
 ########################################################################
 
 import pyzed.sl as sl
-import pyzed.sl_iot as sliot
+import pyzed.sl_hub as hub
 import threading
 import time
 
@@ -37,7 +37,7 @@ def stream_loop(zed : sl.Camera):
         # grab current image
         if zed.grab() == sl.ERROR_CODE.SUCCESS:
             zed.retrieve_image(zed_image, sl.VIEW.LEFT, sl.MEM.CPU, zed_image.get_resolution())
-            sliot.HubClient.update(zed, zed_image)
+            hub.HubClient.update(zed, zed_image)
         else:
             run_zeds = False
 
@@ -45,9 +45,9 @@ def main():
     global run_zeds
 
     # Initialize the communication to ZED Hub
-    status_iot = sliot.HubClient.connect("multi_stream_tutorial")
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status_iot)
+    status_hub = hub.HubClient.connect("multi_stream_tutorial")
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_hub)
         exit(1)
 
     # Get detected cameras
@@ -80,15 +80,15 @@ def main():
             zed.close()
     
         # Register the camera once it's open
-        updateParameters = sliot.UpdateParameters()
+        updateParameters = hub.UpdateParameters()
 
         # On Ubuntu desktop, on consumer-level GPUs, you don't have enough hardware encoder to stream multiple devices
         # and to record at the same time. https://en.wikipedia.org/wiki/Nvidia_NVENC
         # On Jetsons or on business-grade gpus, you can do whatever you want.
         updateParameters.enable_recording = False
-        status_iot = sliot.HubClient.register_camera(zeds[i], updateParameters)
-        if status_iot != sliot.STATUS_CODE.SUCCESS:
-            print("Camera registration error ", status_iot)
+        status_hub = hub.HubClient.register_camera(zeds[i], updateParameters)
+        if status_hub != hub.STATUS_CODE.SUCCESS:
+            print("Camera registration error ", status_hub)
             exit(1)
     
     # Thread loops for all streams
@@ -110,9 +110,9 @@ def main():
             zed.close()
 
     # Close the communication with ZED Hub properly.
-    status_iot = sliot.HubClient.disconnect()
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Terminating error ", status_iot)
+    status_hub = hub.HubClient.disconnect()
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Terminating error ", status_hub)
         exit(1)
     
     return

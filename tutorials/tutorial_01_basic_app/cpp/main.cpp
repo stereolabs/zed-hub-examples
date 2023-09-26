@@ -22,29 +22,29 @@
 #include <string.h>
 #include <chrono>
 
-#include <sl_iot/HubClient.hpp>
+#include <sl_hub/HubClient.hpp>
 
 using namespace std;
 using namespace sl;
-using namespace sl_iot;
-using json = sl_iot::json;
+using namespace sl_hub;
+using json = sl_hub::json;
 
 int main(int argc, char **argv)
 {
     // Initialize the communication to ZED Hub, without a zed camera.
-    STATUS_CODE status_iot;
-    status_iot = HubClient::connect("basic_app");
-    if (status_iot != STATUS_CODE::SUCCESS)
+    STATUS_CODE status_hub;
+    status_hub = HubClient::connect("basic_app");
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Initialization error " << status_iot << std::endl;
+        std::cout << "Initialization error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
 
     string s = "";
-    status_iot = HubClient::getDeviceName(s);
-    if (status_iot != STATUS_CODE::SUCCESS)
+    status_hub = HubClient::getDeviceName(s);
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Name error " << status_iot << std::endl;
+        std::cout << "Name error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
     std::cout << "Device name : " << s << std::endl;
@@ -69,10 +69,10 @@ int main(int argc, char **argv)
     }
 
     // Close the communication with ZED Hub properly.
-    status_iot = HubClient::disconnect();
-    if (status_iot != STATUS_CODE::SUCCESS)
+    status_hub = HubClient::disconnect();
+    if (status_hub != STATUS_CODE::SUCCESS)
     {
-        std::cout << "Terminating error " << status_iot << std::endl;
+        std::cout << "Terminating error " << status_hub << std::endl;
         exit(EXIT_FAILURE);
     }
     return 0;

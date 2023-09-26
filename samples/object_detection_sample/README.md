@@ -55,28 +55,19 @@ Then to run your app :
 
 To dynamically change the parameters and activate their callbacks, edit the `parameters.json` file.
 
-### How to build your application (for service deployment)
-To build your app just run:
-
-```
-$ cd /PATH/TO/object_detection_sample
-$ edge_cli build
-```
-
-This command is available by installing Edge Agent on your device.
-
-- The command will ask for the **device type** (Jetson or x86) on which you want to deploy this app.
-- The command will also ask for your **device cuda version**. If you do not know it you can find it in the **Info** section of your device in the ZED Hub interface.
-- Finally you will be asked the **sl_iot version** you want to use. The default one is the one installed on your device with Edge Agent. It corresponds to the base docker image used to build your app docker image. You can chose the default one, or look for the [most recent version available on Docker Hub](https://hub.docker.com/r/stereolabs/iot/tags?page=1&ordering=last_updated).
-
 ### How to deploy your application
 
-After packaging your app by generating a `app.zip`, you can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/deployment/) using the ZED Hub interface:
+Packages your app by generating a app.zip file using :
 
-- In your workspace, in the **Applications** section, click on **Create a new app**
+```
+$ edge_cli deploy .
+```
+
+You can now [deploy your app](https://www.stereolabs.com/docs/cloud/applications/deployment/) using the ZED Hub interface:
+
+- In your workspace, in the **Applications** section, click on **Add application**
 - Select the ZIP file containing the application in your filesystem
-- Select the devices on which you want to deploy the app and press **Deploy**
-
+- Select the devices on which you want to deploy the app and press **Upload**
 
 ## What you should see after deployment
 ### Live video
@@ -260,7 +251,7 @@ if (recordTelemetry && (uint64)(current_ts.getMilliseconds() >= (uint64)(prev_ti
     }
 
     // Send Telemetry
-    sl_iot::json position_telemetry;
+    sl_hub::json position_telemetry;
     position_telemetry["number_of_detection"] = objects.object_list.size();
     position_telemetry["mean_distance_from_cam"] = mean_distance;
     HubClient::sendTelemetry("object_detection", position_telemetry);

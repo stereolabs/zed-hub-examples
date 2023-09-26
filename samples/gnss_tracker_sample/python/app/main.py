@@ -19,7 +19,7 @@
 ########################################################################
 
 import pyzed.sl as sl
-import pyzed.sl_iot as sliot
+import pyzed.sl_hub as hub
 import json
 import os
 import random
@@ -35,14 +35,14 @@ dataFreq = 1.0
 def on_date_freq_update(message_received):
     global dataFreq
     print("Data frequency updated")
-    dataFreq = sliot.HubClient.get_parameter_float(
-        "dataFreq", sliot.PARAMETER_TYPE.APPLICATION, dataFreq)
+    dataFreq = hub.HubClient.get_parameter_float(
+        "dataFreq", hub.PARAMETER_TYPE.APPLICATION, dataFreq)
 
 
 def on_waypoints(message_received):
     # Get the waypoints from the device parameters
-    waypoints = sliot.HubClient.get_parameter_string(
-        "waypoints", sliot.PARAMETER_TYPE.DEVICE, "[]")
+    waypoints = hub.HubClient.get_parameter_string(
+        "waypoints", hub.PARAMETER_TYPE.DEVICE, "[]")
     print("waypoints", waypoints)
 
 
@@ -52,7 +52,7 @@ def main():
     global longitude
     global altitude
 
-    sliot.HubClient.load_application_parameters("parameters.json")
+    hub.HubClient.load_application_parameters("parameters.json")
 
     dataFreq = 1.0  # in seconds
 
@@ -60,37 +60,37 @@ def main():
     zed = sl.Camera()
 
     # Initialize the communication to ZED Hub, with a zed camera.
-    status_iot = sliot.HubClient.connect("gnss_app")
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status_iot)
+    status_hub = hub.HubClient.connect("gnss_app")
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_hub)
         exit(1)
 
     # Load application parameter file in development mode
     application_token = os.getenv("SL_APPLICATION_TOKEN")
     if application_token == None:
-        status_iot = sliot.HubClient.load_application_parameters("parameters.json")
-        if status_iot != sliot.STATUS_CODE.SUCCESS:
+        status_hub = hub.HubClient.load_application_parameters("parameters.json")
+        if status_hub != hub.STATUS_CODE.SUCCESS:
             print("parameters.json file not found or malformated")
             exit(1)
 
-    sliot.HubClient.set_log_level_threshold(
-        sliot.LOG_LEVEL.DEBUG, sliot.LOG_LEVEL.INFO)
+    hub.HubClient.set_log_level_threshold(
+        hub.LOG_LEVEL.DEBUG, hub.LOG_LEVEL.INFO)
 
     # Open the zed camera
     init_params = sl.InitParameters()
     status_zed = zed.open(init_params)
 
     if status_zed != sl.ERROR_CODE.SUCCESS:
-        sliot.HubClient.send_log(
-            "Camera initialization error : " + str(status_zed), sliot.LOG_LEVEL.ERROR)
+        hub.HubClient.send_log(
+            "Camera initialization error : " + str(status_zed), hub.LOG_LEVEL.ERROR)
         exit(1)
 
 
     # Register the camera once it's open
-    update_params = sliot.UpdateParameters()
-    status_iot = sliot.HubClient.register_camera(zed, update_params)
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Camera registration error ", status_iot)
+    update_params = hub.UpdateParameters()
+    status_hub = hub.HubClient.register_camera(zed, update_params)
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Camera registration error ", status_hub)
         exit(1)
 
     runtime_params = sl.RuntimeParameters()
@@ -98,17 +98,17 @@ def main():
     # PARAMETER_TYPE.APPLICATION is only suitable for dockerized apps, like this sample.
     # If you want to test this on your machine, you'd better switch all your subscriptions to PARAMETER_TYPE.DEVICE.
 
-    callback_params = sliot.CallbackParameters()
-    callback_params.set_parameter_callback("onDataFreqUpdate", "dataFreq",  sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.APPLICATION)
-    sliot.HubClient.register_function(on_date_freq_update, callback_params)
+    callback_params = hub.CallbackParameters()
+    callback_params.set_parameter_callback("onDataFreqUpdate", "dataFreq",  hub.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  hub.PARAMETER_TYPE.APPLICATION)
+    hub.HubClient.register_function(on_date_freq_update, callback_params)
 
-    callback_params.set_parameter_callback("onWaypoints", "waypoints",  sliot.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  sliot.PARAMETER_TYPE.DEVICE)
-    sliot.HubClient.register_function(on_waypoints, callback_params)
+    callback_params.set_parameter_callback("onWaypoints", "waypoints",  hub.CALLBACK_TYPE.ON_PARAMETER_UPDATE,  hub.PARAMETER_TYPE.DEVICE)
+    hub.HubClient.register_function(on_waypoints, callback_params)
 
     # get values defined by the ZED Hub interface.
 
-    dataFreq = sliot.HubClient.get_parameter_float(
-        "dataFreq", sliot.PARAMETER_TYPE.APPLICATION, dataFreq)
+    dataFreq = hub.HubClient.get_parameter_float(
+        "dataFreq", hub.PARAMETER_TYPE.APPLICATION, dataFreq)
 
     prev_timestamp = zed.get_timestamp(sl.TIME_REFERENCE.CURRENT)
 
@@ -140,18 +140,18 @@ def main():
                 gnss["position"]["longitude"] = longitude
                 gnss["position"]["altitude"] = altitude
 
-                sliot.HubClient.send_data_to_peers("geolocation", json.dumps(gnss))
+                hub.HubClient.send_data_to_peers("geolocation", json.dumps(gnss))
                 prev_timestamp = current_ts
 
             # Always update Hub at the end of the grab loop
-            sliot.HubClient.update()
+            hub.HubClient.update()
         
     if zed.is_opened():
         zed.close()
 
     # Close the communication with ZED Hub properly.
-    status = sliot.HubClient.disconnect()
-    if status != sliot.STATUS_CODE.SUCCESS:
+    status = hub.HubClient.disconnect()
+    if status != hub.STATUS_CODE.SUCCESS:
         print("Terminating error ", status)
         exit(1)
 

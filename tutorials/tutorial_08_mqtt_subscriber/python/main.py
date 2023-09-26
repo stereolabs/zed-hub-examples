@@ -19,7 +19,7 @@
 #
 ########################################################################
 
-import pyzed.sl_iot as sliot
+import pyzed.sl_hub as hub
 import time
 import json
 
@@ -28,28 +28,28 @@ def on_data_received(topic, message, target):
     print("Message received !")
     my_raw_data = json.loads(message)
     print("My received message : ", my_raw_data)
-    sliot.HubClient.send_log("Message received on topic " + topic, sliot.LOG_LEVEL.INFO)
+    hub.HubClient.send_log("Message received on topic " + topic, hub.LOG_LEVEL.INFO)
 
 
 def main():
     # Initialize the communication to ZED Hub, without a zed camera.
-    status_iot = sliot.HubClient.connect("sub_app")
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status_iot)
+    status_hub = hub.HubClient.connect("sub_app")
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_hub)
         exit(1)
 
     # Topic to listen to
     topic_name = "/my_custom_data"
-    sliot.HubClient.subscribe_to_topic(topic_name, on_data_received)
+    hub.HubClient.subscribe_to_topic(topic_name, on_data_received)
 
     # Main loop
     while True: 
         time.sleep(1)
     
     # Close the communication with ZED Hub properly.
-    status_iot = sliot.HubClient.disconnect()
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Terminating error ", status_iot)
+    status_hub = hub.HubClient.disconnect()
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Terminating error ", status_hub)
         exit(1)
     
     return

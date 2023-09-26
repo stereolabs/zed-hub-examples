@@ -26,24 +26,19 @@ With C++, your app should fit with this design :
 .
 ├── app
 │   └── Dockerfile
+    └── sources
+        ├── CMakeLists.txt
+        └── src
+            └── main.cpp
 ├── app.json
 ├── docker-compose.yml
-├── README.md
-└── sources
-    ├── CMakeLists.txt
-    ├── Dockerfile
-    └── src
-        └── main.cpp
+└── README.md
+   
 ```
-The `Dockerfile` in source is dedicated to build your app. `edge_cli` will help you build an app targeting a jetson platform from your linux machine. If you just want to target your own machine, you can simply build your app with `cmake`.
+The `Dockerfile` in source is dedicated to run your app. 
+- If you want it to build on the device, you should put a build step in the `Dockerfile` and provide the sources. This is the easiest way to deploy an application.
 
-**Build stage**:
-The source code needs to be compiled before deploying the app. The code is compiled inside a dedicated Docker image. To run the associated container you just need to run
-```
-$ cd /your/app/folder
-$ edge_cli build .
-```
-This command, installed with Edge Agent in your device setup, will ask on which kind of device you will deploy your app and will set the `Dockerfile` parameters accordingly. The `Dockerfile` describes the build stage. It generates binaries, stored in the `./app` folder.
+- If you don't want to build the app on every device, build it yourself and `COPY` the executable in the image. It can be harder to build an executable for jetsons from a x86 host. You can use the docker image we provide for that.
 
 ### Developing an app in Python
 With Python, your app should fit with this design :
@@ -59,12 +54,12 @@ With Python, your app should fit with this design :
 └── README.md
 
 ```
-Python dos not need any build stage.
+Python does not need any build stage.
 
 ### Deploy stage
 The deploy stage consists in create a .zip file containing
 - `app/Dockerfile`
-- `app/<your_app> `the binaries generated during the **build stage**, or the source in case your using Python.
+- `app/<your_app> `the binaries generated during the **build stage**, or the source in case you are using Python.
 - app.json
 - `docker-compose.yml`
 - an `icon.png` image (optional)
@@ -77,9 +72,9 @@ $ edge_cli deploy .
 `app.zip` file is generated. It is ready to be deployed.
 
 Now you just need to deploy your app using the ZED Hub interface:
-- In your workspace, in the **Applications** section, click on **Create a new app**
+- In your workspace, in the **Applications** section, click on **Add application**
 - Get the .zip an Drag’n’Drop in the dedicated area
-- Select the devices on which you want to deploy the app and press **Deploy**
+- Select the devices on which you want to deploy the app and press **Upload**
 
 
 ## Docker complement
@@ -97,7 +92,7 @@ services:
         context : ./app
         dockerfile : Dockerfile
         args :
-            BASE_IMAGE: stereolabs/iot:0.63.0-runtime-jetson-jp4.4
+            BASE_IMAGE: stereolabs/iot:0.72.1-build-jetson-l4t35.1
     runtime: nvidia
     privileged: true
     network_mode: "host"
@@ -105,7 +100,7 @@ services:
         - NVIDIA_DRIVER_CAPABILITIES=all
 ```
 
-In this example the container of the application will run the **tuto01_service** service. This service will use the Dockerfile named **Dockerfile** in the `./app` folder. This Dockerfile will be read with the parameter **BASE_IMAGE** set to `stereolabs/iot:0.63.0-runtime-jetson-jp4.4` by default.
+In this example the container of the application will run the **tuto01_service** service. This service will use the Dockerfile named **Dockerfile** in the `./app` folder. This Dockerfile will be read with the parameter **BASE_IMAGE** set to `stereolabs/iot:0.72.1-build-jetson-l4t35.1` by default.
 
 
 ### Runtime Dockerfile
@@ -126,23 +121,3 @@ COPY app_executable /
 CMD ["/app_executable"]
 
 ```
-
-### Build Dockerfile
-
-The build Dockerfile is **only used for C++ applications** and is **not part of your app** meaning that it is never packaged in the .zip file. It describes the image used to compile your C++ code. This image is similar to the runtime image (the image used to run your app) but contains additional tools required to build the source code and that your runtime image does not need.
-
-The build `Dockerfile` is used by the `edge_cli build` command and generates one or several **binaries**. These binaries are then used by the runtime image described by the runtime `Dockerfile`.
-
-### Uploading a new release
-Let's suppose you have modified one of the tutorials and want to deploy your updated version.
-
-- Modify the `app.json` file by giving it another release name.
-```js
-    //...
-    "release":{
-        "name": "1.0.0",  // modify 1.0.0 by a name of your choice. We recommend to keep the x.x.x version scheme
-      //...
-    }
-    //...
-```
-You just have to follow the same build and deployment stages than those described in each tutorial.

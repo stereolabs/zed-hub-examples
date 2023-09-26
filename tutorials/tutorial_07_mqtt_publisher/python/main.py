@@ -18,15 +18,15 @@
 #
 ########################################################################
 
-import pyzed.sl_iot as sliot
+import pyzed.sl_hub as hub
 import time
 
 
 def main():
     # Initialize the communication to ZED Hub, without a zed camera.
-    status_iot = sliot.HubClient.connect("pub_app")
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Initialization error ", status_iot)
+    status_hub = hub.HubClient.connect("pub_app")
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Initialization error ", status_hub)
         exit(1)
 
     # The name of the topic we will publish our message in
@@ -39,15 +39,15 @@ def main():
         my_message_js["my_custom data"] = 54
         my_message_js["timestamp"] = int(time.time())
 
-        sliot.HubClient.publish_on_topic(topic_name, my_message_js)
-        sliot.HubClient.send_log("Message published", sliot.LOG_LEVEL.INFO)
+        hub.HubClient.publish_on_topic(topic_name, my_message_js)
+        hub.HubClient.send_log("Message published", hub.LOG_LEVEL.INFO)
 
         time.sleep(10) # 10 seconds
 
     # Close the communication with ZED Hub properly.
-    status_iot = sliot.HubClient.disconnect()
-    if status_iot != sliot.STATUS_CODE.SUCCESS:
-        print("Terminating error ", status_iot)
+    status_hub = hub.HubClient.disconnect()
+    if status_hub != hub.STATUS_CODE.SUCCESS:
+        print("Terminating error ", status_hub)
         exit(1)
     
     return
