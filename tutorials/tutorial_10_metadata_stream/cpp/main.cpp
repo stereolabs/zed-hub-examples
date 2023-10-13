@@ -79,6 +79,26 @@ vector<cv::Scalar> colors = {
     cv::Scalar(194, 72, 113, 255)
 };
 
+template<typename T>
+void drawBones(
+        cv::Mat &image,
+        const vector<sl::float2> keypoints,
+        const std::vector<std::pair<T, T>> &bones,
+        const sl::float2 &img_scale,
+        const cv::Scalar &color,
+        const cv::Rect &roi_render)
+{
+    for (auto &bone: bones)
+    {
+        auto kp_a = cvt(keypoints[sl::getIdx(bone.first)], img_scale);
+        auto kp_b = cvt(keypoints[sl::getIdx(bone.second)], img_scale);
+        if (roi_render.contains(kp_a) && roi_render.contains(kp_b))
+        {
+            cv::line(image, kp_a, kp_b, color, 1);
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     // Create camera object
@@ -135,7 +155,7 @@ int main(int argc, char **argv)
     sl::BodyTrackingParameters body_track_params;
     body_track_params.enable_tracking = true;
     body_track_params.enable_body_fitting = false; // smooth skeletons moves
-    body_track_params.body_format = BODY_FORMAT::BODY_38;
+    body_track_params.body_format = BODY_FORMAT::BODY_18;
     body_track_params.detection_model = BODY_TRACKING_MODEL::HUMAN_BODY_ACCURATE;
     zed_error = p_zed->enableBodyTracking(body_track_params);
     if (zed_error != ERROR_CODE::SUCCESS)
@@ -195,14 +215,23 @@ int main(int argc, char **argv)
                     if (roi_render.contains(cv_kp))
                         cv::circle(cv_image, cv_kp, 3, color, -1);
                 }
-
+                
                 // Skeleton bones
-                for (auto& limb : BODY_38_BONES)
+                if (body_track_params.body_format == BODY_FORMAT::BODY_18)
                 {
-                    auto kp_a = cvt(body.keypoint_2d[getIdx(limb.first)], img_scale);
-                    auto kp_b = cvt(body.keypoint_2d[getIdx(limb.second)], img_scale);
-                    if (roi_render.contains(kp_a) && roi_render.contains(kp_b))
-                        cv::line(cv_image, kp_a, kp_b, color, 1);                                
+                    drawBones(cv_image, body.keypoint_2d, sl::BODY_18_BONES, img_scale, color, roi_render);
+                }
+                else if (body_track_params.body_format == BODY_FORMAT::BODY_34)
+                {
+                    drawBones(cv_image, body.keypoint_2d, sl::BODY_34_BONES, img_scale, color, roi_render);
+                }
+                else if (body_track_params.body_format == BODY_FORMAT::BODY_38)
+                {
+                    drawBones(cv_image, body.keypoint_2d, sl::BODY_38_BONES, img_scale, color, roi_render);
+                }
+                else if (body_track_params.body_format == BODY_FORMAT::BODY_70)
+                {
+                    drawBones(cv_image, body.keypoint_2d, sl::BODY_70_BONES, img_scale, color, roi_render);
                 }
             }
         }
